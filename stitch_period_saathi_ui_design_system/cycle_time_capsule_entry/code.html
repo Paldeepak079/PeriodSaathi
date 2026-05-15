@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cycle Time Capsule | Period Saathi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;family=Dancing+Script:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .handwritten-font {
+            font-family: 'Dancing Script', cursive;
+        }
+        .glass-inner-border {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .star-field {
+            background-image: 
+                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 130px 80px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            opacity: 0.4;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-on-surface": "#f6f0ea",
+                      "on-tertiary-fixed": "#001d32",
+                      "on-surface-variant": "#514345",
+                      "tertiary": "#42617d",
+                      "surface": "#fff8f2",
+                      "inverse-surface": "#33302c",
+                      "on-error": "#ffffff",
+                      "outline-variant": "#d6c2c3",
+                      "on-tertiary-container": "#385772",
+                      "on-primary-fixed": "#360c17",
+                      "secondary-fixed-dim": "#d0bfef",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#62547e",
+                      "surface-container-highest": "#e8e1dc",
+                      "on-secondary-fixed": "#21143a",
+                      "primary-fixed": "#ffd9de",
+                      "inverse-primary": "#fcb3be",
+                      "on-surface": "#1e1b18",
+                      "on-primary-container": "#7b444e",
+                      "surface-dim": "#dfd9d3",
+                      "secondary-fixed": "#eaddff",
+                      "tertiary-fixed": "#cde5ff",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f9f2ec",
+                      "on-background": "#1e1b18",
+                      "surface-container-high": "#eee7e1",
+                      "secondary": "#655781",
+                      "on-tertiary-fixed-variant": "#2a4a64",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#874e58",
+                      "tertiary-fixed-dim": "#aacae9",
+                      "surface-bright": "#fff8f2",
+                      "on-primary-fixed-variant": "#6b3741",
+                      "primary": "#874e58",
+                      "outline": "#847375",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e8e1dc",
+                      "background": "#fff8f2",
+                      "secondary-container": "#deccfd",
+                      "primary-container": "#ffb6c1",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed-variant": "#4d4068",
+                      "tertiary-container": "#adcded",
+                      "primary-fixed-dim": "#fcb3be",
+                      "surface-container": "#f3ede7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding-desktop": "48px",
+                      "stack-sm": "8px",
+                      "stack-lg": "32px",
+                      "container-padding-mobile": "24px",
+                      "unit": "4px",
+                      "stack-md": "16px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "label-md": ["Nunito Sans"],
+                      "headline-md": ["Nunito Sans"],
+                      "headline-lg-mobile": ["Nunito Sans"],
+                      "label-sm": ["Nunito Sans"],
+                      "headline-lg": ["Nunito Sans"],
+                      "body-md": ["Nunito Sans"],
+                      "body-lg": ["Nunito Sans"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#1A1228] min-h-screen text-surface-container-lowest font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Global Nav (TopAppBar Shell) -->
+<header class="fixed top-0 w-full z-50 bg-white/10 backdrop-blur-xl border-b border-white/10 shadow-[0_30px_60px_-15px_rgba(135,78,88,0.15)] flex justify-between items-center px-container-padding-mobile h-16">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/30 border border-white/20 flex items-center justify-center overflow-hidden">
+<img alt="Saathi Mascot" class="w-full h-full object-cover" data-alt="A friendly and cute digital mascot illustration representing a health companion for women. The character has soft, rounded features, gentle eyes, and a warm smile, rendered in a modern 3D claymorphic style with pastel pink and lavender highlights. The background is a clean, minimalist gradient that feels supportive and safe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL-qEdRHdWcPb2jPQLMbRbHuTxavwj3OPSrJPLKl_jBEQjf5ZAtL-gKJPciyGZc9ux25RyceVoLrZmQXTeRx_qPqPnIh0N2sXu34y5_nDpkvGwZCdI65Ozasn1Pq4l5IbqaFhY0GY2P_x9eGY0cdTFOcggTEu-ucRco5arVA63Bz8DxSP56UFglHLt7J6ND1AuXp1l8Fr5mjq8_32K4hiL-Mb7J4NO2mU6mrin3krwrmQ8I8Sc8bdfjxfehBjbsL9n7x94Arm0B4rc"/>
+</div>
+<span class="font-headline-md text-headline-md font-extrabold text-white">Period Saathi</span>
+</div>
+<button class="text-white hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="relative min-h-screen pt-24 pb-32 px-container-padding-mobile flex flex-col items-center">
+<!-- Celestial Background Accents -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+<div class="star-field absolute inset-0"></div>
+<div class="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-secondary/20 rounded-full blur-[120px]"></div>
+</div>
+<!-- Hero Content Section -->
+<div class="relative z-10 w-full max-w-lg flex flex-col items-center gap-stack-lg">
+<header class="text-center space-y-stack-sm mb-stack-md">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight">Cycle Time Capsule</h1>
+<p class="text-on-surface-variant/80 font-body-md">A gentle space for your future self.</p>
+</header>
+<!-- The Ceremonial Envelope Element -->
+<div class="relative w-full aspect-[4/5] flex items-center justify-center">
+<!-- Envelope Back / Base -->
+<div class="absolute bottom-0 w-full h-[60%] bg-[#2D2142] rounded-b-lg glass-inner-border shadow-2xl z-0"></div>
+<!-- Sliding Paper (Hero Element) -->
+<div class="absolute top-0 w-[90%] h-[80%] bg-surface-container-low rounded-lg shadow-lg z-10 transform translate-y-4 flex flex-col p-6 border border-white/50">
+<div class="flex-grow flex flex-col">
+<label class="font-label-md text-label-md text-primary mb-2 block" for="capsule-note">Write a note to yourself for next month...</label>
+<textarea class="flex-grow bg-transparent border-none focus:ring-0 resize-none handwritten-font text-[22px] text-on-surface leading-relaxed placeholder:text-on-surface-variant/30" id="capsule-note" placeholder="Dear me, remember to..."></textarea>
+</div>
+<div class="flex justify-between items-end mt-4 pt-4 border-t border-primary/10">
+<div class="flex items-center gap-2 text-on-surface-variant/60 font-label-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="ink_highlighter">ink_highlighter</span>
+<span>Char count: 0/500</span>
+</div>
+<div class="handwritten-font text-primary/60 text-lg">With love, You</div>
+</div>
+</div>
+<!-- Floating Note Label -->
+<div class="absolute -top-8 -right-4 z-20 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-xl rotate-6 animate-bounce">
+<p class="font-label-sm text-white flex items-center gap-2">
+                        You'll read this in ~28 days 💌
+                    </p>
+</div>
+<!-- Envelope Front Flap (Open) -->
+<div class="absolute bottom-0 w-full h-[60%] bg-gradient-to-t from-[#3A2D55] to-[#2D2142] rounded-b-lg z-20 glass-inner-border">
+<!-- Wax Seal -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B] rounded-full shadow-2xl flex items-center justify-center border-2 border-white/20 z-30 transform hover:scale-110 transition-transform">
+<div class="w-14 h-14 rounded-full border border-black/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-black/40 text-4xl" data-icon="local_florist">local_florist</span>
+</div>
+</div>
+</div>
+</div>
+<!-- CTA Section -->
+<div class="w-full mt-stack-lg space-y-stack-md">
+<button class="w-full h-16 bg-[#001D32]/80 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center gap-3 text-white font-headline-md shadow-2xl hover:bg-[#001D32] transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="lock" data-weight="fill" style="font-variation-settings: 'FILL' 1;">lock</span>
+                    Seal it 💌
+                </button>
+<div class="grid grid-cols-2 gap-gutter">
+<div class="bg-white/5 backdrop-blur-lg p-4 rounded-lg glass-inner-border flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="auto_awesome">auto_awesome</span>
+<p class="font-label-sm text-white/70">Safe &amp; Encrypted</p>
+</div>
+<div class="bg-white/5 backdrop-blur-lg p-4 rounded-lg glass-inner-border flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-secondary-fixed" data-icon="schedule">schedule</span>
+<p class="font-label-sm text-white/70">Release in 28 Days</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/10 dark:bg-surface/10 backdrop-blur-xl border-t border-white/10 z-50 shadow-[0_-10px_40px_rgba(135,78,88,0.1)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/20 transition-all rounded-xl px-4 py-1.5 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/20 transition-all rounded-xl px-4 py-1.5 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container/80 text-on-primary-container rounded-xl px-4 py-1.5 shadow-sm active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+<span class="font-label-sm text-label-sm">Remedies</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/20 transition-all rounded-xl px-4 py-1.5 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm">Partner</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/20 transition-all rounded-xl px-4 py-1.5 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

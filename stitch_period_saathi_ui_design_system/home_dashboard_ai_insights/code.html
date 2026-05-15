@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Period Saathi - AI Cycle Whisperer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#eee7e1",
+                    "on-tertiary-fixed-variant": "#2a4a64",
+                    "on-error": "#ffffff",
+                    "tertiary": "#42617d",
+                    "primary-fixed": "#ffd9de",
+                    "outline": "#847375",
+                    "secondary-fixed": "#eaddff",
+                    "on-secondary-fixed": "#21143a",
+                    "on-primary-container": "#7b444e",
+                    "on-primary-fixed-variant": "#6b3741",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f9f2ec",
+                    "surface-tint": "#874e58",
+                    "surface": "#fff8f2",
+                    "on-surface": "#1e1b18",
+                    "on-primary": "#ffffff",
+                    "primary": "#874e58",
+                    "on-secondary-fixed-variant": "#4d4068",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#fcb3be",
+                    "inverse-surface": "#33302c",
+                    "secondary": "#655781",
+                    "surface-bright": "#fff8f2",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#fcb3be",
+                    "primary-container": "#ffb6c1",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#adcded",
+                    "on-primary-fixed": "#360c17",
+                    "surface-container": "#f3ede7",
+                    "tertiary-fixed": "#cde5ff",
+                    "surface-container-highest": "#e8e1dc",
+                    "inverse-on-surface": "#f6f0ea",
+                    "surface-variant": "#e8e1dc",
+                    "outline-variant": "#d6c2c3",
+                    "on-secondary-container": "#62547e",
+                    "on-surface-variant": "#514345",
+                    "background": "#fff8f2",
+                    "on-background": "#1e1b18",
+                    "surface-dim": "#dfd9d3",
+                    "secondary-fixed-dim": "#d0bfef",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#385772",
+                    "secondary-container": "#deccfd",
+                    "tertiary-fixed-dim": "#aacae9",
+                    "on-tertiary-fixed": "#001d32",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "container-padding-desktop": "48px",
+                    "stack-lg": "32px",
+                    "unit": "4px",
+                    "stack-sm": "8px",
+                    "gutter": "16px",
+                    "container-padding-mobile": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Nunito Sans"],
+                    "headline-lg": ["Nunito Sans"],
+                    "body-md": ["Nunito Sans"],
+                    "label-md": ["Nunito Sans"],
+                    "body-lg": ["Nunito Sans"],
+                    "label-sm": ["Nunito Sans"],
+                    "headline-lg-mobile": ["Nunito Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-image: radial-gradient(circle at top left, #fff8f2 0%, #ffeef0 50%, #f9f2ec 100%);
+            background-attachment: fixed;
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(173, 205, 237, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-white/60 dark:bg-black/40 backdrop-blur-2xl border-b border-white/50 dark:border-white/10 shadow-[0_8px_32px_0_rgba(135,78,88,0.15)] flex justify-between items-center px-container-padding-mobile h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+<img alt="Uterus Mascot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm5UPtTyb8bnAQUSAOa8o9cCfnzjmY2XXuq4rsL0EL7wIXiYOU0Ea-in3Q4XgKuipANFeIpkmWD5jdAlnWdgL4uEWJhpzScV8Gaa9QNSfmvPHTCBXVdEjkltaXQkpvqXJtQ3mxoPGGGDjuFawX0DAbFnaKSw2vPNXQbFEXEtfq6NfxGL4QpdMXTwjkR9yKqsroLPu-ShG49ceHs0BRdidz5Ui_i8hYQY4BTp0ulTpret9zZ_9QD7udA4-2MDw6qLmu7w96vKsoHVvA"/>
+</div>
+<h1 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary tracking-tight">Period Saathi</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary active:scale-95 transition-transform duration-200 ease-out hover:bg-white/20">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-padding-mobile max-w-2xl mx-auto space-y-stack-lg">
+<!-- Welcome Hero -->
+<section class="space-y-unit">
+<p class="font-label-md text-label-md text-on-surface-variant">Hello, Sarah</p>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Your Saathi is listening.</h2>
+</section>
+<!-- AI Cycle Whisperer Premium Forecast Card -->
+<div class="glass-card bg-tertiary-container/40 h-[180px] rounded-lg p-stack-md flex items-center relative overflow-hidden ai-glow">
+<!-- AI Badge -->
+<div class="absolute top-3 right-3 bg-white/40 backdrop-blur-sm border border-white/60 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-[10px] font-extrabold text-tertiary uppercase tracking-widest">AI ✦</span>
+</div>
+<div class="flex-shrink-0 w-24 h-24 flex items-center justify-center text-tertiary bg-white/30 rounded-full mr-gutter">
+<span class="material-symbols-outlined text-[48px] animate-pulse" data-icon="cloud">cloud</span>
+</div>
+<div class="flex-grow space-y-unit">
+<span class="font-label-sm text-label-sm text-on-tertiary-container/70 uppercase tracking-tighter">Today's Cycle Forecast</span>
+<h3 class="font-headline-md text-headline-md text-on-tertiary-container">Low Energy Day ☁️</h3>
+<p class="font-body-md text-body-md text-on-tertiary-container/80 leading-snug">
+                    Plan lighter tasks today. Your body is preparing. Rest is productive.
+                </p>
+</div>
+</div>
+<!-- Pattern Detective Notification Card -->
+<div class="glass-card bg-[#fff4e0]/60 rounded-lg p-gutter flex items-start gap-4 border-l-4 border-amber-400">
+<div class="bg-amber-100 p-2 rounded-full text-amber-600">
+<span class="material-symbols-outlined" data-icon="magnifying_glass">search</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-label-md text-label-md text-on-surface">We noticed something interesting 🔍</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Your cycle has been 2 days longer this month. Your AI detective is analyzing why.</p>
+</div>
+</div>
+<!-- Current Status Dashboard Grid (Bento Style) -->
+<div class="grid grid-cols-2 gap-gutter">
+<div class="glass-card bg-white/60 p-stack-md rounded-lg col-span-2 border-2 border-primary-container">
+<div class="flex justify-between items-end">
+<div>
+<p class="font-label-sm text-label-sm text-primary uppercase">Current Phase</p>
+<h4 class="font-headline-md text-headline-md text-on-surface">Menstrual Phase</h4>
+</div>
+<div class="text-right">
+<span class="text-headline-lg font-headline-lg text-primary">02</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">/ 05 Days</span>
+</div>
+</div>
+<div class="mt-stack-md h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/5 rounded-full shadow-[0_0_10px_rgba(135,78,88,0.3)]"></div>
+</div>
+</div>
+<div class="glass-card bg-white/40 p-stack-md rounded-lg aspect-square flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-secondary text-[32px] mb-2" data-icon="water_drop">water_drop</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Flow</p>
+<p class="font-headline-md text-headline-md text-on-surface">Medium</p>
+</div>
+<div class="glass-card bg-white/40 p-stack-md rounded-lg aspect-square flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-tertiary text-[32px] mb-2" data-icon="mood">sentiment_satisfied</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Mood</p>
+<p class="font-headline-md text-headline-md text-on-surface">Cuddly</p>
+</div>
+</div>
+<!-- Daily Insights Section -->
+<div class="space-y-stack-md">
+<h5 class="font-label-md text-label-md text-on-surface-variant px-1">Tailored for Today</h5>
+<div class="space-y-gutter">
+<div class="glass-card bg-white/50 p-gutter rounded-lg flex items-center gap-gutter">
+<img alt="Gentle Yoga" class="w-16 h-16 rounded-lg object-cover" data-alt="A soft, overhead shot of a person performing a gentle yoga stretch on a plush cream-colored mat. The lighting is warm and diffused, creating a calm, safe atmosphere. The color palette consists of soft beiges, warm whites, and muted pinks, emphasizing a wellness and health-oriented aesthetic. The composition is clean and minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRJdT3dRQA4DMSUjKlFcgVy76vX-YzxbSqGapV4zmuJ2_AbGyqGfJ1Kvif70YlE1zTtADMvDbNKSgCG4jCdDVjkPQqn-UWrhvvNgYjcZ8HNXxZuGPEcC3Q3L1DnAykzqt5Okcvu6qX4Thnqs7lqlgAru7jnFMf_HxRHFA7BMaCtN4UZqg3LwmJWVomVAb3sIilGptjbIqZrnx1CZqmq82TSKiMDuq5MI0uoCH0q6rOLfOdUGz7Ef-l2XCP32zY03ZEEChAOvLiY1dV"/>
+<div>
+<p class="font-label-sm text-label-sm text-tertiary">Activity</p>
+<p class="font-body-lg text-body-lg font-bold text-on-surface">5-Min Restorative Yoga</p>
+</div>
+</div>
+<div class="glass-card bg-white/50 p-gutter rounded-lg flex items-center gap-gutter">
+<img alt="Herbal Tea" class="w-16 h-16 rounded-lg object-cover" data-alt="A steaming cup of herbal tea in a ceramic mug, placed on a light wooden surface next to a sprig of dried lavender. The steam rises softly into a bright, airy room with natural light. The aesthetic is cozy, nurturing, and premium, utilizing a palette of warm wood tones, soft purples, and clean white highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4OVPQk0oAdpjGW4euSGnmhyCShQ8rMrdaX478RVK6ka8PvvuSAuXGvzJY9DP60cE9RWx5s8VHj80FYsViq_hfbVB2CeD9mYGSx76gtzPpA1w1cWFr2aeqe-PWUQj7-le1JanfF6ZisnL3R9RZwgnsL3AF9ts5oF2PvClLHMGYWPXxhnhPQyngfyvclXJZmuWvtfRB-KZwRLmP65U_SkE-RzuOkuCgDkllCkVb1ER4ad4Xwt4jBiVKQ8YL7eXBjKtOCDJq6HwSq6US"/>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Remedy</p>
+<p class="font-body-lg text-body-lg font-bold text-on-surface">Ginger &amp; Chamomile Blend</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Cycle Phase Coach Banner -->
+<div class="w-full h-24 rounded-lg bg-gradient-to-r from-primary to-primary-container p-gutter flex items-center justify-between shadow-lg">
+<div class="text-white">
+<p class="font-label-sm text-label-sm opacity-80 uppercase tracking-widest">Phase Coach</p>
+<h4 class="font-headline-md text-headline-md">Day 2 of Menstrual Phase</h4>
+</div>
+<button class="bg-white/20 backdrop-blur-md border border-white/40 text-white px-4 py-2 rounded-full font-label-md hover:bg-white/30 transition-colors">
+                View Coach Guide
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full rounded-t-lg z-50 bg-white/60 dark:bg-black/40 backdrop-blur-2xl border-t border-white/50 dark:border-white/10 shadow-[0_-8px_32px_0_rgba(135,78,88,0.15)] flex justify-around items-center h-20 px-4 pb-safe w-full">
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 shadow-[0_0_15px_rgba(255,182,193,0.5)]">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="spa">spa</span>
+<span class="font-label-sm text-label-sm">Remedies</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm">Partner</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+</body></html>

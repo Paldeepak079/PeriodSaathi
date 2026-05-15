@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-dim": "#dfd9d3",
+                  "on-primary-container": "#7b444e",
+                  "on-surface": "#1e1b18",
+                  "primary-fixed": "#ffd9de",
+                  "inverse-primary": "#fcb3be",
+                  "on-secondary-fixed": "#21143a",
+                  "surface-container-highest": "#e8e1dc",
+                  "on-secondary-container": "#62547e",
+                  "on-primary": "#ffffff",
+                  "secondary-fixed-dim": "#d0bfef",
+                  "outline-variant": "#d6c2c3",
+                  "on-tertiary-container": "#385772",
+                  "on-primary-fixed": "#360c17",
+                  "on-error": "#ffffff",
+                  "inverse-surface": "#33302c",
+                  "surface": "#fff8f2",
+                  "tertiary": "#42617d",
+                  "on-surface-variant": "#514345",
+                  "on-tertiary-fixed": "#001d32",
+                  "inverse-on-surface": "#f6f0ea",
+                  "surface-container": "#f3ede7",
+                  "primary-fixed-dim": "#fcb3be",
+                  "tertiary-container": "#adcded",
+                  "on-secondary-fixed-variant": "#4d4068",
+                  "secondary-container": "#deccfd",
+                  "primary-container": "#ffb6c1",
+                  "error": "#ba1a1a",
+                  "surface-variant": "#e8e1dc",
+                  "background": "#fff8f2",
+                  "error-container": "#ffdad6",
+                  "primary": "#874e58",
+                  "outline": "#847375",
+                  "on-primary-fixed-variant": "#6b3741",
+                  "surface-bright": "#fff8f2",
+                  "tertiary-fixed-dim": "#aacae9",
+                  "surface-tint": "#874e58",
+                  "surface-container-high": "#eee7e1",
+                  "secondary": "#655781",
+                  "on-tertiary-fixed-variant": "#2a4a64",
+                  "on-tertiary": "#ffffff",
+                  "tertiary-fixed": "#cde5ff",
+                  "on-error-container": "#93000a",
+                  "secondary-fixed": "#eaddff"
+          },
+          "borderRadius": {
+                  "DEFAULT": "1rem",
+                  "lg": "2rem",
+                  "xl": "3rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "stack-sm": "8px",
+                  "container-padding-desktop": "48px",
+                  "stack-lg": "32px",
+                  "unit": "4px",
+                  "stack-md": "16px",
+                  "container-padding-mobile": "24px",
+                  "gutter": "16px"
+          },
+          "fontFamily": {
+                  "label-sm": ["Nunito Sans"],
+                  "headline-lg-mobile": ["Nunito Sans"],
+                  "label-md": ["Nunito Sans"],
+                  "headline-md": ["Nunito Sans"],
+                  "body-md": ["Nunito Sans"],
+                  "body-lg": ["Nunito Sans"],
+                  "headline-lg": ["Nunito Sans"]
+          },
+          "fontSize": {
+                  "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}],
+                  "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                  "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px 0 rgba(223, 217, 211, 0.3);
+    }
+    .active-stroke {
+      border: 2px solid #874e58; /* Primary Blush Pink */
+      box-shadow: 0 0 15px rgba(135, 78, 88, 0.2);
+    }
+    .mascot-glow {
+      filter: drop-shadow(0 0 20px rgba(255, 182, 193, 0.5));
+    }
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-surface/60 backdrop-blur-xl text-primary font-headline-md text-headline-md mobile:font-headline-lg-mobile mobile:text-headline-lg-mobile docked full-width top-0 border-b border-white/20 backdrop-blur-lg shadow-[0_8px_32px_0_rgba(223,217,211,0.3)] flex items-center justify-between px-container-mobile h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity cursor-pointer">menu</span>
+<h1 class="font-headline-md text-headline-md text-primary font-extrabold tracking-tight">Saathi</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container hover:opacity-80 transition-opacity cursor-pointer">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A high-quality studio portrait of a smiling woman with a warm, approachable expression. She is set against a soft, creamy background that matches a premium light-mode UI aesthetic. The lighting is diffused and professional, emphasizing a sense of health, wellness, and personal care. The overall mood is bright and supportive." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXI_ViH4NYWI9TyTxUlej2dd4tLbHYyDYmj-G2S-xb9kEL2yVVKz-9U4sonyb0_gHutWHWeJlXZMuOAnlkBFmKenjyERPp3h2Ak3gKsbpc0bIt9s6ZpVHAhAYfJZGbFobdecIr1fL0cpUeKeZjeQOkEZ8Xfle2fEUKGaaW9Bu44IWemjsu7RQ4kAyOI_p8W8NPYwL1UtU-BQe4eXqqOajYh2dUR4ndo9nvuzJkR0D7QSet3TbTln8h4SzkMLqK-H0sQoUieKJqHh9o"/>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-container-mobile lg:px-container-padding-desktop py-stack-lg pb-32">
+<!-- Title & Subtitle Section -->
+<section class="mb-stack-lg text-center lg:text-left">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile lg:font-headline-lg lg:text-headline-lg text-on-surface mb-1">Saathi's Closet 👗</h2>
+<p class="font-label-md text-label-md text-primary tracking-wide">SEASONAL COLLECTIONS</p>
+</section>
+<!-- Content Layout: 2-column -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg items-start">
+<!-- Left Side: Large Mascot Preview -->
+<div class="lg:col-span-5 flex flex-col gap-gutter">
+<div class="glass-card rounded-xl p-stack-lg relative overflow-hidden flex flex-col items-center justify-center min-h-[400px]">
+<!-- Decorative Background Blobs -->
+<div class="absolute -top-10 -left-10 w-40 h-40 bg-primary-container/30 blur-3xl rounded-full"></div>
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary-container/30 blur-3xl rounded-full"></div>
+<div class="relative mascot-glow transition-transform duration-500 hover:scale-105">
+<img alt="Saathi Mascot" class="w-64 h-64 lg:w-80 lg:h-80 object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiqsy0JHHneP69sr1Cf2bEReqVeRJACH8PWZXOYjFnliXs4W5laZ2DEIXBJ1KFJIEwGhPZ_juv0oZj5lYON395-ccl3eawyqos05W9zdU2_UNamghBLn219tvkApmStwh9tQnJUkzXvz3vJSt_cL_dDVvA2WlLMmSwxsa0lzImbeQ0ZF86UdJ_RoXyB2YCQMWGiBwdvZ2IcdnxgCDd1YLVwm2Yv_EbMkyZbGTxOx8kAeqKlDiwFvAh4UBLK"/>
+<!-- Seasonal Overlay Accessory -->
+<div class="absolute top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
+<span class="text-4xl lg:text-5xl drop-shadow-md">🌸</span>
+</div>
+</div>
+<div class="mt-stack-md text-center">
+<p class="font-label-md text-label-md text-on-surface-variant italic">Saathi is feeling "Freshly Picked" today!</p>
+</div>
+</div>
+<!-- Quick Stats Glass Card -->
+<div class="glass-card rounded-lg p-stack-md flex justify-around items-center">
+<div class="text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Wardrobe Pts</p>
+<p class="font-headline-md text-headline-md text-primary">1,250</p>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Unlocked</p>
+<p class="font-headline-md text-headline-md text-secondary">12/48</p>
+</div>
+</div>
+</div>
+<!-- Right Side: Item Grid -->
+<div class="lg:col-span-7">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Item 1: Diwali Sparkle -->
+<div class="glass-card rounded-lg p-gutter relative opacity-75 group hover:opacity-100 transition-all duration-300 gold-glow">
+<div class="aspect-square bg-secondary-container/20 rounded-lg mb-stack-sm flex items-center justify-center relative">
+<span class="material-symbols-outlined text-4xl text-on-secondary-container/40">lock</span>
+<div class="absolute top-2 right-2 bg-on-secondary-container/10 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-label-sm text-label-sm">500</span>
+</div>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">Diwali Sparkle</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Locked Item</p>
+<button class="mt-stack-sm w-full py-2 bg-secondary text-on-secondary rounded-full font-label-md text-label-md hover:scale-95 transition-transform">Unlock Now</button>
+</div>
+<!-- Item 2: Monsoon Teal (Current) -->
+<div class="glass-card rounded-lg p-gutter active-stroke relative group">
+<div class="absolute -top-2 -right-2 bg-primary text-on-primary font-label-sm text-label-sm px-3 py-1 rounded-full shadow-sm z-10">
+              Active
+            </div>
+<div class="aspect-square bg-tertiary-container/30 rounded-lg mb-stack-sm flex items-center justify-center overflow-hidden">
+<span class="text-5xl group-hover:scale-110 transition-transform duration-300">👗</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">Monsoon Teal</h3>
+<p class="font-label-sm text-label-sm text-primary">Currently Wearing</p>
+<div class="mt-stack-sm h-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Item 3: Cozy Winter -->
+<div class="glass-card rounded-lg p-gutter relative opacity-75 group hover:opacity-100 transition-all duration-300">
+<div class="aspect-square bg-primary-container/20 rounded-lg mb-stack-sm flex items-center justify-center relative">
+<span class="material-symbols-outlined text-4xl text-on-primary-container/40">lock_clock</span>
+<div class="absolute bottom-2 left-2 right-2 bg-error-container text-on-error-container px-2 py-1 rounded-lg text-center">
+<span class="font-label-sm text-label-sm">Limited Time</span>
+</div>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">Cozy Winter</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Locked Item</p>
+<button class="mt-stack-sm w-full py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary/5 transition-colors">View Quest</button>
+</div>
+<!-- Extra Items to fill grid -->
+<div class="glass-card rounded-lg p-gutter opacity-50 grayscale">
+<div class="aspect-square bg-surface-container-highest rounded-lg mb-stack-sm flex items-center justify-center">
+<span class="text-5xl">🧣</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">Spring Scarf</h3>
+<p class="font-label-sm text-label-sm">Collection 2023</p>
+</div>
+<div class="glass-card rounded-lg p-gutter opacity-50 grayscale">
+<div class="aspect-square bg-surface-container-highest rounded-lg mb-stack-sm flex items-center justify-center">
+<span class="text-5xl">👒</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">Beach Sunhat</h3>
+<p class="font-label-sm text-label-sm">Collection 2023</p>
+</div>
+<div class="glass-card rounded-lg p-gutter flex flex-col items-center justify-center border-dashed border-2 border-outline-variant bg-transparent">
+<span class="material-symbols-outlined text-4xl text-outline mb-2">add_circle</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-center">More styles coming soon</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/60 backdrop-blur-xl border-t border-white/30 shadow-[0_-8px_32px_0_rgba(223,217,211,0.2)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-white/20 transition-colors py-1 px-4 rounded-full" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/40 rounded-full px-4 py-1 hover:bg-white/20 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">checkroom</span>
+<span class="font-label-sm text-label-sm">Wardrobe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-white/20 transition-colors py-1 px-4 rounded-full" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Capsule</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-white/20 transition-colors py-1 px-4 rounded-full" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-sm text-label-sm">Insights</span>
+</a>
+</nav>
+</body></html>

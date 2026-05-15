@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Partner Mode - Period Saathi</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary": "#655781",
+                    "outline-variant": "#d6c2c3",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#62547e",
+                    "on-secondary-fixed": "#21143a",
+                    "surface-tint": "#874e58",
+                    "on-surface-variant": "#514345",
+                    "primary-fixed-dim": "#fcb3be",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#d0bfef",
+                    "surface-container-highest": "#e8e1dc",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#360c17",
+                    "on-primary-fixed-variant": "#6b3741",
+                    "inverse-primary": "#fcb3be",
+                    "surface-container-high": "#eee7e1",
+                    "on-background": "#1e1b18",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#adcded",
+                    "primary-container": "#ffb6c1",
+                    "on-primary-container": "#7b444e",
+                    "inverse-on-surface": "#f6f0ea",
+                    "on-secondary-fixed-variant": "#4d4068",
+                    "surface-container": "#f3ede7",
+                    "inverse-surface": "#33302c",
+                    "primary-fixed": "#ffd9de",
+                    "tertiary-fixed": "#cde5ff",
+                    "outline": "#847375",
+                    "on-tertiary-container": "#385772",
+                    "surface-container-low": "#f9f2ec",
+                    "primary": "#874e58",
+                    "surface": "#fff8f2",
+                    "tertiary-fixed-dim": "#aacae9",
+                    "surface-dim": "#dfd9d3",
+                    "secondary-fixed": "#eaddff",
+                    "on-tertiary-fixed-variant": "#2a4a64",
+                    "tertiary": "#42617d",
+                    "on-tertiary-fixed": "#001d32",
+                    "background": "#fff8f2",
+                    "surface-variant": "#e8e1dc",
+                    "on-surface": "#1e1b18",
+                    "secondary-container": "#deccfd",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#fff8f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding-desktop": "48px",
+                    "stack-lg": "32px",
+                    "stack-md": "16px",
+                    "container-padding-mobile": "24px",
+                    "unit": "4px",
+                    "stack-sm": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Nunito Sans"],
+                    "headline-lg": ["Nunito Sans"],
+                    "label-md": ["Nunito Sans"],
+                    "headline-md": ["Nunito Sans"],
+                    "body-md": ["Nunito Sans"],
+                    "headline-lg-mobile": ["Nunito Sans"],
+                    "label-sm": ["Nunito Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .organic-gradient-bg {
+            background: radial-gradient(circle at 10% 20%, rgba(255, 182, 193, 0.15) 0%, rgba(255, 248, 242, 0) 50%),
+                        radial-gradient(circle at 90% 80%, rgba(173, 205, 237, 0.15) 0%, rgba(255, 248, 242, 0) 50%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md organic-gradient-bg min-h-screen pb-32">
+<!-- Top AppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-mobile h-16 bg-white/60 backdrop-blur-[20px] border-b border-white/50 shadow-[0_30px_60px_-15px_rgba(243,237,231,0.15)]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly-looking young woman with a warm smile, set against a soft, blurred natural background. The lighting is bright and ethereal, perfectly matching a premium health-tech companion app aesthetic with high-key lighting and a sense of serenity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwFjpjKZTVL-uFoXiW2k8vU7yuRR6W8LyGZiRU9G24hADDkZ5_I4VNzkZ2UMotYBnDiqBS9JLnOqodC752s4FcoX8JOqyGmRnaAh4zCX0uxBWrj8SW0Te-09gr568bMrTLf3OUA_Bp2_WifFC6A6W-gemqctE8lvg-9zLpY6RTEHm2hs5EFHV4nU1QdMMSAjyiaQnvj_Jiqvi-fLSB7HwWweUE00N7SVgHfgYQqMhXUFpxr_L7N8MyfbGWNOqc3fyo2bjeyV_sa2Ld"/>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary">Period Saathi</h1>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-mobile space-y-stack-lg max-w-md mx-auto">
+<!-- Header Glass Card -->
+<section class="glass-card p-stack-md rounded-lg shadow-[0_10px_30px_rgba(135,78,88,0.05)]">
+<div class="flex items-center gap-2 mb-1">
+<h2 class="text-headline-md font-headline-md text-primary">Partner Mode 💌</h2>
+</div>
+<p class="text-body-md text-on-surface-variant">Send a care request — no medical details shared</p>
+</section>
+<!-- Request Builder -->
+<section class="space-y-stack-md">
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Select a request</h3>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Chip 1 -->
+<button class="glass-card p-stack-md rounded-lg text-left border-2 border-primary-container shadow-sm active:scale-95 transition-transform">
+<span class="text-body-lg block mb-1">I need rest 🛋</span>
+<span class="text-label-sm text-primary">Selected</span>
+</button>
+<!-- Chip 2 -->
+<button class="glass-card p-stack-md rounded-lg text-left border-2 border-transparent hover:border-white shadow-sm active:scale-95 transition-transform">
+<span class="text-body-lg block mb-1">Bring me chocolate 🍫</span>
+<span class="text-label-sm text-on-surface-variant/60">Tap to select</span>
+</button>
+<!-- Chip 3 -->
+<button class="glass-card p-stack-md rounded-lg text-left border-2 border-transparent hover:border-white shadow-sm active:scale-95 transition-transform">
+<span class="text-body-lg block mb-1">Just listen 👂</span>
+<span class="text-label-sm text-on-surface-variant/60">Tap to select</span>
+</button>
+<!-- Chip 4 -->
+<button class="glass-card p-stack-md rounded-lg text-left border-2 border-transparent hover:border-white shadow-sm active:scale-95 transition-transform">
+<span class="text-body-lg block mb-1">Warm hug needed 🤗</span>
+<span class="text-label-sm text-on-surface-variant/60">Tap to select</span>
+</button>
+</div>
+</section>
+<!-- Preview Card -->
+<section class="space-y-stack-md">
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Preview for Aryan</h3>
+<div class="bg-primary-container/30 backdrop-blur-md p-stack-lg rounded-lg border border-primary-container/50 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<div>
+<p class="text-headline-md font-headline-md text-on-primary-container">Priya needs you:</p>
+<p class="text-body-lg font-bold text-primary mt-1">"I need rest 🛋"</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Send Button -->
+<button class="w-full h-14 bg-gradient-to-r from-secondary-container to-primary-container text-on-primary-container font-headline-md rounded-full shadow-lg shadow-primary-container/40 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+            Send to Aryan 💌
+        </button>
+<!-- Notification Mockup -->
+<section class="pt-stack-lg">
+<div class="max-w-[280px] mx-auto bg-black/80 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-2xl">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-5 h-5 bg-primary rounded-md flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white" data-icon="home_health">home_health</span>
+</div>
+<span class="text-[10px] text-white/60 font-bold uppercase tracking-widest">Period Saathi • Now</span>
+</div>
+<p class="text-[14px] text-white font-bold">New Care Request</p>
+<p class="text-[13px] text-white/80">Priya needs you: "I need rest 🛋"</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe h-20 bg-white/60 backdrop-blur-[20px] border-t border-white/50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="home_health">home_health</span>
+<span class="text-label-sm font-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="text-label-sm font-label-sm mt-1">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="self_care">self_care</span>
+<span class="text-label-sm font-label-sm mt-1">Remedies</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary scale-110 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="text-label-sm font-label-sm mt-1">Partner</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,88 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  ai-review:
+    name: AI Review (Nikita-Filonov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run AI Review
+        uses: Nikita-Filonov/ai-review@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          review_depth: full
+          inline_comments: true
+          summary_comment: true
+          label_on_review: ai-reviewed
+          model: gpt-4
+
+  ai-code-review:
+    name: AI Code Review (nuekkis)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run AI-Code-Review
+        uses: nuekkis/AI-Code-Review@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-4
+          review_severity: all
+          comment_on_files: true
+          request_changes_on_critical: true
+
+  knowledge-graph-refresh:
+    name: Refresh Knowledge Graphs
+    runs-on: ubuntu-latest
+    needs: [ai-review, ai-code-review]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Graphify
+        continue-on-error: true
+        run: |
+          npm install -g graphify 2>/dev/null || true
+          if command -v graphify &> /dev/null; then
+            graphify --input "${{ github.workspace }}" --output ".agent/graphify-out/" --incremental
+          fi
+
+      - name: Run Understand-Anything
+        continue-on-error: true
+        run: |
+          npm install -g understand-anything 2>/dev/null || true
+          if command -v understand-anything &> /dev/null; then
+            understand-anything --input "${{ github.workspace }}" --output ".agent/knowledge-graph/" --incremental
+          fi

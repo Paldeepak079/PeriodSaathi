@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #fff8f2 0%, #f9f2ec 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .breathing-pulse {
+            box-shadow: 0 0 40px rgba(252, 179, 190, 0.3);
+        }
+        .btn-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        /* Custom Slider Thumb */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: #874e58;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(135, 78, 88, 0.3);
+            border: 3px solid white;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary": "#655781",
+                        "outline-variant": "#d6c2c3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#62547e",
+                        "on-secondary-fixed": "#21143a",
+                        "surface-tint": "#874e58",
+                        "on-surface-variant": "#514345",
+                        "primary-fixed-dim": "#fcb3be",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#d0bfef",
+                        "surface-container-highest": "#e8e1dc",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#360c17",
+                        "on-primary-fixed-variant": "#6b3741",
+                        "inverse-primary": "#fcb3be",
+                        "surface-container-high": "#eee7e1",
+                        "on-background": "#1e1b18",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#adcded",
+                        "primary-container": "#ffb6c1",
+                        "on-primary-container": "#7b444e",
+                        "inverse-on-surface": "#f6f0ea",
+                        "on-secondary-fixed-variant": "#4d4068",
+                        "surface-container": "#f3ede7",
+                        "inverse-surface": "#33302c",
+                        "primary-fixed": "#ffd9de",
+                        "tertiary-fixed": "#cde5ff",
+                        "outline": "#847375",
+                        "on-tertiary-container": "#385772",
+                        "surface-container-low": "#f9f2ec",
+                        "primary": "#874e58",
+                        "surface": "#fff8f2",
+                        "tertiary-fixed-dim": "#aacae9",
+                        "surface-dim": "#dfd9d3",
+                        "secondary-fixed": "#eaddff",
+                        "on-tertiary-fixed-variant": "#2a4a64",
+                        "tertiary": "#42617d",
+                        "on-tertiary-fixed": "#001d32",
+                        "background": "#fff8f2",
+                        "surface-variant": "#e8e1dc",
+                        "on-surface": "#1e1b18",
+                        "secondary-container": "#deccfd",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fff8f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-desktop": "48px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "container-padding-mobile": "24px",
+                        "unit": "4px",
+                        "stack-sm": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Nunito Sans"],
+                        "headline-lg": ["Nunito Sans"],
+                        "label-md": ["Nunito Sans"],
+                        "headline-md": ["Nunito Sans"],
+                        "body-md": ["Nunito Sans"],
+                        "headline-lg-mobile": ["Nunito Sans"],
+                        "label-sm": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-mobile h-16 bg-white/60 backdrop-blur-[20px] border-b border-white/50 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden border-2 border-white shadow-sm">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkTv5QCvb08YYalOOdnZo3kpszWQVAAkJz2HI20NZCjCyf9MJJWwcbimwq-iIyJMje2iznYtnwT91fw4Q_xc13a1ALrf5xXOjca8y9wFc2bhmz4SPMNsoWAPGR0WRt4NByPIJCGvsNk1S7PwrFZ0f6C-hTwVjv48WVscb1J5gFz_AgtK8grSLodmz2b9UackhVcIylesDkchXgDYeqjTS9XZxHXu3c4TgKQywAfVJ4qw9hgiIpDxiwtqvQ7HvdNAMLOXORX_UYhNiP"/>
+</div>
+<h1 class="text-headline-md font-bold text-primary">Period Saathi</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-container-mobile max-w-md mx-auto space-y-stack-lg">
+<!-- Kitchen Remedies -->
+<section class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-primary">Kitchen Remedies</h2>
+<span class="text-label-md font-label-md text-on-surface-variant">View All</span>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar -mx-container-mobile px-container-mobile">
+<!-- Ginger Card -->
+<div class="min-w-[140px] aspect-[4/5] glass-card rounded-lg flex flex-col items-center justify-center p-4 text-center active:scale-95 transition-transform">
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-container to-white mb-4 flex items-center justify-center text-3xl shadow-inner">🫚</div>
+<span class="font-label-md text-label-md text-primary mb-1">Ginger</span>
+<p class="text-[10px] leading-tight text-on-surface-variant">Reduces inflammation</p>
+</div>
+<!-- Jaggery Card -->
+<div class="min-w-[140px] aspect-[4/5] glass-card rounded-lg flex flex-col items-center justify-center p-4 text-center active:scale-95 transition-transform">
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-secondary-container to-white mb-4 flex items-center justify-center text-3xl shadow-inner">🍯</div>
+<span class="font-label-md text-label-md text-primary mb-1">Jaggery</span>
+<p class="text-[10px] leading-tight text-on-surface-variant">Instant energy &amp; iron</p>
+</div>
+<!-- Fennel Card -->
+<div class="min-w-[140px] aspect-[4/5] glass-card rounded-lg flex flex-col items-center justify-center p-4 text-center active:scale-95 transition-transform">
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-tertiary-container to-white mb-4 flex items-center justify-center text-3xl shadow-inner">🌿</div>
+<span class="font-label-md text-label-md text-primary mb-1">Fennel</span>
+<p class="text-[10px] leading-tight text-on-surface-variant">Relieves bloating</p>
+</div>
+</div>
+</section>
+<!-- Yoga Flow Section (Refined) -->
+<section class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-primary">Cramp Relief Flow</h2>
+<div class="px-3 py-1 bg-primary-container/30 text-primary rounded-full text-label-sm font-label-sm border border-primary/10">15 Mins • 5 Poses</div>
+</div>
+<!-- Hero Pose Card -->
+<div class="glass-card rounded-lg p-0 overflow-hidden shadow-lg border-2 border-primary/10">
+<div class="relative w-full aspect-video bg-white/40 flex items-center justify-center">
+<img class="w-full h-full object-contain opacity-80" data-alt="Instructional line art of Child's Pose" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcG222MUeuUnnC-pcwDtwcsQVLpRxsnZEpM-5PE7zA5UYUIGsjSNn2j7jPHQJUsIUD9PPahbo-Gg50xoMwzhXeZUW4wKE0UK47uuYm6VrlKtNeZYrIIyE1KVq-iCB-ub33NXOW61i81UiZM_CVwdcL9eH-t4cq33X2Gjal8vPmnvNBpNscjdwECLOY4oYiKb8KGs3JTvuz_09JQFGi-0TgnTI2Fj2aYIEH1ALSeepn_41iBk4_hwizQ2cpQ0JQOxvDkZZxKTs2Q4OT"/>
+<div class="absolute top-4 left-4 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded uppercase tracking-widest">Active Pose</div>
+</div>
+<div class="p-6 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-primary">Child's Pose (Balasana)</h3>
+<p class="text-label-sm text-on-surface-variant">Hold for 2-3 minutes</p>
+</div>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="ml-1 text-label-md">3:00</span>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant">This restorative posture gently stretches the lower back and hips, effectively calming the nervous system. It creates a space of internal focus while physically decompressing the spine and pelvic floor.</p>
+<button class="w-full mt-4 bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 btn-pulse active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+                        START FLOW
+                    </button>
+</div>
+</div>
+<!-- Up Next List -->
+<div class="space-y-3 mt-4">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest px-1">Up Next</span>
+<!-- Cat-Cow -->
+<div class="glass-card rounded-lg p-4 flex items-center gap-4 border-l-4 border-secondary/40">
+<div class="w-14 h-14 bg-white/50 rounded-lg flex items-center justify-center p-2">
+<img class="w-full h-full opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY3fBmCtvCvs2jzqhjCP2nKL4LW5h2sjJ8ziyeqghYJt1NzExONde7GIvwGoTcwlrNzV-ejtGdwlw3Iy1OzsJNcHUuvr4KiUdKAAtS13KkoOkKC24IkGdlDBvTcHgZL-kqEqihg-clfvULRruL3FTuoXVuAERuMI9p5E1OjRDoUKykFdTXvEhaOGqWmvxajtXZtbEk9BemDNPgFDFuiDTciFGsYK1vi-cMjrR-Mld5uxTJVnGnw5OwdJQyML-yzu89OSaCm3Y1iTGU"/>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-primary">Cat-Cow Flow</h4>
+<p class="text-[12px] text-on-surface-variant leading-tight">Dynamic movement to improve pelvic blood circulation.</p>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Supine Twist -->
+<div class="glass-card rounded-lg p-4 flex items-center gap-4 border-l-4 border-tertiary/40">
+<div class="w-14 h-14 bg-white/50 rounded-lg flex items-center justify-center p-2">
+<img class="w-full h-full opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe7Isryxs7k0rK3BCgnwFhhrfy18jgcQs_RQCVth2oYoN49H39ZlS28DkSf73LRvKZ9iOy8fo7Ge69oy2tGoYfY0zAREtm_nTaqLNfSmpeqdsOuRPkF-dTW6snhl_Qrtus1OQto5ZHMqTE-YCAO7pT0SBjXpbzYsbLbeRhYij3TKo1vRDTqCCUoQT7AfwT73RceGjGh0YYqpezNaJLSb3yeyfhzZl22oP3UTXRVhUT6pfMpQdzxUMyj0Ewc3a_dQt6AafgoR0aONAM"/>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-primary">Supine Twist</h4>
+<p class="text-[12px] text-on-surface-variant leading-tight">Gentle spinal rotation to massage internal organs.</p>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Safety Slider -->
+<section class="glass-card rounded-lg p-6 space-y-4 shadow-md border-t-2 border-primary/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="heat_pump">heat_pump</span>
+<h2 class="font-headline-md text-headline-md text-primary">Safe Heat Therapy</h2>
+</div>
+<div class="space-y-6 py-2">
+<input class="w-full h-2 bg-primary-container rounded-full appearance-none cursor-pointer" max="45" min="30" type="range" value="38"/>
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Current Temp</span>
+<span class="text-headline-lg font-headline-lg text-primary">38°C</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-on-primary-container/10 rounded-full">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="local_fire_department">local_fire_department</span>
+<span class="text-label-md font-label-md text-primary">Soothing Range</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Breathing Circle -->
+<section class="flex flex-col items-center justify-center py-stack-lg space-y-stack-md bg-white/20 rounded-3xl mx-2">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<div class="absolute w-full h-full bg-primary/10 rounded-full animate-pulse breathing-pulse"></div>
+<div class="relative w-40 h-40 bg-white/50 border-2 border-white/80 backdrop-blur-xl rounded-full flex flex-col items-center justify-center shadow-lg">
+<span class="text-primary font-bold text-headline-md">Inhale</span>
+<span class="text-on-surface-variant text-label-sm font-label-sm mt-1">4 Seconds</span>
+</div>
+</div>
+<p class="text-center text-body-md text-on-surface-variant px-12 leading-relaxed">Focus on your breath to lower cortisol levels and ease uterine muscle tension.</p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe h-20 bg-white/80 backdrop-blur-[20px] border-t border-white/50 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60">
+<span class="material-symbols-outlined" data-icon="home_health">home_health</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="text-label-sm font-label-sm">Calendar</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary scale-110 font-bold">
+<span class="material-symbols-outlined" data-icon="self_care" style="font-variation-settings: 'FILL' 1;">self_care</span>
+<span class="text-label-sm font-label-sm">Remedies</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="text-label-sm font-label-sm">Partner</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</button>
+</nav>
+</body></html>

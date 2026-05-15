@@ -1,0 +1,122 @@
+name: Auto-Update Skills
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: "Force full refresh of all skills"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GRAPHIFY_OUT: .agent/graphify-out/
+  KNOWLEDGE_GRAPH_OUT: .agent/knowledge-graph/
+
+jobs:
+  update-skills:
+    name: Update All Skills
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync awesome-ai-agents-2026
+        run: |
+          TARGET=".agent/skills/awesome-ai-agents-2026"
+          if [ -d "$TARGET" ] && [ "${{ github.event.inputs.force_refresh }}" != "true" ]; then
+            cd "$TARGET" && git pull --ff-only
+          else
+            rm -rf "$TARGET"
+            git clone --depth 1 https://github.com/ARUNAGIRINATHAN-K/awesome-ai-agents-2026.git "$TARGET"
+          fi
+          echo "::notice::awesome-ai-agents-2026 synced"
+
+      - name: Sync Agent Almanac (69k+ skills)
+        run: |
+          TARGET=".agent/skills/agent-almanac"
+          if [ -d "$TARGET" ] && [ "${{ github.event.inputs.force_refresh }}" != "true" ]; then
+            cd "$TARGET" && git pull --ff-only
+          else
+            rm -rf "$TARGET"
+            git clone --depth 1 https://github.com/BehiSecc/awesome-claude-skills.git "$TARGET"
+          fi
+          echo "::notice::Agent Almanac synced ($(find $TARGET -name '*.md' | wc -l) skills)"
+
+      - name: Install & Run Graphify
+        run: |
+          npm install -g graphify 2>/dev/null || true
+          if command -v graphify &> /dev/null; then
+            graphify --input "${{ github.workspace }}" --output "${{ env.GRAPHIFY_OUT }}" --fast
+            echo "::notice::Graphify knowledge graph rebuilt"
+          else
+            echo "::warning::graphify not installed, skipping"
+          fi
+
+      - name: Install & Run Understand-Anything
+        run: |
+          npm install -g understand-anything 2>/dev/null || true
+          if command -v understand-anything &> /dev/null; then
+            understand-anything --input "${{ github.workspace }}" --output "${{ env.KNOWLEDGE_GRAPH_OUT }}" --incremental
+            echo "::notice::Understand-Anything knowledge graph refreshed"
+          else
+            echo "::warning::understand-anything not installed, skipping"
+          fi
+
+      - name: Update Skill Metadata Index
+        run: |
+          cat > .agent/skills/INDEX.md << 'EOF'
+          # Agent Skills Index
+
+          Auto-generated weekly. Last updated: $(date -u)
+
+          | # | Skill | Source | Description |
+          |---|-------|--------|-------------|
+          $(for f in .agent/skills/*.md; do
+            name=$(grep -m1 'name:' "$f" 2>/dev/null | sed 's/.*name: *//')
+            desc=$(grep -m1 'description:' "$f" 2>/dev/null | sed 's/.*description: *//')
+            echo "| | \`$name\` | | $desc |"
+          done)
+          EOF
+          echo "::notice::Skill index regenerated"
+
+      - name: Commit & Push Updates
+        run: |
+          git config user.name "PeriodSaathi Bot"
+          git config user.email "bot@periodsaathi.app"
+          git add .agent/ .claude/
+          if git diff --cached --quiet; then
+            echo "::notice::No changes to commit"
+          else
+            git commit -m "chore: auto-update skills and knowledge graphs [weekly]"
+            git push
+            echo "::notice::Skills updated and pushed"
+          fi
+
+      - name: Create Pull Request (if significant changes)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_refresh == 'true' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore: force-refresh all skills and knowledge graphs"
+          body: "Automated full refresh triggered via workflow_dispatch."
+          branch: auto-update/skills-force-refresh
+          base: main
+          labels: auto-update, skills

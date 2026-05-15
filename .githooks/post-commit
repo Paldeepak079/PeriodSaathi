@@ -1,0 +1,42 @@
+#!/bin/sh
+# ============================================================
+# post-commit hook — Refresh knowledge graphs after every commit
+# ============================================================
+# Installed by: git config core.hooksPath .githooks
+# ============================================================
+
+set -e
+
+echo "⟳ post-commit: Refreshing knowledge graphs..."
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+GRAPHIFY_OUT="$REPO_ROOT/.agent/graphify-out"
+KG_OUT="$REPO_ROOT/.agent/knowledge-graph"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+mkdir -p "$GRAPHIFY_OUT" "$KG_OUT"
+
+# ---------- Graphify (71.5x token savings) ----------
+if command -v graphify > /dev/null 2>&1; then
+  echo "  → Running graphify (incremental)..."
+  graphify --input "$REPO_ROOT" --output "$GRAPHIFY_OUT" --incremental 2>/dev/null && \
+    echo "$TIMESTAMP" > "$GRAPHIFY_OUT/.last-refresh" && \
+    echo "  ✓ graphify complete"
+else
+  echo "  ⚠ graphify not installed. Install: npm install -g graphify"
+fi
+
+# ---------- Understand-Anything (knowledge graph) ----------
+if command -v understand-anything > /dev/null 2>&1; then
+  echo "  → Running understand-anything (incremental)..."
+  understand-anything --input "$REPO_ROOT" --output "$KG_OUT" --incremental 2>/dev/null && \
+    echo "$TIMESTAMP" > "$KG_OUT/.last-refresh" && \
+    echo "  ✓ understand-anything complete"
+else
+  echo "  ⚠ understand-anything not installed. Install: npm install -g understand-anything"
+fi
+
+# ---------- Log ----------
+echo "$TIMESTAMP | post-commit: graphify + understand-anything" >> "$REPO_ROOT/.agent/logs/refresh.log"
+
+echo "✓ post-commit: Knowledge graphs refreshed"

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Meet Saathi - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#fcb3be",
+                    "inverse-primary": "#fcb3be",
+                    "on-secondary-fixed-variant": "#4d4068",
+                    "on-primary-fixed": "#360c17",
+                    "outline": "#847375",
+                    "on-tertiary-container": "#385772",
+                    "inverse-surface": "#33302c",
+                    "primary-fixed": "#ffd9de",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#42617d",
+                    "surface-variant": "#e8e1dc",
+                    "surface-container-low": "#f9f2ec",
+                    "secondary-container": "#deccfd",
+                    "outline-variant": "#d6c2c3",
+                    "on-primary-container": "#7b444e",
+                    "on-tertiary-fixed-variant": "#2a4a64",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#eaddff",
+                    "tertiary-fixed": "#cde5ff",
+                    "primary": "#874e58",
+                    "on-background": "#1e1b18",
+                    "background": "#fff8f2",
+                    "surface-container": "#f3ede7",
+                    "surface-container-highest": "#e8e1dc",
+                    "on-surface": "#1e1b18",
+                    "inverse-on-surface": "#f6f0ea",
+                    "surface-dim": "#dfd9d3",
+                    "on-surface-variant": "#514345",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#874e58",
+                    "secondary": "#655781",
+                    "surface": "#fff8f2",
+                    "tertiary-container": "#adcded",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#d0bfef",
+                    "surface-container-high": "#eee7e1",
+                    "on-secondary-container": "#62547e",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#aacae9",
+                    "on-primary-fixed-variant": "#6b3741",
+                    "on-secondary-fixed": "#21143a",
+                    "primary-container": "#ffb6c1",
+                    "on-tertiary-fixed": "#001d32",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fff8f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "container-padding-mobile": "24px",
+                    "container-padding-desktop": "48px",
+                    "stack-sm": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Nunito Sans"],
+                    "headline-lg": ["Nunito Sans"],
+                    "body-lg": ["Nunito Sans"],
+                    "headline-md": ["Nunito Sans"],
+                    "body-md": ["Nunito Sans"],
+                    "label-md": ["Nunito Sans"],
+                    "label-sm": ["Nunito Sans"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mesh-bg {
+            background: radial-gradient(at 0% 0%, #ffd9de 0px, transparent 50%),
+                        radial-gradient(at 100% 0%, #eaddff 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, #cde5ff 0px, transparent 50%),
+                        radial-gradient(at 0% 100%, #fff8f2 0px, transparent 50%);
+            background-size: 200% 200%;
+        }
+        .glass-effect {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .bounce-soft {
+            animation: bounce-soft 4s ease-in-out infinite;
+        }
+        @keyframes bounce-soft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+    </style>
+</head>
+<body class="bg-background overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Gradient Mesh Background -->
+<div class="fixed inset-0 mesh-bg opacity-40 z-0"></div>
+<main class="relative z-10 min-h-screen flex flex-col px-container-padding-mobile pt-16 pb-12">
+<!-- Mascot Section -->
+<div class="flex-1 flex flex-col items-center justify-center space-y-stack-lg">
+<div class="relative w-full max-w-[320px] aspect-square flex items-center justify-center">
+<!-- Decorative Glow Behind Mascot -->
+<div class="absolute inset-0 bg-primary-container/30 blur-[64px] rounded-full"></div>
+<div class="relative bounce-soft">
+<img alt="Saathi Mascot" class="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(135,78,88,0.2)]" data-alt="A cute, friendly cartoon uterus mascot named Saathi for a women's health application. The character features rounded organic shapes and a soft pastel pink body with tiny blush cheeks and wide sparkling eyes. She has a small, gentle smile and a tiny heart floating playfully above her head. The lighting is soft and warm, rendered in a 2D vector style with subtle gradients and a premium, empathetic aesthetic against a translucent glass backdrop." src="https://lh3.googleusercontent.com/aida/ADBb0uiqsy0JHHneP69sr1Cf2bEReqVeRJACH8PWZXOYjFnliXs4W5laZ2DEIXBJ1KFJIEwGhPZ_juv0oZj5lYON395-ccl3eawyqos05W9zdU2_UNamghBLn219tvkApmStwh9tQnJUkzXvz3vJSt_cL_dDVvA2WlLMmSwxsa0lzImbeQ0ZF86UdJ_RoXyB2YCQMWGiBwdvZ2IcdnxgCDd1YLVwm2Yv_EbMkyZbGTxOx8kAeqKlDiwFvAh4UBLK"/>
+</div>
+</div>
+<!-- Content Section -->
+<div class="text-center space-y-stack-md px-4">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
+                    Your new best friend 💕
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[280px] mx-auto leading-relaxed">
+                    She'll cheer you on, remind you to rest, and never judge you.
+                </p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="glass-effect rounded-lg p-6 flex flex-col items-center space-y-stack-lg shadow-[0_8px_32px_0_rgba(135,78,88,0.1)]">
+<!-- Indicators -->
+<div class="flex items-center space-x-unit gap-2">
+<div class="w-8 h-2 rounded-full bg-primary shadow-[0_0_12px_rgba(135,78,88,0.3)]"></div>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<!-- Pill Button -->
+<button class="w-full bg-primary text-on-primary py-4 rounded-full font-label-md text-label-md flex items-center justify-center space-x-2 shadow-lg active:scale-[0.97] transition-all duration-200">
+<span>Next</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<!-- Subtle Skip Text -->
+<button class="font-label-sm text-label-sm text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity">
+                Skip for now
+            </button>
+</div>
+</main>
+<!-- Visual Polish: Corner Floaters -->
+<div class="fixed -top-10 -left-10 w-40 h-40 bg-secondary-container/20 rounded-full blur-3xl z-0"></div>
+<div class="fixed top-1/2 -right-20 w-60 h-60 bg-tertiary-container/10 rounded-full blur-3xl z-0"></div>
+</body></html>

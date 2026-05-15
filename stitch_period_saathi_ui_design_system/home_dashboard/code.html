@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #FDF6F0; /* Warm Cream */
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .glow-mint {
+            box-shadow: 0 0 15px rgba(173, 205, 237, 0.5);
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(186, 26, 26, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "secondary": "#655781",
+                      "outline-variant": "#d6c2c3",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#62547e",
+                      "on-secondary-fixed": "#21143a",
+                      "surface-tint": "#874e58",
+                      "on-surface-variant": "#514345",
+                      "primary-fixed-dim": "#fcb3be",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#d0bfef",
+                      "surface-container-highest": "#e8e1dc",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#360c17",
+                      "on-primary-fixed-variant": "#6b3741",
+                      "inverse-primary": "#fcb3be",
+                      "surface-container-high": "#eee7e1",
+                      "on-background": "#1e1b18",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#adcded",
+                      "primary-container": "#ffb6c1",
+                      "on-primary-container": "#7b444e",
+                      "inverse-on-surface": "#f6f0ea",
+                      "on-secondary-fixed-variant": "#4d4068",
+                      "surface-container": "#f3ede7",
+                      "inverse-surface": "#33302c",
+                      "primary-fixed": "#ffd9de",
+                      "tertiary-fixed": "#cde5ff",
+                      "outline": "#847375",
+                      "on-tertiary-container": "#385772",
+                      "surface-container-low": "#f9f2ec",
+                      "primary": "#874e58",
+                      "surface": "#fff8f2",
+                      "tertiary-fixed-dim": "#aacae9",
+                      "surface-dim": "#dfd9d3",
+                      "secondary-fixed": "#eaddff",
+                      "on-tertiary-fixed-variant": "#2a4a64",
+                      "tertiary": "#42617d",
+                      "on-tertiary-fixed": "#001d32",
+                      "background": "#fff8f2",
+                      "surface-variant": "#e8e1dc",
+                      "on-surface": "#1e1b18",
+                      "secondary-container": "#deccfd",
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fff8f2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding-desktop": "48px",
+                      "stack-lg": "32px",
+                      "stack-md": "16px",
+                      "container-padding-mobile": "24px",
+                      "unit": "4px",
+                      "stack-sm": "8px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Nunito Sans"],
+                      "headline-lg": ["Nunito Sans"],
+                      "label-md": ["Nunito Sans"],
+                      "headline-md": ["Nunito Sans"],
+                      "body-md": ["Nunito Sans"],
+                      "headline-lg-mobile": ["Nunito Sans"],
+                      "label-sm": ["Nunito Sans"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-mobile h-16 bg-white/60 backdrop-blur-[20px] border-b border-white/50 shadow-[0_30px_60px_-15px_rgba(243,237,231,0.15)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFEVPkWiA1B7ugiRtiEQiSdC-UUvh3MtjcWqHh8h5KNBPxD9VbgYc2QpdzaHfB_kEJSyrcKmbo4LqCmHHSUPhrocWehmSJNebV_1HdOUaJIRHsY6wRXG-ZJEVYH7mQoFH37weqoYVPMozAtp7vzJPQKmDW4guLIyi_kGJ1xdvLtTRfd5hodMYLH99dGj02Dt1I6gWQTA0D9oAe9NQFE9d_FM-087tiw192qWy8PeFsFLdTo3uK2h13rTf9up3N9SVZVXkkJpaMQTGZ"/>
+</div>
+<span class="text-headline-md font-headline-md font-bold text-primary">Period Saathi</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-container-mobile max-w-lg mx-auto space-y-stack-lg">
+<!-- Greeting & Wellness Score -->
+<section class="flex justify-between items-end">
+<div class="space-y-1">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Hey Priya 🌸</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Day 3 of your cycle</p>
+</div>
+<div class="relative w-16 h-16 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-white/50" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-primary" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="176" stroke-dashoffset="35" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<span class="font-label-md text-label-md text-primary">82%</span>
+</div>
+</section>
+<!-- Central Hero Card -->
+<section class="glass-card rounded-xl p-6 space-y-stack-md shadow-[0_30px_60px_-15px_rgba(243,237,231,0.5)]">
+<div class="flex justify-between items-center px-2">
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">M</span>
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">12</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">T</span>
+<div class="relative">
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">13</span>
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-on-error-container text-white px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap glow-red">🛏 REST DAY</div>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">W</span>
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center bg-error text-white rounded-full">14</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">T</span>
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">15</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">F</span>
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">16</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">S</span>
+<div class="relative bg-tertiary-container/30 rounded-full p-0.5 glow-mint">
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">17</span>
+<span class="material-symbols-outlined absolute -bottom-1 -right-1 text-[12px] text-tertiary" data-icon="sparkles" style="font-variation-settings: 'FILL' 1;">Sparkle</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">S</span>
+<div class="relative bg-tertiary-container/30 rounded-full p-0.5 glow-mint">
+<span class="font-label-md text-label-md w-8 h-8 flex items-center justify-center">18</span>
+<span class="material-symbols-outlined absolute -bottom-1 -right-1 text-[12px] text-tertiary" data-icon="sparkles" style="font-variation-settings: 'FILL' 1;">Sparkle</span>
+</div>
+</div>
+</div>
+<!-- Mascot & Speech Bubble -->
+<div class="flex flex-col items-center pt-8 relative">
+<div class="absolute top-0 right-1/4 -mt-4 bg-white/80 border border-white px-4 py-2 rounded-2xl rounded-bl-none shadow-sm backdrop-blur-sm">
+<p class="font-label-md text-label-md text-on-surface">Hydrate yourself, Priya! 💧</p>
+</div>
+<div class="w-48 h-48">
+<img alt="Happy Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-scYOzv6Vs9bAdDbroarlaZq9C90IVkeNbUz04e5Uffa-jbjvBtz1c5aSotsc37-CW1LIsrTT6mk5_mbZaz2AVeVNgzPrWoo7QazhNDF5jp7ei3IqsBx9slwH20zC8x3sKeJ3T5NtLh5xhkG0lEhg_7kgT5Nr6AIxHgq_U0r_AE4c_nOQRFBApSwjEDvdAKLQIgsorh7AZQ5yBv2PvpbfvnIzWdnCVPAeUDkjJD-44ztGN4tsZewRExV1pV_PdDF51-9ybFmMzv4g"/>
+</div>
+</div>
+</section>
+<!-- Quick Log Row -->
+<section class="space-y-stack-md">
+<h2 class="font-label-md text-label-md text-on-surface-variant px-2">Quick Log</h2>
+<div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-container-mobile px-container-mobile">
+<button class="glass-card flex items-center gap-2 px-6 py-4 rounded-full min-w-max hover:bg-white/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-tertiary" data-icon="water_drop" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<span class="font-label-md text-label-md text-on-surface">💧 Water</span>
+</button>
+<button class="glass-card flex items-center gap-2 px-6 py-4 rounded-full min-w-max hover:bg-white/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-secondary" data-icon="restaurant" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="font-label-md text-label-md text-on-surface">🍽 Meals</span>
+</button>
+<button class="glass-card flex items-center gap-2 px-6 py-4 rounded-full min-w-max hover:bg-white/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="medication" style="font-variation-settings: 'FILL' 1;">medication</span>
+<span class="font-label-md text-label-md text-on-surface">💊 Medicine</span>
+</button>
+<button class="glass-card flex items-center gap-2 px-6 py-4 rounded-full min-w-max hover:bg-white/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-error" data-icon="opacity" style="font-variation-settings: 'FILL' 1;">opacity</span>
+<span class="font-label-md text-label-md text-on-surface">🩸 Flow</span>
+</button>
+</div>
+</section>
+<!-- Insights Bento Section -->
+<section class="grid grid-cols-2 gap-gutter">
+<div class="glass-card rounded-xl p-5 col-span-1 space-y-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="bedtime">bedtime</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sleep</p>
+<p class="font-headline-md text-headline-md text-on-surface">7h 20m</p>
+</div>
+<div class="glass-card rounded-xl p-5 col-span-1 space-y-2">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="favorite">favorite</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">BPM</p>
+<p class="font-headline-md text-headline-md text-on-surface">74</p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe h-20 bg-white/60 backdrop-blur-[20px] border-t border-white/50 rounded-t-lg shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-primary scale-110 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home_health" style="font-variation-settings: 'FILL' 1;">home_health</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="self_care">self_care</span>
+<span class="font-label-sm text-label-sm">Remedies</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm">Partner</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary/80" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- FAB Action (Optional but adds value) -->
+<button class="fixed bottom-24 right-container-mobile w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

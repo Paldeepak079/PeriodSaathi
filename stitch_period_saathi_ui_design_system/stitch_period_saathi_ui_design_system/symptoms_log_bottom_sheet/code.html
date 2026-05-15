@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#4d4068",
+                        "outline-variant": "#d6c2c3",
+                        "on-surface": "#1e1b18",
+                        "tertiary": "#42617d",
+                        "surface-tint": "#874e58",
+                        "surface-container-low": "#f9f2ec",
+                        "surface": "#fff8f2",
+                        "on-secondary-container": "#62547e",
+                        "on-primary-fixed": "#360c17",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#fcb3be",
+                        "secondary-fixed-dim": "#d0bfef",
+                        "on-primary-fixed-variant": "#6b3741",
+                        "surface-bright": "#fff8f2",
+                        "surface-container": "#f3ede7",
+                        "on-tertiary-container": "#385772",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#21143a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#2a4a64",
+                        "secondary": "#655781",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e8e1dc",
+                        "tertiary-container": "#adcded",
+                        "primary-container": "#ffb6c1",
+                        "on-tertiary-fixed": "#001d32",
+                        "primary": "#874e58",
+                        "secondary-fixed": "#eaddff",
+                        "surface-dim": "#dfd9d3",
+                        "on-background": "#1e1b18",
+                        "secondary-container": "#deccfd",
+                        "inverse-surface": "#33302c",
+                        "surface-variant": "#e8e1dc",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#aacae9",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#ffd9de",
+                        "on-surface-variant": "#514345",
+                        "background": "#fff8f2",
+                        "on-primary-container": "#7b444e",
+                        "primary-fixed-dim": "#fcb3be",
+                        "tertiary-fixed": "#cde5ff",
+                        "surface-container-high": "#eee7e1",
+                        "outline": "#847375",
+                        "inverse-on-surface": "#f6f0ea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "container-padding-mobile": "24px",
+                        "stack-sm": "8px",
+                        "gutter": "16px",
+                        "unit": "4px",
+                        "stack-lg": "32px",
+                        "container-padding-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Nunito Sans"],
+                        "body-md": ["Nunito Sans"],
+                        "headline-lg": ["Nunito Sans"],
+                        "body-lg": ["Nunito Sans"],
+                        "label-sm": ["Nunito Sans"],
+                        "headline-lg-mobile": ["Nunito Sans"],
+                        "label-md": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-sheet {
+            background: rgba(253, 246, 240, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 -10px 40px rgba(135, 78, 88, 0.1);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .symptom-chip {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .symptom-chip-selected-lavender {
+            background: linear-gradient(135deg, #eaddff 0%, #deccfd 100%);
+            border-color: #secondary-fixed;
+            box-shadow: 0 4px 12px rgba(101, 87, 129, 0.2);
+        }
+        .symptom-chip-selected-mint {
+            background: linear-gradient(135deg, #cde5ff 0%, #adcded 100%);
+            border-color: #tertiary-fixed;
+            box-shadow: 0 4px 12px rgba(66, 97, 125, 0.2);
+        }
+        .input-glow:focus {
+            outline: none;
+            border-color: #deccfd;
+            box-shadow: 0 0 15px rgba(222, 204, 253, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body-md text-on-background overflow-hidden h-screen w-full relative">
+<!-- Background: Period Calendar (Dimmed) -->
+<div class="absolute inset-0 z-0 bg-surface-container opacity-50 flex flex-col p-container-padding-mobile">
+<!-- Mock Calendar Header -->
+<div class="flex justify-between items-center mb-stack-lg pt-4">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">March 2024</h1>
+<div class="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">settings</span>
+</div>
+</div>
+<!-- Mock Calendar Grid -->
+<div class="grid grid-cols-7 gap-gutter flex-1 opacity-20">
+<div class="aspect-square flex items-center justify-center font-bold">M</div>
+<div class="aspect-square flex items-center justify-center font-bold">T</div>
+<div class="aspect-square flex items-center justify-center font-bold">W</div>
+<div class="aspect-square flex items-center justify-center font-bold">T</div>
+<div class="aspect-square flex items-center justify-center font-bold">F</div>
+<div class="aspect-square flex items-center justify-center font-bold">S</div>
+<div class="aspect-square flex items-center justify-center font-bold">S</div>
+<!-- Repeat dots -->
+<div class="aspect-square rounded-xl bg-white/40"></div>
+<div class="aspect-square rounded-xl bg-white/40"></div>
+<div class="aspect-square rounded-xl bg-white/40"></div>
+<div class="aspect-square rounded-xl bg-primary/20 ring-2 ring-primary"></div>
+<div class="aspect-square rounded-xl bg-primary/20"></div>
+<div class="aspect-square rounded-xl bg-white/40"></div>
+<div class="aspect-square rounded-xl bg-white/40"></div>
+</div>
+</div>
+<!-- Backdrop Dimmer Overlay -->
+<div class="absolute inset-0 bg-on-surface/30 z-10"></div>
+<!-- Log Symptoms Bottom Sheet -->
+<div class="absolute bottom-0 left-0 right-0 z-20 h-[85%] glass-sheet rounded-t-xl overflow-hidden flex flex-col">
+<!-- Mascot Peeking (Brand Identity) -->
+<div class="absolute -top-12 right-12 z-30 w-24 h-24 transform rotate-12 pointer-events-none">
+<img alt="Saathi Mascot" class="w-full h-full object-contain" data-alt="A friendly, soft-textured illustrated mascot character for a women's health app. The character has an organic, rounded shape with large, gentle eyes and a supportive smile, rendered in a high-quality 3D claymorphic style with soft pastel pink and cream tones. It peeks playfully from a corner, conveying a sense of emotional warmth and companionship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1fue27faMHSU-aGCjRhGOqRWASMmgwRgLw_w_746yWm9QYODdTXrxZTTyAv3RVsnu441d6xZV_azBx2nhYP9GhOizz3wpmr6omdfL0ooFmHfmbhRa8ZFsOiKPwCMRw825IYraJJHpys4We1MgUz5tFmbzNWqwy6-TVo7rrP8RoQKMjNxlo6ROTIGhCAali03x_8wP6XojUEZ-Hvfc4R89z20gzvT0rG_ipNT1wf4dYFbyDf97DLXE53fLUr7gRlq3mEJR3RcDTOKE"/>
+</div>
+<!-- Handle Bar -->
+<div class="flex justify-center py-4">
+<div class="w-12 h-1.5 bg-outline-variant/50 rounded-full"></div>
+</div>
+<!-- Header Content -->
+<div class="px-container-padding-mobile pb-stack-md flex flex-col">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Log Symptoms</h2>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant mt-1">Today, March 14</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center hover:bg-white/60 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">close</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Body -->
+<div class="flex-1 overflow-y-auto px-container-padding-mobile pb-32">
+<!-- Flow Level Selector -->
+<div class="mt-stack-lg">
+<h3 class="font-label-md text-label-md text-on-surface mb-stack-md">Flow Level</h3>
+<div class="grid grid-cols-3 gap-gutter">
+<button class="symptom-chip py-3 px-4 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-white/60">
+                        Light
+                    </button>
+<button class="scale-105 bg-gradient-to-br from-primary-container to-primary py-3 px-4 rounded-lg font-label-md text-label-md text-white shadow-lg shadow-primary/20">
+                        Medium
+                    </button>
+<button class="symptom-chip py-3 px-4 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-white/60">
+                        Heavy
+                    </button>
+</div>
+</div>
+<!-- Symptom Chips Section -->
+<div class="mt-stack-lg">
+<h3 class="font-label-md text-label-md text-on-surface mb-stack-md">How are you feeling?</h3>
+<div class="flex flex-wrap gap-stack-sm">
+<button class="symptom-chip-selected-lavender py-2 px-5 rounded-full font-label-md text-label-md text-on-secondary-container">
+                        Cramps
+                    </button>
+<button class="symptom-chip py-2 px-5 rounded-full font-label-md text-label-md text-on-surface-variant">
+                        Bloating
+                    </button>
+<button class="symptom-chip py-2 px-5 rounded-full font-label-md text-label-md text-on-surface-variant">
+                        Headache
+                    </button>
+<button class="symptom-chip-selected-mint py-2 px-5 rounded-full font-label-md text-label-md text-on-tertiary-container">
+                        Mood Swings
+                    </button>
+<button class="symptom-chip py-2 px-5 rounded-full font-label-md text-label-md text-on-surface-variant">
+                        Back Pain
+                    </button>
+<button class="symptom-chip py-2 px-5 rounded-full font-label-md text-label-md text-on-surface-variant">
+                        Fatigue
+                    </button>
+<button class="symptom-chip py-2 px-5 rounded-full font-label-md text-label-md text-on-surface-variant">
+                        Acne
+                    </button>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="mt-stack-lg">
+<label class="block font-label-md text-label-md text-on-surface mb-stack-sm" for="symptom-notes">Notes</label>
+<div class="relative">
+<textarea class="w-full rounded-lg bg-white/20 border-white/50 backdrop-blur-sm p-4 font-body-md text-body-md placeholder:text-on-surface-variant/50 input-glow transition-all" id="symptom-notes" placeholder="How's your day going?" rows="4"></textarea>
+</div>
+</div>
+</div>
+<!-- Floating Action Button Footer -->
+<div class="absolute bottom-0 left-0 right-0 p-container-padding-mobile bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/90 to-transparent pt-8">
+<button class="w-full py-5 rounded-lg bg-gradient-to-r from-primary to-primary-container text-white font-headline-md text-headline-md shadow-xl shadow-primary/25 active:scale-95 transition-transform">
+                Save Log
+            </button>
+</div>
+</div>
+<!-- Fixed Bottom Bar Guidance from JSON (Simulated for visual context) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-surface/60 backdrop-blur-xl border-t border-white/30 z-30">
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-label-md font-label-md">Calendar</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Insights</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-label-md font-label-md">Log</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Circle</span>
+</div>
+</nav>
+</body></html>
