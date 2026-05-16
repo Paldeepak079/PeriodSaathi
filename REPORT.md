@@ -24,6 +24,11 @@
 | 9 | Splash Screen | Animated logo with gradient | `ui/screens/splash/SplashScreen.kt` |
 | 10 | Login Screen | Glassmorphism login UI | `ui/screens/login/LoginScreen.kt` |
 | 11 | Home Screen | Full glassmorphism with all components | `ui/screens/home/HomeScreen.kt` |
+| 12 | BiometricManager | Biometric auth (fingerprint/face) with fallback | `security/BiometricManager.kt` |
+| 13 | StealthModeManager | Stealth mode toggle, PIN hashing, disguise | `security/StealthModeManager.kt` |
+| 14 | LockScreen | Animated lock screen with stars, mascot, Zzz | `ui/lock/LockScreen.kt` |
+| 15 | PinEntryScreen | 4-digit PIN numpad with glass buttons | `ui/lock/PinEntryScreen.kt` |
+| 16 | Lock Gate | Biometric/PIN lock integrated into navigation | `MainActivity.kt` |
 
 ### 🔄 ONGOING (1 Task)
 
@@ -58,6 +63,25 @@
 - **Screen.kt**: 19 sealed routes with @Serializable
 - **PeriodSaathiNavGraph.kt**: Animated transitions (slide + fade)
 - **BottomNavBar.kt**: Custom frosted glass, 4 tabs, spring animations
+
+### Security & Lock (`security/`, `ui/lock/`)
+- **BiometricManager.kt**: Fingerprint/face auth with device credential fallback
+  - `isBiometricAvailable()` returns `Available`, `NotEnrolled`, `NotAvailable`
+  - `authenticate()` with prompt "Wake up Saathi 🌸"
+- **StealthModeManager.kt**: SharedPreferences-based stealth state
+  - SHA-256 PIN hashing, disguise name, enable/disable/verify
+- **LockScreen.kt**: Full lock screen with:
+  - Dark navy (#1A0E2E) background with 50 drifting stars
+  - Sleeping mascot with breathing animation (1.0→1.03→1.0, 3s loop)
+  - 3 Zzz bubbles floating diagonally with staggered timing
+  - Text fade-in after 500ms
+  - Unlock button with pulsing icon (0.7→1.0 opacity, 1.5s loop)
+  - SUCCESS: brighten overlay (0→1 alpha, 600ms), wake animation, speech bubble
+  - FAILED: screen shake (±8dp, 3 cycles)
+- **PinEntryScreen.kt**: 4-dot indicator, 3×4 numpad, glass circle buttons
+  - Tap animation (0.9→1.0 spring), wrong PIN shake + red flash
+- **Lock Gate** (`MainActivity.kt`): `AnimatedContent` with `fadeIn/fadeOut`
+  - States: `Checking → Locked/PinFallback → Unlocked`
 
 ### Screens (`ui/screens/`)
 - **SplashScreen**: Animated scale + fade, mesh gradient background

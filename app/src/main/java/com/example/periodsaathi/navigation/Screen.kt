@@ -1,81 +1,27 @@
 package com.example.periodsaathi.navigation
 
-import kotlinx.serialization.Serializable
-
-sealed interface Screen {
-    @Serializable
-    data object Splash : Screen
-
-    @Serializable
-    data class Onboarding(val page: Int = 0) : Screen
-
-    @Serializable
-    data object Login : Screen
-
-    @Serializable
-    data object Home : Screen
-
-    @Serializable
-    data object Calendar : Screen
-
-    @Serializable
-    data object Wellness : Screen
-
-    @Serializable
-    data object PartnerMode : Screen
-
-    @Serializable
-    data object Remedies : Screen
-
-    @Serializable
-    data object YogaFlow : Screen
-
-    @Serializable
-    data object Journal : Screen
-
-    @Serializable
-    data object MoodMap : Screen
-
-    @Serializable
-    data object Insights : Screen
-
-    @Serializable
-    data object Settings : Screen
-
-    @Serializable
-    data object ReportExport : Screen
-
-    @Serializable
-    data object TimeCapsule : Screen
-
-    @Serializable
-    data object Wardrobe : Screen
-
-    @Serializable
-    data object Challenges : Screen
-
-    @Serializable
-    data object BreathingMode : Screen
-
-    @Serializable
-    data object VoiceLog : Screen
-
-    @Serializable
-    data object Profile : Screen
-
-    @Serializable
-    data object More : Screen
+sealed class Screen(val route: String) {
+    data object Splash : Screen("splash")
+    data object Onboarding : Screen("onboarding")
+    data object Login : Screen("login")
+    data object NameSetup : Screen("name_setup")
+    data object Home : Screen("home")
+    data object Calendar : Screen("calendar")
+    data object Wellness : Screen("wellness")
+    data object PartnerMode : Screen("partner")
+    data object Remedies : Screen("remedies")
+    data object YogaFlow : Screen("yoga")
+    data object Journal : Screen("journal")
+    data object MoodMap : Screen("mood_map")
+    data object Insights : Screen("insights")
+    data object Settings : Screen("settings")
+    data object ReportExport : Screen("report_export")
+    data object TimeCapsule : Screen("time_capsule")
+    data object Wardrobe : Screen("wardrobe")
+    data object Challenges : Screen("challenges")
+    data object BreathingMode : Screen("breathing")
+    data object VoiceLog : Screen("voice_log")
+    data object Profile : Screen("profile")
+    data object More : Screen("more")
+    data object Payment : Screen("payment")
 }
-
-val bottomNavItems = listOf(
-    BottomNavItem(Screen.Home, "Home", "home_health"),
-    BottomNavItem(Screen.Calendar, "Calendar", "calendar_month"),
-    BottomNavItem(Screen.Wellness, "Wellness", "self_care"),
-    BottomNavItem(Screen.More, "More", "menu")
-)
-
-data class BottomNavItem(
-    val screen: Screen,
-    val label: String,
-    val iconName: String
-)

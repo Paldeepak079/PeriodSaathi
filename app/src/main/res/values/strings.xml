@@ -1,6 +1,253 @@
 <resources>
+    <!-- App Identity -->
     <string name="app_name">Period Saathi</string>
+    <string name="app_name_hindi">पीरियड साथी</string>
+    <string name="app_description">Your empathetic cycle companion. Track periods, symptoms, moods, and wellness with a cute mascot by your side.</string>
+    <string name="app_tagline">Your empathetic cycle companion.</string>
+
+    <!-- Navigation & Bottom Bar -->
+    <string name="nav_home">Home</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_wellness">Wellness</string>
+    <string name="nav_more">More</string>
+    <string name="nav_home_icon">home_health</string>
+    <string name="nav_calendar_icon">calendar_month</string>
+    <string name="nav_wellness_icon">self_care</string>
+    <string name="nav_more_icon">menu</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">Welcome to Period Saathi</string>
+    <string name="onboarding_meet_saathi_title">Meet Saathi</string>
+    <string name="onboarding_meet_saathi_desc">Your cute period bestie who understands you inside out.</string>
+    <string name="onboarding_privacy_title">Your data stays with you</string>
+    <string name="onboarding_privacy_desc">Everything is stored on your device. No one else can see it.</string>
+    <string name="onboarding_rewards_title">Earn rewards!</string>
+    <string name="onboarding_rewards_desc">Track, log, and stay healthy. Earn badges and rewards along the way.</string>
+    <string name="onboarding_start">Start Your Journey</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Login / Auth -->
+    <string name="login_title">Welcome to Period Saathi</string>
+    <string name="login_subtitle">Your empathetic cycle companion.</string>
+    <string name="login_google_button">Continue with Google</string>
+    <string name="login_guest">or explore as guest</string>
+    <string name="login_terms">By continuing, you agree to our Terms &amp; Privacy Policy</string>
+    <string name="login_terms_short">Terms &amp; Privacy Policy</string>
+
+    <!-- Lock Screen -->
+    <string name="lock_title">Saathi is resting 😴</string>
+    <string name="lock_subtitle">Verify to wake her up</string>
+    <string name="lock_biometric_prompt_title">Wake up Saathi 🌸</string>
+    <string name="lock_biometric_prompt_subtitle">Verify to access Period Saathi</string>
+    <string name="lock_unlock_biometric">Unlock with Biometrics</string>
+    <string name="lock_unlock_pin">Use PIN to unlock</string>
+    <string name="lock_biometric_setup">Set up biometrics</string>
+    <string name="lock_pin_title">Enter PIN</string>
+    <string name="lock_pin_subtitle">Enter your security PIN</string>
+    <string name="lock_pin_wrong">Wrong PIN</string>
+    <string name="lock_good_morning">Good Morning, %s! 🌸</string>
+    <string name="lock_good_evening">Good Evening, %s! 🌸</string>
+
+    <!-- Home Screen -->
+    <string name="home_greeting">Hey %s 🌸</string>
+    <string name="home_cycle_day">Day %d of your cycle</string>
+    <string name="home_wellness_score">Wellness Score</string>
+    <string name="home_quick_log">Quick Log</string>
+    <string name="home_log_water">Water</string>
+    <string name="home_log_meals">Meals</string>
+    <string name="home_log_medicine">Medicine</string>
+    <string name="home_log_flow">Flow</string>
+    <string name="home_insight_sleep">Sleep</string>
+    <string name="home_insight_bpm">BPM</string>
+    <string name="home_speech_hydrate">Hydrate yourself, %s! 💧</string>
+    <string name="home_notifications">Notifications</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">Calendar</string>
+    <string name="calendar_goal_baby">Planning Baby 🌱</string>
+    <string name="calendar_goal_avoid">Avoiding 🧡</string>
+    <string name="calendar_next_period">NEXT PERIOD</string>
+    <string name="calendar_fertile_in">FERTILE IN</string>
+    <string name="calendar_cycle_health">Cycle Health</string>
+    <string name="calendar_cycle_health_desc">Your pattern looks normal and consistent.</string>
+    <string name="calendar_log">Log</string>
+    <string name="calendar_today">Today</string>
+    <string name="calendar_fertile">Fertile</string>
+    <string name="calendar_period">Period</string>
+    <string name="calendar_predicted">Predicted</string>
+
+    <!-- Wellness & Remedies -->
+    <string name="wellness_title">Wellness</string>
+    <string name="wellness_remedies">Remedies</string>
+    <string name="wellness_yoga">Yoga</string>
+    <string name="wellness_breathing">Breathing</string>
+    <string name="wellness_meditation">Meditation</string>
+    <string name="remedy_cramps_title">Cramp Relief</string>
+    <string name="remedy_cramps_desc">Gentle stretches and heat therapy for menstrual cramps.</string>
+    <string name="remedy_headache_title">Headache Relief</string>
+    <string name="remedy_headache_desc">Acupressure points and relaxation techniques.</string>
+    <string name="remedy_bloating_title">Bloating Relief</string>
+    <string name="remedy_bloating_desc">Herbal tea suggestions and light exercises.</string>
+    <string name="remedy_fatigue_title">Fatigue Relief</string>
+    <string name="remedy_fatigue_desc">Iron-rich food suggestions and rest tips.</string>
+    <string name="remedy_mood_title">Mood Boost</string>
+    <string name="remedy_mood_desc">Activities and affirmations to lift your spirits.</string>
+
+    <!-- Yoga Flow -->
+    <string name="yoga_title">Cramp Relief Yoga</string>
+    <string name="yoga_child_pose">Child\'s Pose</string>
+    <string name="yoga_cat_cow">Cat-Cow Stretch</string>
+    <string name="yoga_butterfly">Butterfly Pose</string>
+    <string name="yoga_cobra">Cobra Pose</string>
+    <string name="yoga_start">Start Flow</string>
+    <string name="yoga_next">Next Pose</string>
+    <string name="yoga_complete">Flow Complete! 🌸</string>
+
+    <!-- Partner Mode -->
+    <string name="partner_title">Partner Mode</string>
+    <string name="partner_desc">Share your cycle insights with your partner.</string>
+    <string name="partner_invite">Invite Partner</string>
+    <string name="partner_connected">Connected</string>
+    <string name="partner_disconnected">Not Connected</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_name_hint">Your Name</string>
+    <string name="profile_cycle_length">Cycle Length</string>
+    <string name="profile_period_length">Period Length</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_settings">Settings</string>
+    <string name="profile_about">About</string>
+    <string name="profile_version">Version %s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_desc">Receive period reminders and wellness tips</string>
+    <string name="settings_stealth_mode">Stealth Mode</string>
+    <string name="settings_stealth_mode_desc">Lock the app with biometrics or PIN</string>
+    <string name="settings_stealth_disable">Disable Stealth Mode</string>
+    <string name="settings_stealth_enable">Enable Stealth Mode</string>
+    <string name="settings_set_pin">Set PIN</string>
+    <string name="settings_change_pin">Change PIN</string>
+    <string name="settings_reminders">Reminders</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System Default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_hi">हिन्दी</string>
+    <string name="settings_export">Export Report</string>
+    <string name="settings_privacy">Privacy Policy</string>
+    <string name="settings_about">About Period Saathi</string>
+
+    <!-- Stealth Mode PIN -->
+    <string name="stealth_create_pin">Create a 4-digit PIN</string>
+    <string name="stealth_confirm_pin">Confirm your PIN</string>
+    <string name="stealth_pin_mismatch">PINs don\'t match</string>
+    <string name="stealth_pin_set">PIN set successfully!</string>
+
+    <!-- Time Capsule -->
+    <string name="capsule_title">Time Capsule</string>
+    <string name="capsule_desc">Write a letter to your future self about this cycle.</string>
+    <string name="capsule_write">Write Entry</string>
+    <string name="capsule_save">Save to Capsule</string>
+    <string name="capsule_saved">Saved! 🌸</string>
+
+    <!-- Journal -->
+    <string name="journal_title">Journal</string>
+    <string name="journal_write">How are you feeling today?</string>
+    <string name="journal_save">Save Entry</string>
+    <string name="journal_saved">Entry saved! 🌸</string>
+    <string name="journal_mood_great">Great</string>
+    <string name="journal_mood_good">Good</string>
+    <string name="journal_mood_okay">Okay</string>
+    <string name="journal_mood_bad">Bad</string>
+    <string name="journal_mood_terrible">Terrible</string>
+
+    <!-- Insights -->
+    <string name="insights_title">Insights</string>
+    <string name="insights_avg_cycle">Avg. Cycle Length</string>
+    <string name="insights_avg_period">Avg. Period Length</string>
+    <string name="insights_predictions">Predictions</string>
+    <string name="insights_patterns">Patterns</string>
+    <string name="insights_days"><![CDATA[%d days]]></string>
+    <string name="insights_no_data">Not enough data yet. Keep tracking!</string>
+
+    <!-- Wardrobe -->
+    <string name="wardrobe_title">Saathi\'s Wardrobe</string>
+    <string name="wardrobe_desc">Dress up your Saathi mascot!</string>
+    <string name="wardrobe_unlock">Unlock items by tracking consistently</string>
+
+    <!-- Challenges -->
+    <string name="challenges_title">Challenges</string>
+    <string name="challenges_daily">Daily Streak</string>
+    <string name="challenges_logging">Logging Master</string>
+    <string name="challenges_wellness">Wellness Warrior</string>
+    <string name="challenges_progress">%d/%d</string>
+
+    <!-- Mood Map -->
+    <string name="moodmap_title">Mood Map</string>
+    <string name="moodmap_desc">Track how your mood changes throughout your cycle.</string>
+
+    <!-- Breathing Mode -->
+    <string name="breathing_title">Breathe</string>
+    <string name="breathing_inhale">Inhale</string>
+    <string name="breathing_hold">Hold</string>
+    <string name="breathing_exhale">Exhale</string>
+    <string name="breathing_start">Start Breathing</string>
+    <string name="breathing_stop">Stop</string>
+
+    <!-- Voice Log -->
+    <string name="voicelog_title">Voice Log</string>
+    <string name="voicelog_start">Start Recording</string>
+    <string name="voicelog_stop">Stop Recording</string>
+    <string name="voicelog_listening">Listening...</string>
+    <string name="voicelog_transcribing">Transcribing...</string>
+    <string name="voicelog_saved">Voice log saved!</string>
+
+    <!-- Report Export -->
+    <string name="export_title">Export Report</string>
+    <string name="export_desc">Generate a PDF report of your cycle data.</string>
+    <string name="export_generate">Generate Report</string>
+    <string name="export_share">Share Report</string>
+    <string name="export_generating">Generating report...</string>
+
+    <!-- Notifications -->
     <string name="notification_title">Period Reminder</string>
     <string name="notification_message">Your period is expected soon. Stay prepared!</string>
-    <string name="channel_description">Notifications for period reminders and predictions</string>
+    <string name="notification_channel_name">Period Reminders</string>
+    <string name="notification_channel_desc">Notifications for period reminders and predictions</string>
+    <string name="notification_wellness_title">Wellness Tip</string>
+    <string name="notification_wellness_body">Time for some self-care! Check your wellness tips. 🌸</string>
+    <string name="notification_log_title">Log Reminder</string>
+    <string name="notification_log_body">Don\'t forget to log your symptoms today!</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">No internet connection. Please check your network.</string>
+    <string name="error_biometric_unavailable">Biometric authentication is not available on this device.</string>
+    <string name="error_biometric_not_enrolled">Please set up fingerprint or face unlock in your device settings.</string>
+    <string name="error_data_load">Could not load data. Please restart the app.</string>
+    <string name="error_save_failed">Could not save. Please try again.</string>
+
+    <!-- General CTAs -->
+    <string name="action_retry">Retry</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_share">Share</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_done">Done</string>
+
+    <!-- Permissions -->
+    <string name="permission_body_animation">Period Saathi needs body sensors permission to track health data from Wear OS devices.</string>
+    <string name="permission_notification_title">Enable Notifications</string>
+    <string name="permission_notification_message">Period Saathi sends you gentle reminders for your cycle, wellness tips, and logging prompts.</string>
+    <string name="permission_sms_title">Send SMS</string>
+    <string name="permission_sms_message">Period Saathi needs SMS permission only when you choose to share cycle information with your partner. This is optional and user-initiated.</string>
 </resources>

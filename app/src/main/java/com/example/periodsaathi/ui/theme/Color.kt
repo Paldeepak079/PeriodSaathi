@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 
 val BlushPink = Color(0xFFFFB5C8)
 val SoftLavender = Color(0xFFC9B8FF)
+val Lavender = SoftLavender
 val BabyBlue = Color(0xFFB8DCFF)
 val ButterYellow = Color(0xFFFFF3B0)
 val SoftCoral = Color(0xFFFFB3A7)

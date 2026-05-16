@@ -14,8 +14,17 @@
 .cxx
 local.properties
 
+# Keystore files
+*.jks
+*.keystore
+
 # Generated knowledge graph outputs
 .agent/graphify-out/
 .agent/knowledge-graph/
 .agent/logs/
+
+# App-specific
+/app/schemas/
+google-services.json
+.env
 

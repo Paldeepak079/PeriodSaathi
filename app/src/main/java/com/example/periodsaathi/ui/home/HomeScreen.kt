@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.periodsaathi.navigation.Screen
 import com.example.periodsaathi.domain.model.CyclePhase
 import com.example.periodsaathi.domain.usecase.MascotEmotion
 import com.example.periodsaathi.ui.components.*
@@ -45,9 +46,10 @@ import kotlin.math.roundToInt
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onNavigateToLog: () -> Unit = {},
-    onNavigateToCalendar: () -> Unit = {},
-    onNavigateToRemedies: () -> Unit = {}
+    onNavigate: (Screen) -> Unit = {},
+    onNavigateToLog: () -> Unit = { onNavigate(Screen.Login) },
+    onNavigateToCalendar: () -> Unit = { onNavigate(Screen.Calendar) },
+    onNavigateToRemedies: () -> Unit = { onNavigate(Screen.Remedy) }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()

@@ -1,0 +1,140 @@
+<resources>
+    <!-- App Identity -->
+    <string name="app_name">पीरियड साथी</string>
+    <string name="app_description">आपका सहानुभूतिपूर्ण साइकल साथी। पीरियड ट्रैक करें, लक्षण नोट करें, मूड और स्वास्थ्य पर नज़र रखें — एक प्यारे मस्कट के साथ।</string>
+    <string name="app_tagline">आपका सहानुभूतिपूर्ण साइकल साथी।</string>
+
+    <!-- Navigation & Bottom Bar -->
+    <string name="nav_home">होम</string>
+    <string name="nav_calendar">कैलेंडर</string>
+    <string name="nav_wellness">वेलनेस</string>
+    <string name="nav_more">और</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">पीरियड साथी में आपका स्वागत है</string>
+    <string name="onboarding_meet_saathi_title">साथी से मिलें</string>
+    <string name="onboarding_meet_saathi_desc">आपका प्यारा पीरियड बेस्टी जो आपको अंदर और बाहर से समझता है।</string>
+    <string name="onboarding_privacy_title">आपका डेटा आपके पास है</string>
+    <string name="onboarding_privacy_desc">सब कुछ आपके डिवाइस पर स्टोर है। कोई और इसे नहीं देख सकता।</string>
+    <string name="onboarding_rewards_title">रिवॉर्ड कमाएँ!</string>
+    <string name="onboarding_rewards_desc">ट्रैक करें, लॉग करें और स्वस्थ रहें। बैज और रिवॉर्ड कमाएँ।</string>
+    <string name="onboarding_start">अपनी यात्रा शुरू करें</string>
+    <string name="onboarding_next">आगे</string>
+    <string name="onboarding_skip">छोड़ें</string>
+
+    <!-- Login / Auth -->
+    <string name="login_title">पीरियड साथी में आपका स्वागत है</string>
+    <string name="login_subtitle">आपका सहानुभूतिपूर्ण साइकल साथी।</string>
+    <string name="login_google_button">Google से जारी रखें</string>
+    <string name="login_guest">या मेहमान के रूप में देखें</string>
+    <string name="login_terms">जारी रखने से, आप हमारी शर्तों और गोपनीयता नीति से सहमत होते हैं</string>
+
+    <!-- Lock Screen -->
+    <string name="lock_title">साथी आराम कर रही है 😴</string>
+    <string name="lock_subtitle">जगाने के लिए सत्यापित करें</string>
+    <string name="lock_biometric_prompt_title">साथी को जगाएँ 🌸</string>
+    <string name="lock_biometric_prompt_subtitle">पीरियड साथी तक पहुँचने के लिए सत्यापित करें</string>
+    <string name="lock_unlock_biometric">बायोमेट्रिक्स से अनलॉक करें</string>
+    <string name="lock_unlock_pin">PIN से अनलॉक करें</string>
+    <string name="lock_pin_title">PIN दर्ज करें</string>
+    <string name="lock_pin_subtitle">अपना सुरक्षा PIN दर्ज करें</string>
+    <string name="lock_pin_wrong">गलत PIN</string>
+    <string name="lock_good_morning">सुप्रभात, %s! 🌸</string>
+    <string name="lock_good_evening">शुभ संध्या, %s! 🌸</string>
+
+    <!-- Home Screen -->
+    <string name="home_greeting">नमस्ते %s 🌸</string>
+    <string name="home_cycle_day">आपके साइकल का दिन %d</string>
+    <string name="home_quick_log">त्वरित लॉग</string>
+    <string name="home_log_water">पानी</string>
+    <string name="home_log_meals">भोजन</string>
+    <string name="home_log_medicine">दवा</string>
+    <string name="home_log_flow">फ्लो</string>
+    <string name="home_insight_sleep">नींद</string>
+    <string name="home_insight_bpm">BPM</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">कैलेंडर</string>
+    <string name="calendar_goal_baby">प्लानिंग बेबी 🌱</string>
+    <string name="calendar_goal_avoid">अवॉइडिंग 🧡</string>
+    <string name="calendar_next_period">अगला पीरियड</string>
+    <string name="calendar_fertile_in">फर्टाइल में</string>
+    <string name="calendar_cycle_health">साइकल हेल्थ</string>
+    <string name="calendar_cycle_health_desc">आपका पैटर्न सामान्य और स्थिर है।</string>
+    <string name="calendar_log">लॉग</string>
+    <string name="calendar_today">आज</string>
+    <string name="calendar_fertile">फर्टाइल</string>
+    <string name="calendar_period">पीरियड</string>
+    <string name="calendar_predicted">अनुमानित</string>
+
+    <!-- Wellness & Remedies -->
+    <string name="wellness_title">वेलनेस</string>
+    <string name="wellness_remedies">उपचार</string>
+    <string name="wellness_yoga">योग</string>
+    <string name="wellness_breathing">साँस लेना</string>
+    <string name="wellness_meditation">ध्यान</string>
+    <string name="remedy_cramps_title">ऐंठन से राहत</string>
+    <string name="remedy_cramps_desc">मासिक धर्म की ऐंठन के लिए हल्का स्ट्रेच और हीट थेरेपी।</string>
+    <string name="remedy_headache_title">सिरदर्द से राहत</string>
+    <string name="remedy_bloating_title">सूजन से राहत</string>
+    <string name="remedy_fatigue_title">थकान से राहत</string>
+    <string name="remedy_mood_title">मूड बूस्ट</string>
+
+    <!-- Partner Mode -->
+    <string name="partner_title">पार्टनर मोड</string>
+    <string name="partner_desc">अपने पार्टनर के साथ अपने साइकल इनसाइट्स शेयर करें।</string>
+    <string name="partner_invite">पार्टनर को आमंत्रित करें</string>
+    <string name="partner_connected">कनेक्टेड</string>
+    <string name="partner_disconnected">कनेक्टेड नहीं</string>
+
+    <!-- Profile -->
+    <string name="profile_title">प्रोफ़ाइल</string>
+    <string name="profile_name_hint">आपका नाम</string>
+    <string name="profile_cycle_length">साइकल लंबाई</string>
+    <string name="profile_period_length">पीरियड लंबाई</string>
+    <string name="profile_save">सहेजें</string>
+    <string name="profile_settings">सेटिंग्स</string>
+    <string name="profile_version">संस्करण %s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_notifications">सूचनाएँ</string>
+    <string name="settings_stealth_mode">स्टील्थ मोड</string>
+    <string name="settings_stealth_mode_desc">बायोमेट्रिक्स या PIN से ऐप लॉक करें</string>
+    <string name="settings_enable">स्टील्थ मोड चालू करें</string>
+    <string name="settings_disable">स्टील्थ मोड बंद करें</string>
+    <string name="settings_set_pin">PIN सेट करें</string>
+    <string name="settings_change_pin">PIN बदलें</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_hi">हिन्दी</string>
+
+    <!-- Journal -->
+    <string name="journal_title">जर्नल</string>
+    <string name="journal_write">आज आप कैसा महसूस कर रहे हैं?</string>
+    <string name="journal_save">एंट्री सहेजें</string>
+    <string name="journal_saved">एंट्री सहेजी गई! 🌸</string>
+
+    <!-- Breathing -->
+    <string name="breathing_title">साँस लें</string>
+    <string name="breathing_inhale">अंदर लें</string>
+    <string name="breathing_hold">रोकें</string>
+    <string name="breathing_exhale">बाहर छोड़ें</string>
+    <string name="breathing_start">साँस लेना शुरू करें</string>
+    <string name="breathing_stop">रोकें</string>
+
+    <!-- Errors -->
+    <string name="error_generic">कुछ गलत हुआ। कृपया पुनः प्रयास करें।</string>
+    <string name="error_network">कोई इंटरनेट कनेक्शन नहीं। कृपया अपना नेटवर्क जाँचें।</string>
+
+    <!-- General CTAs -->
+    <string name="action_retry">पुनः प्रयास करें</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_confirm">पुष्टि करें</string>
+    <string name="action_save">सहेजें</string>
+    <string name="action_delete">हटाएँ</string>
+    <string name="action_share">शेयर करें</string>
+    <string name="action_close">बंद करें</string>
+    <string name="action_back">वापस</string>
+    <string name="action_done">हो गया</string>
+</resources>
