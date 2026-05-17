@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,21 +32,13 @@ class SplashViewModel @Inject constructor(
     fun determineStartDestination() {
         viewModelScope.launch {
             delay(1500) // Animation delay
-            val settings = settingsDao.getSettings().asStateFlow()
-            settings.collect { settingsData ->
-                val destination = when {
-                    settingsData == null -> "Onboarding"
-                    settingsData.stealthModeEnabled -> "LockScreen"
-                    else -> "Home"
-                }
-                _splashState.value = SplashState.NavigateTo(destination)
+            val settingsData = settingsDao.getSettings().first()
+            val destination = when {
+                settingsData == null -> "Onboarding"
+                settingsData.stealthModeEnabled -> "LockScreen"
+                else -> "Home"
             }
+            _splashState.value = SplashState.NavigateTo(destination)
         }
     }
-}
-
-private suspend fun <T> kotlinx.coroutines.flow.Flow<T>.asStateFlow(): kotlinx.coroutines.flow.StateFlow<T?> {
-    var result: T? = null
-    collect { result = it }
-    return kotlinx.coroutines.flow.MutableStateFlow(result)
 }

@@ -27,6 +27,11 @@ import com.example.periodsaathi.ui.navigation.Settings
 import com.example.periodsaathi.ui.navigation.Wellness
 import com.example.periodsaathi.ui.theme.PeriodSaathiTheme
 
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.periodsaathi.ui.screens.splash.SplashViewModel
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
