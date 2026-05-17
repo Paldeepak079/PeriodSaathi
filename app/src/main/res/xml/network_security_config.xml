@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">supabase.co</domain>
+        <pin-set expiration="2026-01-01">
+            <pin digest="SHA-256">REPLACE_WITH_REAL_HASH</pin>
+            <pin digest="SHA-256">BACKUP_PLACEHOLDER</pin>
+        </pin-set>
+    </domain-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+            <certificates src="system" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
