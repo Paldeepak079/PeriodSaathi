@@ -1,74 +1,54 @@
 package com.example.periodsaathi.ui.screens.yoga
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalView
-import android.view.HapticFeedbackConstants
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.periodsaathi.ui.theme.*
-import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun YogaFlowScreen(
-    viewModel: YogaFlowViewModel = hiltViewModel(),
-    onExit: () -> Unit = {}
+    onExit: () -> Unit = {},
+    viewModel: YogaFlowViewModel = hiltViewModel()
 ) {
-    val currentPoseIndex by viewModel.currentPoseIndex.collectAsStateWithLifecycle()
-    val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
-    val timeRemaining by viewModel.timeRemaining.collectAsStateWithLifecycle()
-    val breathingPhase by viewModel.breathingPhase.collectAsStateWithLifecycle()
-
+    val isPlaying by viewModel.isPlaying.collectAsState()
+    val currentPoseIndex by viewModel.currentPoseIndex.collectAsState()
+    val timeRemaining by viewModel.timeRemaining.collectAsState()
+    val breathingPhase by viewModel.breathingPhase.collectAsState()
     val currentPose = viewModel.poses[currentPoseIndex]
 
-    // Timer countdown
-    LaunchedEffect(isPlaying, currentPoseIndex) {
-        if (isPlaying) {
-            var remaining = timeRemaining
-            while (remaining > 0 && isPlaying) {
-                delay(1000)
-                remaining--
-                viewModel.setTimeRemaining(remaining)
-            }
-            if (remaining == 0 && currentPoseIndex < viewModel.poses.size - 1) {
-                viewModel.nextPose()
-            } else if (remaining == 0) {
-                viewModel.togglePlay()
-            }
-        }
-    }
+    val breathingRadius = remember { Animatable(120f) }
 
-    // Breathing animation
-    LaunchedEffect(isPlaying) {
-        while (isPlaying) {
-            viewModel.setBreathingPhase(BreathingPhase.INHALE)
-            delay(4000)
-            viewModel.setBreathingPhase(BreathingPhase.HOLD)
-            delay(2000)
-            viewModel.setBreathingPhase(BreathingPhase.EXHALE)
-            delay(6000)
-            viewModel.setBreathingPhase(BreathingPhase.REST)
-            delay(2000)
+    LaunchedEffect(isPlaying, breathingPhase) {
+        if (isPlaying) {
+            when (breathingPhase) {
+                BreathingPhase.INHALE -> breathingRadius.animateTo(170f, tween(4000))
+                BreathingPhase.HOLD -> {}
+                BreathingPhase.EXHALE -> breathingRadius.animateTo(120f, tween(6000))
+                else -> {}
+            }
         }
     }
 
@@ -77,132 +57,107 @@ fun YogaFlowScreen(
             .fillMaxSize()
             .background(Color(0xFF0D0A14))
     ) {
-        // Exit button
+        // Close button
         IconButton(
-            onClick = onExit,
+            onClick = {
+                viewModel.exit()
+                onExit()
+            },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Exit",
-                tint = Color.White.copy(alpha = 0.7f)
-            )
+            Icon(Icons.Default.Close, contentDescription = "Exit", tint = Color.White)
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Center
         ) {
-            // Pose info
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 32.dp)
-            ) {
-                Text(
-                    text = currentPose.name,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = currentPose.description,
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "💡 ${currentPose.benefits}",
-                    fontSize = 12.sp,
-                    color = SoftLavender.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center
-                )
-            }
+            // Pose name
+            Text(
+                text = currentPose.name,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = currentPose.description,
+                color = SoftLavender,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Benefits: ${currentPose.benefits}",
+                color = BabyBlue,
+                fontSize = 12.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Breathing circle
             BreathingCircle(
-                phase = breathingPhase,
-                isPlaying = isPlaying
+                radius = breathingRadius.value,
+                phase = breathingPhase
             )
 
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Timer
+            Text(
+                text = formatTime(timeRemaining),
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                color = BlushPink
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Pose dots
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                viewModel.poses.forEachIndexed { index, _ ->
+                    Box(
+                        modifier = Modifier
+                            .size(if (index == currentPoseIndex) 12.dp else 8.dp)
+                            .background(
+                                if (index == currentPoseIndex) BlushPink else SoftLavender.copy(alpha = 0.3f),
+                                shape = MaterialTheme.shapes.small)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             // Controls
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Timer
-                Text(
-                    text = formatTime(timeRemaining),
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Play/Pause button
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(Primary)
-                        .pointerInput(Unit) {
-                            detectHorizontalDragGestures { _, _ -> }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    IconButton(
-                        onClick = { viewModel.togglePlay() }
-                    ) {
-                        Text(
-                            text = if (isPlaying) "⏸" else "▶️",
-                            fontSize = 32.sp
-                        )
-                    }
+                TextButton(onClick = { viewModel.previousPose() }) {
+                    Text("← Previous", color = SoftLavender)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Pose navigation dots
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                FloatingActionButton(
+                    onClick = { viewModel.togglePlay() },
+                    containerColor = BlushPink
                 ) {
-                    viewModel.poses.forEachIndexed { index, _ ->
-                        Box(
-                            modifier = Modifier
-                                .size(if (index == currentPoseIndex) 12.dp else 8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (index == currentPoseIndex) Primary
-                                    else Color.White.copy(alpha = 0.3f)
-                                )
-                        )
-                    }
+                    Icon(
+                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        tint = Color.White
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Navigation arrows
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(32.dp)
-                ) {
-                    TextButton(
-                        onClick = { viewModel.previousPose() },
-                        enabled = currentPoseIndex > 0
-                    ) {
-                        Text("← Previous", color = Color.White.copy(alpha = if (currentPoseIndex > 0) 1f else 0.3f))
-                    }
-                    TextButton(
-                        onClick = { viewModel.nextPose() },
-                        enabled = currentPoseIndex < viewModel.poses.size - 1
-                    ) {
-                        Text("Next →", color = Color.White.copy(alpha = if (currentPoseIndex < viewModel.poses.size - 1) 1f else 0.3f))
-                    }
+                TextButton(onClick = { viewModel.nextPose() }) {
+                    Text("Next →", color = SoftLavender)
                 }
             }
         }
@@ -210,82 +165,51 @@ fun YogaFlowScreen(
 }
 
 @Composable
-private fun BreathingCircle(
-    phase: BreathingPhase,
-    isPlaying: Boolean
-) {
-    val targetRadius = when (phase) {
-        BreathingPhase.INHALE -> 170f
-        BreathingPhase.HOLD -> 170f
-        BreathingPhase.EXHALE -> 120f
-        BreathingPhase.REST -> 120f
-    }
-
-    val animatedRadius = animateFloatAsState(
-        targetValue = if (isPlaying) targetRadius else 120f,
-        animationSpec = tween(
-            durationMillis = when (phase) {
-                BreathingPhase.INHALE -> 4000
-                BreathingPhase.HOLD -> 2000
-                BreathingPhase.EXHALE -> 6000
-                BreathingPhase.REST -> 2000
-            },
-            easing = FastOutSlowInEasing
-        ),
-        label = "breathingRadius"
+private fun BreathingCircle(radius: Float, phase: BreathingPhase) {
+    val animatedColor by animateColorAsState(
+        targetValue = when (phase) {
+            BreathingPhase.INHALE -> BabyBlue
+            BreathingPhase.HOLD -> SoftLavender
+            BreathingPhase.EXHALE -> BlushPink
+            else -> SoftLavender
+        },
+        animationSpec = tween(1000),
+        label = "breathColor"
     )
 
-    val circleColor = when (phase) {
-        BreathingPhase.INHALE -> BabyBlue
-        BreathingPhase.HOLD -> SoftLavender
-        BreathingPhase.EXHALE -> BlushPink
-        BreathingPhase.REST -> Color.Gray.copy(alpha = 0.5f)
+    Canvas(modifier = Modifier.size(300.dp)) {
+        // Glow effect
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(animatedColor.copy(alpha = 0.3f), Color.Transparent)
+            ),
+            radius = radius * 1.5f
+        )
+
+        // Main circle
+        drawCircle(
+            color = animatedColor.copy(alpha = 0.8f),
+            radius = radius,
+            center = Offset(size.width / 2, size.height / 2)
+        )
     }
 
-    val phaseText = when (phase) {
-        BreathingPhase.INHALE -> "Breathe In..."
-        BreathingPhase.HOLD -> "Hold..."
-        BreathingPhase.EXHALE -> "Breathe Out..."
-        BreathingPhase.REST -> "Rest"
-    }
-
-    Box(
-        modifier = Modifier.size(280.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // Glow effect
-            drawCircle(
-                color = circleColor.copy(alpha = 0.3f),
-                radius = animatedRadius.value.dp.toPx() + 20.dp.toPx()
-            )
-
-            // Main circle
-            drawCircle(
-                brush = androidx.compose.ui.graphics.Brush.radialGradient(
-                    colors = listOf(
-                        circleColor.copy(alpha = 0.8f),
-                        circleColor.copy(alpha = 0.4f)
-                    )
-                ),
-                radius = animatedRadius.value.dp.toPx()
-            )
-        }
-
-        AnimatedContent(
-            targetState = phaseText,
-            transitionSpec = {
-                fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+    // Breathing text
+    AnimatedContent(
+        targetState = phase,
+        label = "breathText"
+    ) { phaseText ->
+        Text(
+            text = when (phaseText) {
+                BreathingPhase.INHALE -> "Breathe In..."
+                BreathingPhase.HOLD -> "Hold..."
+                BreathingPhase.EXHALE -> "Breathe Out..."
+                else -> "Press Play"
             },
-            label = "breathingText"
-        ) { text ->
-            Text(
-                text = text,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White
-            )
-        }
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

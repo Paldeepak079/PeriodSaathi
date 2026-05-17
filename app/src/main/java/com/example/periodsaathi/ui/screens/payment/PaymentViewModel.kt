@@ -1,16 +1,26 @@
 package com.example.periodsaathi.ui.screens.payment
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class Product(val id: String, val name: String, val price: String, val features: List<String>, val isBestValue: Boolean = false)
 
+sealed class PaymentState {
+    object Idle : PaymentState()
+    object Loading : PaymentState()
+    object Success : PaymentState()
+}
+
 @HiltViewModel
 class PaymentViewModel @Inject constructor() : ViewModel() {
+
     private val _paymentState = MutableStateFlow<PaymentState>(PaymentState.Idle)
     val paymentState: StateFlow<PaymentState> = _paymentState.asStateFlow()
 
@@ -22,14 +32,16 @@ class PaymentViewModel @Inject constructor() : ViewModel() {
 
     fun initiatePurchase(productId: String) {
         _paymentState.value = PaymentState.Loading
-        // Simulate purchase
-        kotlinx.coroutines.GlobalScope.launch {
-            kotlinx.coroutines.delay(2000)
+        viewModelScope.launch {
+            delay(2000)
             _paymentState.value = PaymentState.Success
         }
     }
+
+    fun restorePurchases() {
+    }
+
+    fun resetState() {
+        _paymentState.value = PaymentState.Idle
+    }
 }
-
-sealed class PaymentState { data object Idle, data object Loading, data object Success }
-
-private object kotlinx { val GlobalScope = kotlinx.coroutines.GlobalScope; fun delay(timeMs: Long) = kotlinx.coroutines.delay(timeMs) }

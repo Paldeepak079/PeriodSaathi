@@ -2,88 +2,94 @@ package com.example.periodsaathi.ui.screens.wellness
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.periodsaathi.data.model.CycleSettings
-import com.example.periodsaathi.data.repository.CycleRepository
+import com.example.periodsaathi.data.dao.CycleDao
+import com.example.periodsaathi.data.model.CycleEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
+
+data class HabitItem(val id: String, val name: String, val emoji: String, val isCompleted: Boolean = false)
 
 data class WellnessUiState(
     val waterGlasses: Int = 0,
     val waterGoal: Int = 8,
-    val habits: List<Habit> = emptyList(),
+    val habits: List<HabitItem> = listOf(
+        HabitItem("1", "Drink warm water", "☕"),
+        HabitItem("2", "Take vitamins", "💊"),
+        HabitItem("3", "Stretch 10 min", "🧘"),
+        HabitItem("4", "No caffeine", "🚫")
+    ),
     val sleepHours: Float = 7f,
-    val exerciseMinutes: Int = 30,
+    val exerciseMinutes: Int = 0,
     val streakCount: Int = 0,
     val totalPoints: Int = 0,
     val showConfetti: Boolean = false
 )
 
-data class Habit(
-    val id: String,
-    val name: String,
-    val emoji: String,
-    val isCompleted: Boolean
-)
-
 @HiltViewModel
 class WellnessViewModel @Inject constructor(
-    private val repository: CycleRepository
+    private val cycleDao: CycleDao
 ) : ViewModel() {
 
     private val _wellnessState = MutableStateFlow(WellnessUiState())
     val wellnessState: StateFlow<WellnessUiState> = _wellnessState.asStateFlow()
 
     init {
-        loadData()
-    }
-
-    private fun loadData() {
         viewModelScope.launch {
-            repository.getSettings().collect { settings ->
-                val defaultHabits = listOf(
-                    Habit("1", "Drink 8 glasses", "💧", false),
-                    Habit("2", "Log symptoms", "📝", false),
-                    Habit("3", "Take vitamins", "💊", false),
-                    Habit("4", "Light exercise", "🚶", false),
-                    Habit("5", "Meditate", "🧘", false)
-                )
-                _wellnessState.value = _wellnessState.value.copy(
-                    habits = defaultHabits,
-                    totalPoints = settings?.totalPoints ?: 0,
-                    streakCount = settings?.streakCount ?: 0
-                )
+            val todayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            cycleDao.getWaterTotalForDate(todayStart).collect { total ->
+                _wellnessState.value = _wellnessState.value.copy(waterGlasses = total.coerceAtMost(_wellnessState.value.waterGoal))
             }
         }
     }
 
-    fun addWater(glasses: Int) {
-        val newGlasses = (_wellnessState.value.waterGlasses + glasses).coerceAtMost(_wellnessState.value.waterGoal)
-        val showConfetti = newGlasses >= _wellnessState.value.waterGoal && _wellnessState.value.waterGlasses < _wellnessState.value.waterGoal
-
+    fun addWater(amount: Int) {
+        val oldCount = _wellnessState.value.waterGlasses
+        val newCount = (oldCount + amount).coerceIn(0, _wellnessState.value.waterGoal)
+        val goalReached = newCount >= _wellnessState.value.waterGoal && oldCount < _wellnessState.value.waterGoal
         _wellnessState.value = _wellnessState.value.copy(
-            waterGlasses = newGlasses,
-            showConfetti = showConfetti,
-            totalPoints = _wellnessState.value.totalPoints + glasses
+            waterGlasses = newCount,
+            totalPoints = if (goalReached) _wellnessState.value.totalPoints + 10 else _wellnessState.value.totalPoints,
+            showConfetti = goalReached
         )
+        viewModelScope.launch {
+            val todayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val existing = cycleDao.getEntryByDate(todayStart).first()
+            val entry = (existing ?: CycleEntry(
+                date = todayStart,
+                cyclePhase = "MENSTRUAL"
+            )).copy(waterGlasses = newCount)
+            cycleDao.insertEntry(entry)
+        }
     }
 
     fun toggleHabit(habitId: String) {
-        val habits = _wellnessState.value.habits.map { habit ->
+        val updatedHabits = _wellnessState.value.habits.map { habit ->
             if (habit.id == habitId) {
-                habit.copy(isCompleted = !habit.isCompleted)
+                val newCompleted = !habit.isCompleted
+                if (newCompleted) {
+                    _wellnessState.value = _wellnessState.value.copy(
+                        totalPoints = _wellnessState.value.totalPoints + 5
+                    )
+                }
+                habit.copy(isCompleted = newCompleted)
             } else habit
         }
-        val completedCount = habits.count { it.isCompleted }
-        val pointsEarned = if (completedCount == habits.size) 10 else 1
+        _wellnessState.value = _wellnessState.value.copy(habits = updatedHabits)
+    }
 
-        _wellnessState.value = _wellnessState.value.copy(
-            habits = habits,
-            totalPoints = _wellnessState.value.totalPoints + pointsEarned
-        )
+    fun setSleepHours(hours: Float) {
+        _wellnessState.value = _wellnessState.value.copy(sleepHours = hours)
+    }
+
+    fun setExerciseMinutes(minutes: Int) {
+        _wellnessState.value = _wellnessState.value.copy(exerciseMinutes = minutes)
     }
 
     fun dismissConfetti() {

@@ -137,4 +137,117 @@
     <string name="action_close">बंद करें</string>
     <string name="action_back">वापस</string>
     <string name="action_done">हो गया</string>
+
+    <!-- Lock Screen extras -->
+    <string name="lock_biometric_setup">बायोमेट्रिक्स सेट करें</string>
+
+    <!-- Home Screen extras -->
+    <string name="home_wellness_score">वेलनेस स्कोर</string>
+    <string name="home_speech_hydrate">हाइड्रेट हो जाएँ, %s! 💧</string>
+    <string name="home_notifications">सूचनाएँ</string>
+
+    <!-- Yoga Flow -->
+    <string name="yoga_title">क्रैम्प रिलीफ योगा</string>
+    <string name="yoga_child_pose">बाल आसन</string>
+    <string name="yoga_cat_cow">बिल्ली-गाय स्ट्रेच</string>
+    <string name="yoga_butterfly">तितली आसन</string>
+    <string name="yoga_cobra">सर्प आसन</string>
+    <string name="yoga_start">शुरू करें</string>
+    <string name="yoga_next">अगला आसन</string>
+    <string name="yoga_complete">आसन पूरा! 🌸</string>
+
+    <!-- Profile extras -->
+    <string name="profile_about">परिचय</string>
+
+    <!-- Settings extras -->
+    <string name="settings_notifications_desc">पीरियड रिमाइंडर और वेलनेस टिप्स प्राप्त करें</string>
+    <string name="settings_stealth_disable">स्टील्थ मोड बंद करें</string>
+    <string name="settings_stealth_enable">स्टील्थ मोड चालू करें</string>
+    <string name="settings_reminders">रिमाइंडर</string>
+    <string name="settings_theme">थीम</string>
+    <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="settings_theme_light">लाइट</string>
+    <string name="settings_theme_dark">डार्क</string>
+    <string name="settings_export">रिपोर्ट एक्सपोर्ट करें</string>
+    <string name="settings_privacy">गोपनीयता नीति</string>
+    <string name="settings_about">पीरियड साथी के बारे में</string>
+
+    <!-- Stealth Mode PIN -->
+    <string name="stealth_create_pin">4-अंकों का PIN बनाएँ</string>
+    <string name="stealth_confirm_pin">अपने PIN की पुष्टि करें</string>
+    <string name="stealth_pin_mismatch">PIN मेल नहीं खाते</string>
+    <string name="stealth_pin_set">PIN सफलतापूर्वक सेट! 🌸</string>
+
+    <!-- Time Capsule -->
+    <string name="capsule_title">टाइम कैप्सूल</string>
+    <string name="capsule_desc">इस साइकल के बारे में अपने भविष्य के आपको एक पत्र लिखें।</string>
+    <string name="capsule_write">एंट्री लिखें</string>
+    <string name="capsule_save">कैप्सूल में सहेजें</string>
+    <string name="capsule_saved">सहेजा गया! 🌸</string>
+
+    <!-- Journal moods -->
+    <string name="journal_mood_great">बहुत अच्छा</string>
+    <string name="journal_mood_good">अच्छा</string>
+    <string name="journal_mood_okay">ठीक</string>
+    <string name="journal_mood_bad">खराब</string>
+    <string name="journal_mood_terrible">बहुत खराब</string>
+
+    <!-- Insights -->
+    <string name="insights_title">इनसाइट्स</string>
+    <string name="insights_avg_cycle">औसत साइकल लंबाई</string>
+    <string name="insights_avg_period">औसत पीरियड लंबाई</string>
+    <string name="insights_predictions">अनुमान</string>
+    <string name="insights_patterns">पैटर्न</string>
+    <string name="insights_days"><![CDATA[%d दिन]]></string>
+    <string name="insights_no_data">अभी पर्याप्त डेटा नहीं है। ट्रैक करते रहें!</string>
+
+    <!-- Wardrobe -->
+    <string name="wardrobe_title">साथी की अलमारी</string>
+    <string name="wardrobe_desc">अपने साथी मस्कट को तैयार करें!</string>
+    <string name="wardrobe_unlock">लगातार ट्रैक करके आइटम अनलॉक करें</string>
+
+    <!-- Challenges -->
+    <string name="challenges_title">चैलेंजेज</string>
+    <string name="challenges_daily">दैनिक स्ट्रीक</string>
+    <string name="challenges_logging">लॉगिंग मास्टर</string>
+    <string name="challenges_wellness">वेलनेस वॉरियर</string>
+    <string name="challenges_progress">%1$d/%2$d</string>
+
+    <!-- Mood Map -->
+    <string name="moodmap_title">मूड मैप</string>
+    <string name="moodmap_desc">अपने साइकल के दौरान मूड में बदलाव को ट्रैक करें।</string>
+
+    <!-- Voice Log -->
+    <string name="voicelog_title">वॉइस लॉग</string>
+    <string name="voicelog_start">रिकॉर्डिंग शुरू करें</string>
+    <string name="voicelog_stop">रिकॉर्डिंग बंद करें</string>
+    <string name="voicelog_listening">सुन रहा है...</string>
+    <string name="voicelog_transcribing">लिप्यंतरण हो रहा है...</string>
+    <string name="voicelog_saved">वॉइस लॉग सहेजा गया!</string>
+
+    <!-- Report Export -->
+    <string name="export_title">रिपोर्ट एक्सपोर्ट करें</string>
+    <string name="export_desc">अपने साइकल डेटा की PDF रिपोर्ट जनरेट करें।</string>
+    <string name="export_generate">रिपोर्ट जनरेट करें</string>
+    <string name="export_share">रिपोर्ट शेयर करें</string>
+    <string name="export_generating">रिपोर्ट जनरेट हो रही है...</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">पीरियड रिमाइंडर</string>
+    <string name="notification_channel_desc">पीरियड रिमाइंडर और अनुमानों के लिए सूचनाएँ</string>
+    <string name="notification_wellness_title">वेलनेस टिप</string>
+    <string name="notification_wellness_body">खुद की देखभाल करें! अपने वेलनेस टिप्स देखें। 🌸</string>
+    <string name="notification_log_title">लॉग रिमाइंडर</string>
+    <string name="notification_log_body">आज अपने लक्षण लॉग करना न भूलें!</string>
+
+    <!-- Errors extras -->
+    <string name="error_biometric_unavailable">बायोमेट्रिक प्रमाणीकरण इस डिवाइस पर उपलब्ध नहीं है।</string>
+    <string name="error_biometric_not_enrolled">कृपया डिवाइस सेटिंग्स में फिंगरप्रिंट या फेस अनलॉक सेट करें।</string>
+    <string name="error_data_load">डेटा लोड नहीं हो सका। कृपया ऐप पुनः शुरू करें।</string>
+    <string name="error_save_failed">सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।</string>
+
+    <!-- Permissions -->
+    <string name="permission_body_animation">पीरियड साथी को Wear OS डिवाइसों से स्वास्थ्य डेटा ट्रैक करने के लिए बॉडी सेंसर अनुमति चाहिए।</string>
+    <string name="permission_sms_title">SMS भेजें</string>
+    <string name="permission_sms_message">पीरियड साथी को SMS अनुमति तभी चाहिए जब आप अपने पार्टनर के साथ साइकल जानकारी साझा करना चाहते हैं। यह वैकल्पिक और उपयोगकर्ता द्वारा शुरू किया गया है।</string>
 </resources>

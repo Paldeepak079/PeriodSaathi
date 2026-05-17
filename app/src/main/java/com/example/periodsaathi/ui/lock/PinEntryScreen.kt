@@ -19,28 +19,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.periodsaathi.security.StealthModeManager
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val PIN_LENGTH = 4
 
@@ -52,8 +52,8 @@ fun PinEntryScreen(
 ) {
     var pin by remember { mutableStateOf("") }
     var wrongAttempt by remember { mutableStateOf(false) }
-
     val shakeOffset = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -69,7 +69,7 @@ fun PinEntryScreen(
             modifier = Modifier.align(Alignment.Start)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
                 tint = Color.White.copy(alpha = 0.7f)
             )
@@ -102,15 +102,11 @@ fun PinEntryScreen(
             repeat(PIN_LENGTH) { index ->
                 val isFilled = index < pin.length
                 val dotAlpha by animateFloatAsState(
-                    targetValue = when {
-                        isFilled -> 1f
-                        else -> 0.3f
-                    },
+                    targetValue = if (isFilled) 1f else 0.3f,
                     animationSpec = spring(),
                     label = "dotAlpha_$index"
                 )
-                val dotColor = if (wrongAttempt && index < pin.length) Color(0xFFE53935)
-                    else Color.White
+                val dotColor = if (wrongAttempt && index < pin.length) Color(0xFFE53935) else Color.White
 
                 Box(
                     modifier = Modifier
@@ -143,7 +139,7 @@ fun PinEntryScreen(
                             pinVerified()
                         } else {
                             wrongAttempt = true
-                            LaunchedEffect(Unit) {
+                            scope.launch {
                                 shakeOffset.animateTo(10f, tween(50))
                                 shakeOffset.animateTo(-10f, tween(50))
                                 shakeOffset.animateTo(8f, tween(50))
@@ -177,7 +173,7 @@ private fun NumPad(
         listOf("1", "2", "3"),
         listOf("4", "5", "6"),
         listOf("7", "8", "9"),
-        listOf("", "0", "⌫")
+        listOf("", "0", "\u232B")
     )
 
     Column(
@@ -192,7 +188,7 @@ private fun NumPad(
                 row.forEach { label ->
                     when (label) {
                         "" -> Box(modifier = Modifier.size(64.dp))
-                        "⌫" -> NumPadButton(
+                        "\u232B" -> NumPadButton(
                             label = label,
                             onClick = onDelete,
                             isDelete = true
@@ -215,6 +211,7 @@ private fun NumPadButton(
     isDelete: Boolean = false
 ) {
     val scale = remember { Animatable(1f) }
+    val btnScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -232,7 +229,7 @@ private fun NumPadButton(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {
-                    LaunchedEffect(Unit) {
+                    btnScope.launch {
                         scale.animateTo(0.9f, tween(80))
                         scale.animateTo(1f, spring())
                     }
@@ -242,7 +239,7 @@ private fun NumPadButton(
         ) {
             if (isDelete) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Delete",
                     tint = Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(28.dp)

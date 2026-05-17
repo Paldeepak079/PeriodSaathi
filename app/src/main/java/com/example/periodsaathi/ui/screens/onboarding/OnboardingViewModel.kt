@@ -13,24 +13,24 @@ class OnboardingViewModel @Inject constructor() : ViewModel() {
     private val _currentPage = MutableStateFlow(0)
     val currentPage: StateFlow<Int> = _currentPage.asStateFlow()
 
-    private val _showConfetti = MutableStateFlow(false)
-    val showConfetti: StateFlow<Boolean> = _showConfetti.asStateFlow()
+    private val _isComplete = MutableStateFlow(false)
+    val isComplete: StateFlow<Boolean> = _isComplete.asStateFlow()
 
     fun nextPage() {
         if (_currentPage.value < 2) {
-            _currentPage.value++
+            _currentPage.value += 1
         }
     }
 
     fun skip() {
-        _currentPage.value = 2
+        _isComplete.value = true
     }
 
     fun completeOnboarding() {
-        _showConfetti.value = true
+        _isComplete.value = true
     }
 
-    fun onConfettiComplete() {
-        _showConfetti.value = false
+    fun onPageChanged(page: Int) {
+        _currentPage.value = page
     }
 }

@@ -13,11 +13,7 @@ import javax.inject.Inject
 
 sealed class SplashState {
     data object Loading : SplashState()
-    data class NavigateTo(val destination: SplashDestination) : SplashState()
-}
-
-enum class SplashDestination {
-    ONBOARDING, LOGIN, HOME, LOCK_SCREEN
+    data class NavigateTo(val destination: String) : SplashState()
 }
 
 @HiltViewModel
@@ -32,16 +28,24 @@ class SplashViewModel @Inject constructor(
         determineStartDestination()
     }
 
-    private fun determineStartDestination() {
+    fun determineStartDestination() {
         viewModelScope.launch {
-            delay(1500) // Animation duration
-            settingsDao.getSettings().collect { settings ->
+            delay(1500) // Animation delay
+            val settings = settingsDao.getSettings().asStateFlow()
+            settings.collect { settingsData ->
                 val destination = when {
-                    settings == null -> SplashDestination.ONBOARDING
-                    else -> SplashDestination.HOME
+                    settingsData == null -> "Onboarding"
+                    settingsData.stealthModeEnabled -> "LockScreen"
+                    else -> "Home"
                 }
                 _splashState.value = SplashState.NavigateTo(destination)
             }
         }
     }
+}
+
+private suspend fun <T> kotlinx.coroutines.flow.Flow<T>.asStateFlow(): kotlinx.coroutines.flow.StateFlow<T?> {
+    var result: T? = null
+    collect { result = it }
+    return kotlinx.coroutines.flow.MutableStateFlow(result)
 }

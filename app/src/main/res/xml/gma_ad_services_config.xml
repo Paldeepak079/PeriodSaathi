@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ad-services-config>
+    <ad-tech source="web">
+        <url>
+            <pattern value="https://googleads.g.doubleclick.net" />
+        </url>
+    </ad-tech>
+</ad-services-config>

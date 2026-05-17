@@ -1,6 +1,5 @@
 package com.example.periodsaathi.ui.lock
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -10,8 +9,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,20 +41,20 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
-import com.example.periodsaathi.security.BiometricAuthManager
+import com.example.periodsaathi.security.AppBiometricManager
+import com.example.periodsaathi.security.BiometricStatus
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 private data class Star(
@@ -76,8 +73,8 @@ fun LockScreen(
     val context = LocalContext.current
     val activity = context as? FragmentActivity
 
-    val screenHeightDp = 800f
     val density = LocalDensity.current
+    val screenHeightDp = 800f
     val screenHeightPx = with(density) { screenHeightDp.dp.toPx() }
 
     val stars = remember {
@@ -124,9 +121,8 @@ fun LockScreen(
 
     val shakeOffset = remember { Animatable(0f) }
     val brightenAlpha = remember { Animatable(0f) }
-    var showMascotBubble by remember { mutableStateOf(false) }
 
-    val biometricManager = remember { BiometricAuthManager(context) }
+    val biometricManager = remember { AppBiometricManager(context) }
 
     Box(
         modifier = Modifier
@@ -162,7 +158,7 @@ fun LockScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Saathi is resting 😴",
+                text = "Saathi is resting \uD83D\uDE34",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFFB8A9D4),
@@ -208,7 +204,7 @@ fun LockScreen(
         }
 
         when (unlockState) {
-            is UnlockState.Success -> {
+            UnlockState.Success -> {
                 var wakePhase by remember { mutableStateOf(WakePhase.Brightening) }
 
                 LaunchedEffect(Unit) {
@@ -245,7 +241,7 @@ fun LockScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "🌸",
+                                        text = "\uD83C\uDF38",
                                         fontSize = 48.sp,
                                         modifier = Modifier.scale(1.2f)
                                     )
@@ -258,7 +254,7 @@ fun LockScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "Good Morning, Priya! 🌸",
+                                    text = "Good Morning! \uD83C\uDF38",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
@@ -269,7 +265,7 @@ fun LockScreen(
                     }
                 }
             }
-            is UnlockState.Failed -> {
+            UnlockState.Failed -> {
                 LaunchedEffect(Unit) {
                     repeat(3) {
                         shakeOffset.animateTo(8f, tween(60))
@@ -279,7 +275,7 @@ fun LockScreen(
                     unlockState = UnlockState.Idle
                 }
             }
-            else -> {}
+            UnlockState.Idle -> {}
         }
     }
 }
@@ -343,13 +339,20 @@ private fun MascotSleepingSection(currentScale: Float) {
     }
 }
 
+private data class ZzzData(
+    val text: String,
+    val fontSize: TextUnit,
+    val xOffset: Float,
+    val yOffset: Float
+)
+
 @Composable
 private fun ZzzBubbles() {
     val zzzData = remember {
         listOf(
-            ZzzData("Z", 24.sp, Offset(0f, 0f)),
-            ZzzData("z", 18.sp, Offset(-16f, 0f)),
-            ZzzData("ᶻ", 14.sp, Offset(16f, 0f))
+            ZzzData("Z", 24.sp, 0f, 0f),
+            ZzzData("z", 18.sp, -16f, 0f),
+            ZzzData("\u02FB", 14.sp, 16f, 0f)
         )
     }
 
@@ -387,33 +390,23 @@ private fun ZzzBubbles() {
                     ),
                     label = "zzzScale_$index"
                 )
-                val xOffset = data.xOffset + yOffset * 0.3f
 
                 Text(
                     text = data.text,
                     fontSize = data.fontSize,
                     color = Color(0xFFB8A9D4).copy(alpha = zAlpha),
                     modifier = Modifier
-                        .offset { IntOffset(xOffset.roundToInt(), yOffset.roundToInt()) }
-                        .scale(zScale)
+                        .offset { IntOffset((data.xOffset + yOffset * 0.3f).roundToInt(), yOffset.roundToInt()) }
+                        .graphicsLayer { scaleX = zScale; scaleY = zScale }
                 )
             }
         }
     }
 }
 
-private data class ZzzData(
-    val text: String,
-    val fontSize: androidx.compose.ui.unit.TextUnit,
-    val offset: Offset
-) {
-    val xOffset: Float = offset.x
-    val yOffset: Float = offset.y
-}
-
 @Composable
 private fun UnlockButton(
-    biometricStatus: com.example.periodsaathi.security.BiometricStatus,
+    biometricStatus: BiometricStatus,
     onClick: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "unlockPulse")
@@ -441,15 +434,15 @@ private fun UnlockButton(
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = if (biometricStatus == com.example.periodsaathi.security.BiometricStatus.Available) "🔓" else "🔑",
+                text = if (biometricStatus == BiometricStatus.Available) "\uD83D\uDD13" else "\uD83D\uDD11",
                 fontSize = 20.sp
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = when (biometricStatus) {
-                    com.example.periodsaathi.security.BiometricStatus.Available -> "Unlock with Biometrics"
-                    com.example.periodsaathi.security.BiometricStatus.NotEnrolled -> "Set up biometrics"
-                    com.example.periodsaathi.security.BiometricStatus.NotAvailable -> "Use PIN to unlock"
+                    BiometricStatus.Available -> "Unlock with Biometrics"
+                    BiometricStatus.NotEnrolled -> "Set up biometrics"
+                    BiometricStatus.NotAvailable -> "Use PIN to unlock"
                 },
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 16.sp,

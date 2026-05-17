@@ -119,7 +119,7 @@ class LogCycleEntryUseCase @Inject constructor(
         return when {
             cycleDay <= periodLength -> CyclePhase.MENSTRUAL
             cycleDay <= cycleLength / 2 - 1 -> CyclePhase.FOLLICULAR
-            cycleDay <= cycleLength / 2 + 1 -> CyclePhase.OVULATION
+            cycleDay <= cycleLength / 2 + 1 -> CyclePhase.OVULATORY
             else -> CyclePhase.LUTEAL
         }
     }

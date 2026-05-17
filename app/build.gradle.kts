@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.example.periodsaathi"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.periodsaathi"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
@@ -143,6 +143,7 @@ dependencies {
     // Razorpay
     implementation(libs.razorpay.checkout) {
         exclude(group = "com.razorpay", module = "core")
+        exclude(group = "com.razorpay", module = "standard-core")
     }
 
     // AdMob

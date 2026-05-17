@@ -2,8 +2,8 @@ package com.example.periodsaathi.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.periodsaathi.data.datastore.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,44 +18,43 @@ sealed class LoginState {
 }
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
-) : ViewModel() {
+class LoginViewModel @Inject constructor() : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
+    private val _showEmailForm = MutableStateFlow(false)
+    val showEmailForm: StateFlow<Boolean> = _showEmailForm.asStateFlow()
+
     fun signInWithGoogle() {
+        _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-            try {
-                // Simulate Google Sign-In
-                kotlinx.coroutines.delay(1500)
-                userPreferences.setLoggedIn("User")
-                _loginState.value = LoginState.Success
-            } catch (e: Exception) {
-                _loginState.value = LoginState.Error(e.message ?: "Sign in failed")
-            }
+            delay(1500)
+            _loginState.value = LoginState.Success
         }
     }
 
     fun signInWithEmail(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            _loginState.value = LoginState.Error("Please fill in all fields")
+            return
+        }
+        _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-            try {
-                kotlinx.coroutines.delay(1000)
-                userPreferences.setLoggedIn(email.substringBefore("@"))
-                _loginState.value = LoginState.Success
-            } catch (e: Exception) {
-                _loginState.value = LoginState.Error(e.message ?: "Login failed")
-            }
+            delay(1500)
+            _loginState.value = LoginState.Success
         }
     }
 
     fun continueAsGuest() {
-        viewModelScope.launch {
-            userPreferences.setGuestMode()
-            _loginState.value = LoginState.Success
-        }
+        _loginState.value = LoginState.Success
+    }
+
+    fun toggleEmailForm() {
+        _showEmailForm.value = !_showEmailForm.value
+    }
+
+    fun resetState() {
+        _loginState.value = LoginState.Idle
     }
 }

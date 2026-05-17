@@ -42,7 +42,7 @@ abstract class PeriodSaathiDatabase : RoomDatabase() {
                     PeriodSaathiDatabase::class.java,
                     "period_saathi_db"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                     .also { INSTANCE = it }
             }

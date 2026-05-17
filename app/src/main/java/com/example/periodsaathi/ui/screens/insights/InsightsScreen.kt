@@ -1,5 +1,6 @@
 package com.example.periodsaathi.ui.screens.insights
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,72 +11,116 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.periodsaathi.ui.components.*
+import com.example.periodsaathi.ui.components.GlassCard
 import com.example.periodsaathi.ui.theme.*
 
 @Composable
-fun InsightsScreen(viewModel: InsightsViewModel = hiltViewModel()) {
-    val insights by viewModel.insights.collectAsStateWithLifecycle()
-    val cyclesLogged by viewModel.cyclesLogged.collectAsStateWithLifecycle()
+fun InsightsScreen(
+    viewModel: InsightsViewModel = hiltViewModel()
+) {
+    val cyclesLogged by viewModel.cyclesLogged.collectAsState()
+    val minimumCyclesReached by viewModel.minimumCyclesReached.collectAsState()
+    val insights by viewModel.insights.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize().background(WarmCream)) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                Text(
-                    text = "Pattern Insights 🧠",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Primary
-                )
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .padding(16.dp)
+    ) {
+        Text(text = "Insights", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
-            item {
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "📊", fontSize = 32.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(text = "$cyclesLogged of 3 cycles", fontWeight = FontWeight.Bold, color = OnSurface)
-                            Text(text = "Keep logging to unlock more insights!", fontSize = 12.sp, color = OnSurfaceVariant)
-                        }
-                    }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (cyclesLogged < 3) {
+            // Empty state
+            GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "🔍", fontSize = 64.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Still gathering data...", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Track $cyclesLogged of 3 cycles to see insights", color = SoftLavender)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LinearProgressIndicator(
+                        progress = { cyclesLogged / 3f },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = BlushPink,
+                        trackColor = SoftLavender.copy(alpha = 0.3f)
+                    )
                 }
             }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                item {
+                    Text(text = "Your Patterns", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-            items(insights) { insight ->
-                InsightCard(insight = insight)
+                items(insights) { insight ->
+                    InsightCard(insight = insight)
+                }
+
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
     }
 }
 
 @Composable
-private fun InsightCard(insight: InsightItem) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = insight.title, fontWeight = FontWeight.Bold, color = OnSurface)
-                Text(text = "${(insight.confidence * 100).toInt()}%", fontWeight = FontWeight.Bold, color = Primary)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = insight.description, color = OnSurfaceVariant)
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { insight.confidence },
-                modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                color = Primary,
-                trackColor = Color.Gray.copy(alpha = 0.2f)
+private fun InsightCard(insight: PatternInsight) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = insight.confidence,
+        animationSpec = tween(1000),
+        label = "confidence"
+    )
+
+    GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color(insight.color))
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = insight.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = insight.description, color = SoftLavender, fontSize = 14.sp)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Confidence: ", color = SoftLavender, fontSize = 12.sp)
+                    Text(text = "${(animatedProgress * 100).toInt()}%", color = Color(insight.color), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                LinearProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(insight.color),
+                    trackColor = SoftLavender.copy(alpha = 0.2f)
+                )
+            }
         }
     }
 }

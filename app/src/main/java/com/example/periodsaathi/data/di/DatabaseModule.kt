@@ -6,8 +6,7 @@ import com.example.periodsaathi.data.dao.JournalDao
 import com.example.periodsaathi.data.dao.ReminderDao
 import com.example.periodsaathi.data.dao.SettingsDao
 import com.example.periodsaathi.data.database.PeriodSaathiDatabase
-import com.example.periodsaathi.data.repository.CycleRepository
-import com.example.periodsaathi.data.repository.CycleRepositoryImpl
+import com.example.periodsaathi.data.datastore.UserPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,10 +46,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideCycleRepository(
-        cycleDao: CycleDao,
-        settingsDao: SettingsDao
-    ): CycleRepository {
-        return CycleRepositoryImpl(cycleDao, settingsDao)
+    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
+        return UserPreferences(context)
     }
 }

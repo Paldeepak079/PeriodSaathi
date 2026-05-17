@@ -7,14 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
-data class RemedyCard(
-    val id: String,
-    val emoji: String,
-    val name: String,
-    val ingredients: String,
-    val steps: String,
-    val helpfulFor: String
-)
+data class Remedy(val id: String, val name: String, val emoji: String, val ingredients: String, val steps: String, val helpsWith: String)
 
 @HiltViewModel
 class RemediesViewModel @Inject constructor() : ViewModel() {
@@ -26,42 +19,14 @@ class RemediesViewModel @Inject constructor() : ViewModel() {
     val hotBagPosition: StateFlow<Float> = _hotBagPosition.asStateFlow()
 
     val remedies = listOf(
-        RemedyCard(
-            "1", "🫚", "Ginger Tea",
-            "Fresh ginger, honey, hot water",
-            "1. Boil water 2. Add sliced ginger 3. Simmer 5 min 4. Add honey",
-            "Cramps, Nausea"
-        ),
-        RemedyCard(
-            "2", "🥛", "Turmeric Milk",
-            "Milk, turmeric, black pepper, honey",
-            "1. Warm milk 2. Add 1/2 tsp turmeric 3. Pinch of black pepper 4. Sweeten",
-            "Inflammation, Mood"
-        ),
-        RemedyCard(
-            "3", "🌿", "Chamomile",
-            "Chamomile tea bags, hot water",
-            "1. Boil water 2. Steep chamomile 3. Drink warm",
-            "Anxiety, Cramps"
-        ),
-        RemedyCard(
-            "4", "🍫", "Dark Chocolate",
-            "70%+ dark chocolate",
-            "1. Enjoy 1-2 squares 2. Pair with nuts",
-            "Mood, Energy"
-        ),
-        RemedyCard(
-            "5", "🌿", "Fennel Seeds",
-            "Fennel seeds, hot water",
-            "1. Boil water 2. Add 1 tsp fennel 3. Steep 5 min 4. Strain and drink",
-            "Bloating, Digestion"
-        ),
-        RemedyCard(
-            "6", "🧘", "Heating Pad",
-            "Warm compress or heating pad",
-            "1. Apply to lower abdomen 2. Use for 15-20 min 3. Repeat as needed",
-            "Cramps, Back pain"
-        )
+        Remedy("1", "Ginger Tea", "🫚", "1 inch ginger, 1 cup water, honey", "Boil ginger 5 min, strain, add honey", "Bloatedness, cramps"),
+        Remedy("2", "Turmeric Milk", "🥛", "1 cup milk, 1 tsp turmeric, pinch black pepper", "Warm milk, add turmeric, stir well", "Inflammation, mood"),
+        Remedy("3", "Hot Compress", "🔥", "Hot water bottle or heating pad", "Apply to lower abdomen for 15-20 mins", "Cramps, back pain"),
+        Remedy("4", "Magnesium Foods", "🥬", "Leafy greens, nuts, seeds, dark chocolate", "Incorporate into daily meals", "Muscle tension, mood"),
+        Remedy("5", "Dark Chocolate", "🍫", "70%+ dark chocolate", "Enjoy in moderation", "Mood boost, cravings"),
+        Remedy("6", "Chamomile Tea", "🌼", "1 tsp chamomile, hot water, honey", "Steep 5 mins, strain, enjoy", "Anxiety, sleep"),
+        Remedy("7", "Fennel Seeds", "🌿", "1 tsp fennel, hot water", "Steep 10 mins, sip slowly", "Bloating, digestion"),
+        Remedy("8", "Heating Pad", "🔌", "Electric or microwavable heating pad", "Use on low-medium setting", "Cramps relief")
     )
 
     fun flipCard(id: String) {

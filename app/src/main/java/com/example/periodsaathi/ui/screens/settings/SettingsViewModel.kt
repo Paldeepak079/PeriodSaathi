@@ -1,28 +1,133 @@
 package com.example.periodsaathi.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.periodsaathi.data.dao.CycleDao
+import com.example.periodsaathi.data.dao.JournalDao
+import com.example.periodsaathi.data.dao.ReminderDao
+import com.example.periodsaathi.data.dao.SettingsDao
+import com.example.periodsaathi.data.model.CycleSettings
+import com.example.periodsaathi.security.StealthModeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor() : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val settingsDao: SettingsDao,
+    private val cycleDao: CycleDao,
+    private val journalDao: JournalDao,
+    private val reminderDao: ReminderDao
+) : ViewModel() {
+
+    private val _userName = MutableStateFlow("Friend")
+    val userName: StateFlow<String> = _userName.asStateFlow()
+
     private val _cycleLength = MutableStateFlow(28)
     val cycleLength: StateFlow<Int> = _cycleLength.asStateFlow()
+
     private val _periodLength = MutableStateFlow(5)
     val periodLength: StateFlow<Int> = _periodLength.asStateFlow()
-    private val _notifications = MutableStateFlow(true)
-    val notifications: StateFlow<Boolean> = _notifications.asStateFlow()
-    private val _haptics = MutableStateFlow(true)
-    val haptics: StateFlow<Boolean> = _haptics.asStateFlow()
-    private val _biometric = MutableStateFlow(false)
-    val biometric: StateFlow<Boolean> = _biometric.asStateFlow()
 
-    fun setCycleLength(length: Int) { _cycleLength.value = length }
-    fun setPeriodLength(length: Int) { _periodLength.value = length }
-    fun toggleNotifications() { _notifications.value = !_notifications.value }
-    fun toggleHaptics() { _haptics.value = !_haptics.value }
-    fun toggleBiometric() { _biometric.value = !_biometric.value }
+    private val _stealthMode = MutableStateFlow(false)
+    val stealthMode: StateFlow<Boolean> = _stealthMode.asStateFlow()
+
+    private val _biometricLock = MutableStateFlow(false)
+    val biometricLock: StateFlow<Boolean> = _biometricLock.asStateFlow()
+
+    private val _soundEnabled = MutableStateFlow(true)
+    val soundEnabled: StateFlow<Boolean> = _soundEnabled.asStateFlow()
+
+    private val _hapticEnabled = MutableStateFlow(true)
+    val hapticEnabled: StateFlow<Boolean> = _hapticEnabled.asStateFlow()
+
+    private val _premiumTier = MutableStateFlow("FREE")
+    val premiumTier: StateFlow<String> = _premiumTier.asStateFlow()
+
+    init {
+        loadSettings()
+    }
+
+    private fun loadSettings() {
+        viewModelScope.launch {
+            val settings = settingsDao.getSettings().first() ?: CycleSettings()
+            _userName.value = settings.userName
+            _cycleLength.value = settings.averageCycleLength
+            _periodLength.value = settings.averagePeriodLength
+            _stealthMode.value = settings.stealthModeEnabled
+            _soundEnabled.value = settings.soundEnabled
+            _hapticEnabled.value = settings.hapticEnabled
+        }
+    }
+
+    private fun saveSettings() {
+        viewModelScope.launch {
+            val current = settingsDao.getSettings().first() ?: CycleSettings()
+            settingsDao.upsertSettings(current.copy(
+                userName = _userName.value,
+                averageCycleLength = _cycleLength.value,
+                averagePeriodLength = _periodLength.value,
+                stealthModeEnabled = _stealthMode.value,
+                soundEnabled = _soundEnabled.value,
+                hapticEnabled = _hapticEnabled.value
+            ))
+        }
+    }
+
+    fun updateUserName(name: String) {
+        _userName.value = name
+        saveSettings()
+    }
+
+    fun updateCycleLength(length: Int) {
+        _cycleLength.value = length.coerceIn(21, 45)
+        saveSettings()
+    }
+
+    fun updatePeriodLength(length: Int) {
+        _periodLength.value = length.coerceIn(2, 10)
+        saveSettings()
+    }
+
+    fun toggleStealthMode() {
+        _stealthMode.value = !_stealthMode.value
+        saveSettings()
+    }
+
+    fun toggleBiometricLock() {
+        _biometricLock.value = !_biometricLock.value
+    }
+
+    fun toggleSound() {
+        _soundEnabled.value = !_soundEnabled.value
+        saveSettings()
+    }
+
+    fun toggleHaptic() {
+        _hapticEnabled.value = !_hapticEnabled.value
+        saveSettings()
+    }
+
+    fun deleteAllData() {
+        viewModelScope.launch {
+            cycleDao.deleteAll()
+            journalDao.deleteAll()
+            reminderDao.deleteAll()
+            settingsDao.deleteAll()
+            loadSettings()
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            cycleDao.deleteAll()
+            journalDao.deleteAll()
+            reminderDao.deleteAll()
+            settingsDao.deleteAll()
+        }
+    }
 }

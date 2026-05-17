@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -59,7 +60,7 @@ class CycleRepositoryImpl @Inject constructor(
             val today = LocalDate.now()
             val periodStarts = detectCycleStarts(periodEntries)
             val lastPeriodStart = periodStarts.lastOrNull()
-                ?: settings.lastPeriodStartDate?.let { epochToDate(it) }
+                ?: settings?.lastPeriodStartDate?.let { epochToDate(it) }
 
             if (lastPeriodStart == null) {
                 return@combine PeriodPrediction(
@@ -79,7 +80,7 @@ class CycleRepositoryImpl @Inject constructor(
             val avgCycleLength = if (intervals.isNotEmpty()) {
                 (intervals.sum().toDouble() / intervals.size).toLong()
             } else {
-                settings.averageCycleLength.toLong()
+                (settings?.averageCycleLength ?: 28).toLong()
             }
 
             val expectedDate = lastPeriodStart.plusDays(avgCycleLength)
@@ -104,12 +105,12 @@ class CycleRepositoryImpl @Inject constructor(
             val periodStarts = detectCycleStarts(periodEntries)
 
             val lastStart = periodStarts.lastOrNull()
-                ?: settings.lastPeriodStartDate?.let { epochToDate(it) }
+                ?: settings?.lastPeriodStartDate?.let { epochToDate(it) }
 
             if (lastStart == null) return@combine 1
 
             val daysSince = ChronoUnit.DAYS.between(lastStart, today).toInt() + 1
-            daysSince.coerceIn(1, settings.averageCycleLength)
+            daysSince.coerceIn(1, settings?.averageCycleLength ?: 28)
         }
     }
 
@@ -118,13 +119,13 @@ class CycleRepositoryImpl @Inject constructor(
             getCurrentCycleDay(),
             settingsDao.getSettings()
         ) { cycleDay, settings ->
-            val cycleLength = settings.averageCycleLength
-            val periodLength = settings.averagePeriodLength
+            val cycleLength = settings?.averageCycleLength ?: 28
+            val periodLength = settings?.averagePeriodLength ?: 5
 
             when {
                 cycleDay <= periodLength -> CyclePhase.MENSTRUAL
                 cycleDay <= (cycleLength / 2) - 2 -> CyclePhase.FOLLICULAR
-                cycleDay <= (cycleLength / 2) + 1 -> CyclePhase.OVULATION
+                cycleDay <= (cycleLength / 2) + 1 -> CyclePhase.OVULATORY
                 else -> CyclePhase.LUTEAL
             }
         }
@@ -168,9 +169,7 @@ class CycleRepositoryImpl @Inject constructor(
     }
 
     override fun getSettings(): Flow<CycleSettings> {
-        return settingsDao.getSettings().let { flow ->
-            flow as Flow<CycleSettings>
-        }
+        return settingsDao.getSettings().map { it ?: CycleSettings() }
     }
 
     override suspend fun updateSettings(settings: CycleSettings) {

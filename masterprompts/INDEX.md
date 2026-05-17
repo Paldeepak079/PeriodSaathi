@@ -14,11 +14,11 @@
 | S01 | `S01_technical_requirements.md` | Technical Requirements (TRD) | `docs/TRD.md` | None | ✅ Complete |
 | S02 | `S02_architecture_plan.md` | Architecture Plan | `docs/ARCHITECTURE.md` | None | ✅ Complete |
 | S03 | `S03_backend_spec.md` | Supabase Backend Spec | `docs/BACKEND_SPEC.md` | None | ✅ Complete |
-| S04 | `S04_gradle_build_files.md` | Gradle Build Files | 5 build files | `assembleDebug` | ⬜ |
-| S05 | `S05_foundation_db_theme.md` | Foundation: DB + Theme | 14 Kotlin files | `assembleDebug` | ⬜ |
-| S06 | `S06_navigation.md` | Navigation (All Routes) | 4 Kotlin files | `assembleDebug` | ⬜ |
-| S07 | `S07_shared_components.md` | Shared Components | 10 Kotlin files | `assembleDebug` | ⬜ |
-| S08 | `S08_all_screens.md` | All 17 Screens | 34 Kotlin files | `assembleDebug` | ⬜ |
+| S04 | `S04_gradle_build_files.md` | Gradle Build Files | 5 build files | `assembleDebug` | ✅ Complete |
+| S05 | `S05_foundation_db_theme.md` | Foundation: DB + Theme | 19 Kotlin files | `assembleDebug` | ✅ Complete |
+| S06 | `S06_navigation.md` | Navigation (All Routes) | 4 Kotlin files | `assembleDebug` | ✅ Complete |
+| S07 | `S07_shared_components.md` | Shared Components | 10 Kotlin files | `assembleDebug` | ✅ Complete |
+| S08 | `S08_all_screens.md` | All 17 Screens | 34 Kotlin files | `assembleDebug` | ✅ Complete |
 | S09 | `S09_domain_layer.md` | Domain Layer | 20 Kotlin files | `assembleDebug` + tests | ⬜ |
 | S10 | `S10_gamification_workers.md` | Gamification + Workers | 7 Kotlin files | `assembleDebug` | ⬜ |
 | S11 | `S11_widgets.md` | Glance Widgets | 3 Kotlin + 2 XML | `assembleDebug` | ⬜ |

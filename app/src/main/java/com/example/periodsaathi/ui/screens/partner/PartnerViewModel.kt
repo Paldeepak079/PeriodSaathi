@@ -1,10 +1,13 @@
 package com.example.periodsaathi.ui.screens.partner
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class CareRequest(
@@ -61,10 +64,8 @@ class PartnerViewModel @Inject constructor() : ViewModel() {
 
     fun sendViaShareIntent() {
         _sendState.value = SendState.Sending
-
-        // Simulate sending
-        kotlinx.coroutines.GlobalScope.launch {
-            kotlinx.coroutines.delay(1500)
+        viewModelScope.launch {
+            delay(1500)
             _sendState.value = SendState.Sent
         }
     }
@@ -73,12 +74,5 @@ class PartnerViewModel @Inject constructor() : ViewModel() {
         _sendState.value = SendState.Idle
         _selectedRequests.value = emptySet()
         _customMessage.value = ""
-    }
-}
-
-private object kotlinx {
-    object coroutines {
-        val GlobalScope = kotlinx.coroutines.GlobalScope
-        fun delay(timeMs: Long) = kotlinx.coroutines.delay(timeMs)
     }
 }

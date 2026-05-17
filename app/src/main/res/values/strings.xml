@@ -186,7 +186,7 @@
     <string name="challenges_daily">Daily Streak</string>
     <string name="challenges_logging">Logging Master</string>
     <string name="challenges_wellness">Wellness Warrior</string>
-    <string name="challenges_progress">%d/%d</string>
+    <string name="challenges_progress">%1$d/%2$d</string>
 
     <!-- Mood Map -->
     <string name="moodmap_title">Mood Map</string>
@@ -250,4 +250,10 @@
     <string name="permission_notification_message">Period Saathi sends you gentle reminders for your cycle, wellness tips, and logging prompts.</string>
     <string name="permission_sms_title">Send SMS</string>
     <string name="permission_sms_message">Period Saathi needs SMS permission only when you choose to share cycle information with your partner. This is optional and user-initiated.</string>
+
+    <!-- Widgets -->
+    <string name="widget_cycle_day_name">Period Saathi - Cycle Day</string>
+    <string name="widget_cycle_day_desc">Shows your current cycle day, phase, and water progress</string>
+    <string name="widget_countdown_name">Period Saathi - Countdown</string>
+    <string name="widget_countdown_desc">Shows days until your next period</string>
 </resources>

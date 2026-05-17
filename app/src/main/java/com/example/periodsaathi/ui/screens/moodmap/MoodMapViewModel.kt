@@ -1,20 +1,53 @@
 package com.example.periodsaathi.ui.screens.moodmap
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.periodsaathi.data.dao.CycleDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
-data class MoodData(val date: String, val mood: Int) // 1-5
+data class MoodData(val mood: String, val date: Long)
 
 @HiltViewModel
-class MoodMapViewModel @Inject constructor() : ViewModel() {
-    private val _moodData = MutableStateFlow(List(90) { MoodData("Day ${it+1}", (1..5).random()) })
-    val moodData: StateFlow<List<MoodData>> = _moodData.asStateFlow()
+class MoodMapViewModel @Inject constructor(
+    private val cycleDao: CycleDao
+) : ViewModel() {
+
+    private val _moodData = MutableStateFlow<Map<LocalDate, MoodData>>(emptyMap())
+    val moodData: StateFlow<Map<LocalDate, MoodData>> = _moodData.asStateFlow()
+
     private val _showCycleOverlay = MutableStateFlow(true)
     val showCycleOverlay: StateFlow<Boolean> = _showCycleOverlay.asStateFlow()
 
-    fun toggleOverlay() { _showCycleOverlay.value = !_showCycleOverlay.value }
+    private val _selectedDay = MutableStateFlow<LocalDate?>(null)
+    val selectedDay: StateFlow<LocalDate?> = _selectedDay.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            cycleDao.getAllEntries().collect { entries ->
+                _moodData.value = entries
+                    .filter { it.mood != null }
+                    .associate { entry ->
+                        val date = Instant.ofEpochMilli(entry.date)
+                            .atZone(ZoneId.systemDefault()).toLocalDate()
+                        date to MoodData(mood = entry.mood!!, date = entry.date)
+                    }
+            }
+        }
+    }
+
+    fun toggleCycleOverlay() {
+        _showCycleOverlay.value = !_showCycleOverlay.value
+    }
+
+    fun selectDay(date: LocalDate) {
+        _selectedDay.value = if (_selectedDay.value == date) null else date
+    }
 }

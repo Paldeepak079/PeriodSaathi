@@ -1,91 +1,73 @@
 package com.example.periodsaathi
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import com.example.periodsaathi.navigation.PeriodSaathiNavGraph
-import com.example.periodsaathi.security.StealthModeManager
-import com.example.periodsaathi.ui.lock.LockScreen
-import com.example.periodsaathi.ui.lock.PinEntryScreen
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.periodsaathi.ui.navigation.BottomNavBar
+import com.example.periodsaathi.ui.navigation.Calendar
+import com.example.periodsaathi.ui.navigation.Home
+import com.example.periodsaathi.ui.navigation.PeriodSaathiNavGraph
+import com.example.periodsaathi.ui.navigation.Settings
+import com.example.periodsaathi.ui.navigation.Wellness
 import com.example.periodsaathi.ui.theme.PeriodSaathiTheme
-
-private enum class LockState { Checking, Locked, PinFallback, Unlocked }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
 
         setContent {
             PeriodSaathiTheme {
-                LockGate()
-            }
-        }
-    }
-}
+                val navController = rememberNavController()
+                val currentRoute by navController.currentBackStackEntryAsState()
 
-@Composable
-private fun LockGate() {
-    val context = LocalContext.current
-    val stealthManager = remember { StealthModeManager(context) }
-    var lockState by remember { mutableStateOf(LockState.Checking) }
-
-    LaunchedEffect(Unit) {
-        if (stealthManager.isStealthModeEnabled() && !stealthManager.isAuthenticated()) {
-            lockState = LockState.Locked
-        } else {
-            lockState = LockState.Unlocked
-        }
-    }
-
-    AnimatedContent(
-        targetState = lockState,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
-        modifier = Modifier.fillMaxSize(),
-        label = "lockGate"
-    ) { state ->
-        when (state) {
-            LockState.Checking -> {}
-            LockState.Locked -> {
-                LockScreen(
-                    onUnlocked = {
-                        stealthManager.setAuthenticated(true)
-                        lockState = LockState.Unlocked
-                    },
-                    onPinFallback = {
-                        lockState = LockState.PinFallback
-                    }
+                val mainScreenRoutes = setOf(
+                    Home::class.qualifiedName,
+                    Calendar::class.qualifiedName,
+                    Wellness::class.qualifiedName,
+                    Settings::class.qualifiedName
                 )
-            }
-            LockState.PinFallback -> {
-                PinEntryScreen(
-                    stealthModeManager = stealthManager,
-                    pinVerified = {
-                        stealthManager.setAuthenticated(true)
-                        lockState = LockState.Unlocked
+
+                val showBottomNav = currentRoute?.destination?.route in mainScreenRoutes
+
+                Scaffold(
+                    bottomBar = {
+                        AnimatedVisibility(
+                            visible = showBottomNav,
+                            enter = slideInVertically(initialOffsetY = { it }),
+                            exit = slideOutVertically(targetOffsetY = { it })
+                        ) {
+                            BottomNavBar(navController = navController)
+                        }
                     },
-                    onBack = {
-                        lockState = LockState.Locked
+                    contentWindowInsets = WindowInsets.navigationBars
+                ) { paddingValues ->
+                    Box(modifier = Modifier.padding(paddingValues)) {
+                        PeriodSaathiNavGraph(navController = navController)
                     }
-                )
-            }
-            LockState.Unlocked -> {
-                PeriodSaathiNavGraph()
+                }
             }
         }
     }

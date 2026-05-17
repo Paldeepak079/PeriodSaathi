@@ -44,7 +44,6 @@ class GetHomeDataUseCase @Inject constructor(
         val todayEntryFlow = repository.getMonthEntries(
             LocalDate.now().year, LocalDate.now().monthValue
         ).let { flow ->
-            // filtered to today only
             combine(flow, repository.getSettings()) { entries, _ ->
                 entries.find { entry ->
                     val entryDate = Instant.ofEpochMilli(entry.date)
