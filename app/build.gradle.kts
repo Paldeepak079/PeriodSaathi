@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.periodsaathi"
+    namespace = "com.deepak.periodsaathi"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.periodsaathi"
+        applicationId = "com.deepak.periodsaathi"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

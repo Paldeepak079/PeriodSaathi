@@ -60,9 +60,9 @@
             android:name=".notification.ReminderActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.periodsaathi.app.ACTION_LOG_WATER" />
-                <action android:name="com.periodsaathi.app.ACTION_MEDICINE_TAKEN" />
-                <action android:name="com.periodsaathi.app.ACTION_LOG_PERIOD" />
+                <action android:name="com.deepak.periodsaathi.app.ACTION_LOG_WATER" />
+                <action android:name="com.deepak.periodsaathi.app.ACTION_MEDICINE_TAKEN" />
+                <action android:name="com.deepak.periodsaathi.app.ACTION_LOG_PERIOD" />
             </intent-filter>
         </receiver>
 
