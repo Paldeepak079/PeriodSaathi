@@ -36,11 +36,7 @@ fun WellnessScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))
-                )
-            )
+            .background(Background)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -53,7 +49,7 @@ fun WellnessScreen(
                     text = "Wellness",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = OnSurface
                 )
             }
 
@@ -69,7 +65,7 @@ fun WellnessScreen(
 
             // Habits section
             item {
-                Text(text = "Daily Habits", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(text = "Daily Habits", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
             }
 
             items(state.habits) { habit ->
@@ -199,7 +195,7 @@ private fun HabitCheckItem(habit: HabitItem, onToggle: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = habit.name,
-                color = Color.White,
+                color = OnSurface,
                 fontWeight = if (habit.isCompleted) FontWeight.Normal else FontWeight.Medium
             )
         }
@@ -216,7 +212,7 @@ private fun SleepSection(currentHours: Float, onHoursChange: (Float) -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "😴", fontSize = 24.sp)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "Sleep", color = Color.White, fontWeight = FontWeight.SemiBold)
+                Text(text = "Sleep", color = OnSurface, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = "${currentHours.toInt()}h", color = BlushPink, fontWeight = FontWeight.Bold)
             }
@@ -245,7 +241,7 @@ private fun ExerciseSection(minutes: Int, onMinutesChange: (Int) -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "🏃", fontSize = 24.sp)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "Exercise", color = Color.White, fontWeight = FontWeight.SemiBold)
+                Text(text = "Exercise", color = OnSurface, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = "$minutes min", color = BabyBlue, fontWeight = FontWeight.Bold)
             }
@@ -280,13 +276,13 @@ private fun RewardsSection(points: Int, streak: Int) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "⭐", fontSize = 32.sp)
                 Text(text = "$points pts", color = WarmGold, fontWeight = FontWeight.Bold)
-                Text(text = "Points", color = SoftLavender, fontSize = 12.sp)
+                Text(text = "Points", color = OnSurfaceVariant, fontSize = 12.sp)
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "🔥", fontSize = 32.sp)
                 Text(text = "$streak", color = SoftCoral, fontWeight = FontWeight.Bold)
-                Text(text = "Day Streak", color = SoftLavender, fontSize = 12.sp)
+                Text(text = "Day Streak", color = OnSurfaceVariant, fontSize = 12.sp)
             }
         }
     }

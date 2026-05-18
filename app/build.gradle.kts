@@ -25,10 +25,16 @@ android {
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("supabase.anon.key") ?: ""}\"")
         buildConfigField("String", "RAZORPAY_KEY_ID", "\"${project.findProperty("razorpay.key.id") ?: ""}\"")
         buildConfigField("String", "ADMOB_APP_ID", "\"${project.findProperty("admob.app.id") ?: ""}\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"${project.findProperty("admob.banner.id") ?: ""}\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${project.findProperty("admob.interstitial.id") ?: ""}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${project.findProperty("google.web.client.id") ?: ""}\"")
+        buildConfigField("String", "GOOGLE_ANDROID_CLIENT_ID", "\"${project.findProperty("google.android.client.id") ?: ""}\"")
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
+
+        manifestPlaceholders["admobAppId"] = project.findProperty("admob.app.id") ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     signingConfigs {

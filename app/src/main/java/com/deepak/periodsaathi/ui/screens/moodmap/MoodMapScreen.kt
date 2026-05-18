@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.moodmap
+﻿package com.deepak.periodsaathi.ui.screens.moodmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -35,18 +35,18 @@ fun MoodMapScreen(
     val selectedDay by viewModel.selectedDay.collectAsState()
 
     val moodColors = mapOf(
-        "😊" to Color(0xFF4CAF50),
-        "😐" to Color(0xFF2196F3),
-        "😢" to Color(0xFF9C27B0),
-        "😤" to Color(0xFFF44336),
-        "😴" to Color(0xFF795548),
-        "😌" to Color(0xFF00BCD4)
+        "ðŸ˜Š" to Color(0xFF4CAF50),
+        "ðŸ˜" to Color(0xFF2196F3),
+        "ðŸ˜¢" to Color(0xFF9C27B0),
+        "ðŸ˜¤" to Color(0xFFF44336),
+        "ðŸ˜´" to Color(0xFF795548),
+        "ðŸ˜Œ" to Color(0xFF00BCD4)
     )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A1228), Color(0xFF0D0A14))))
+            .background(Background)
             .padding(16.dp)
     ) {
         Row(
@@ -54,9 +54,9 @@ fun MoodMapScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Mood Map", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = "Mood Map", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Cycle", color = SoftLavender, fontSize = 14.sp)
+                Text(text = "Cycle", color = OnSurfaceVariant, fontSize = 14.sp)
                 Switch(
                     checked = showCycleOverlay,
                     onCheckedChange = { viewModel.toggleCycleOverlay() },
@@ -67,7 +67,7 @@ fun MoodMapScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = "Last 90 days", color = SoftLavender, fontSize = 14.sp)
+        Text(text = "Last 90 days", color = OnSurfaceVariant, fontSize = 14.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -120,3 +120,4 @@ fun MoodMapScreen(
         Spacer(modifier = Modifier.height(80.dp))
     }
 }
+

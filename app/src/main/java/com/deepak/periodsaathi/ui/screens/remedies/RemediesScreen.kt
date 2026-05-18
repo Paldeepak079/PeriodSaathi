@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.remedies
+﻿package com.deepak.periodsaathi.ui.screens.remedies
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -35,15 +35,15 @@ fun RemediesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Natural Remedies", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Natural Remedies", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Tap to reveal", color = SoftLavender, fontSize = 14.sp)
+        Text(text = "Tap to reveal", color = OnSurfaceVariant, fontSize = 14.sp)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -60,13 +60,13 @@ fun RemediesScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Hot Bag Safety Section
-        Text(text = "Hot Bag Safety", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(text = "Hot Bag Safety", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Temperature: ${(hotBagPosition * 100).toInt()}%", color = Color.White)
+                Text(text = "Temperature: ${(hotBagPosition * 100).toInt()}%", color = OnSurface)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -94,7 +94,7 @@ fun RemediesScreen(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "⚠️ Warning: Too hot! Reduce temperature.",
+                            text = "âš ï¸ Warning: Too hot! Reduce temperature.",
                             color = Color.Red,
                             modifier = Modifier.padding(12.dp)
                         )
@@ -106,7 +106,7 @@ fun RemediesScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Yoga Flow Section
-        Text(text = "Yoga Flow", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(text = "Yoga Flow", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -121,8 +121,8 @@ fun RemediesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "🧘 4-Minute Flow", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text(text = "Gentle stretches to ease cramps", color = SoftLavender, fontSize = 14.sp)
+                    Text(text = "ðŸ§˜ 4-Minute Flow", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                    Text(text = "Gentle stretches to ease cramps", color = OnSurfaceVariant, fontSize = 14.sp)
                 }
                 Button(
                     onClick = onNavigateToYoga,
@@ -165,8 +165,8 @@ private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = remedy.emoji, fontSize = 40.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = remedy.name, color = Color.White, fontWeight = FontWeight.Medium)
-                    Text(text = "Tap to reveal", color = SoftLavender, fontSize = 12.sp)
+                    Text(text = remedy.name, color = OnSurface, fontWeight = FontWeight.Medium)
+                    Text(text = "Tap to reveal", color = OnSurfaceVariant, fontSize = 12.sp)
                 }
             } else {
                 Column(
@@ -175,11 +175,11 @@ private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
                         .padding(12.dp)
                 ) {
                     Text(text = remedy.emoji, fontSize = 28.sp)
-                    Text(text = remedy.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(text = remedy.name, color = OnSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Ingredients: ${remedy.ingredients}", color = SoftLavender, fontSize = 10.sp)
+                    Text(text = "Ingredients: ${remedy.ingredients}", color = OnSurfaceVariant, fontSize = 10.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Steps: ${remedy.steps.take(50)}...", color = SoftLavender, fontSize = 10.sp)
+                    Text(text = "Steps: ${remedy.steps.take(50)}...", color = OnSurfaceVariant, fontSize = 10.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Helps: ${remedy.helpsWith}", color = BabyBlue, fontSize = 10.sp)
                 }
@@ -187,3 +187,4 @@ private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
         }
     }
 }
+

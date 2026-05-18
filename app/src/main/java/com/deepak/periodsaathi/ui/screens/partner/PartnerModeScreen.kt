@@ -39,11 +39,7 @@ fun PartnerModeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))
-                )
-            )
+            .background(Background)
             .padding(16.dp)
     ) {
         // Header
@@ -56,11 +52,11 @@ fun PartnerModeScreen(
                 text = "Partner Mode",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = OnSurface
             )
 
             TextButton(onClick = { /* Show privacy info */ }) {
-                Text("🔒 Privacy", color = SoftLavender)
+                Text("🔒 Privacy", color = OnSurfaceVariant)
             }
         }
 
@@ -77,7 +73,7 @@ fun PartnerModeScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Zero health data shared. Only your selected care requests.",
-                    color = SoftLavender,
+                    color = OnSurfaceVariant,
                     fontSize = 12.sp
                 )
             }
@@ -88,7 +84,7 @@ fun PartnerModeScreen(
         // Partner name
         Text(
             text = "Send to $partnerName 💕",
-            color = Color.White,
+            color = OnSurface,
             fontWeight = FontWeight.SemiBold
         )
 
@@ -201,7 +197,7 @@ private fun CareRequestCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = request.text,
-                color = Color.White,
+                color = OnSurface,
                 fontSize = 14.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )

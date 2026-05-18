@@ -9,7 +9,15 @@ supabase.anon.key=YOUR_ANON_KEY
 razorpay.key.id=rzp_test_XXXXXX
 
 # AdMob
+# AdMob
 admob.app.id=ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX
+admob.banner.id=ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX
+admob.interstitial.id=ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX
+admob.native.id=ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX
+
+# Google OAuth
+google.web.client.id=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+google.android.client.id=YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com
 
 # Signing (release builds only)
 keystore.path=../period-saathi-key.jks

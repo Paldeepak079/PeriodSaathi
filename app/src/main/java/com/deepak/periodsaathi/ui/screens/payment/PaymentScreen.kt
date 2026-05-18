@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.payment
+﻿package com.deepak.periodsaathi.ui.screens.payment
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,14 +30,14 @@ fun PaymentScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Go Premium 🌟", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Go Premium ðŸŒŸ", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = "Unlock all features", color = SoftLavender)
+        Text(text = "Unlock all features", color = OnSurfaceVariant)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -49,11 +49,11 @@ fun PaymentScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "👑", fontSize = 32.sp)
+                        Text(text = "ðŸ‘‘", fontSize = 32.sp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text(text = "Current Plan", color = SoftLavender, fontSize = 12.sp)
-                            Text(text = "Free", fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(text = "Current Plan", color = OnSurfaceVariant, fontSize = 12.sp)
+                            Text(text = "Free", fontWeight = FontWeight.Bold, color = OnSurface)
                         }
                     }
                 }
@@ -73,7 +73,7 @@ fun PaymentScreen(
                     onClick = { viewModel.restorePurchases() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Already purchased? Restore", color = SoftLavender)
+                    Text(text = "Already purchased? Restore", color = OnSurfaceVariant)
                 }
             }
 
@@ -91,11 +91,11 @@ fun PaymentScreen(
                         modifier = Modifier.padding(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "🎉", fontSize = 64.sp)
+                        Text(text = "ðŸŽ‰", fontSize = 64.sp)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "Purchase Successful!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(text = "Purchase Successful!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Welcome to Premium!", color = SoftLavender)
+                        Text(text = "Welcome to Premium!", color = OnSurfaceVariant)
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = { viewModel.resetState() },
@@ -128,7 +128,7 @@ private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boo
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = product.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = product.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                     if (product.isBestValue) {
                         Surface(color = WarmGold, shape = RoundedCornerShape(4.dp)) {
                             Text(
@@ -148,9 +148,9 @@ private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boo
 
             product.features.forEach { feature ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "✓", color = MintGreen)
+                    Text(text = "âœ“", color = MintGreen)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = feature, color = SoftLavender, fontSize = 14.sp)
+                    Text(text = feature, color = OnSurfaceVariant, fontSize = 14.sp)
                 }
             }
 
@@ -171,3 +171,4 @@ private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boo
         }
     }
 }
+

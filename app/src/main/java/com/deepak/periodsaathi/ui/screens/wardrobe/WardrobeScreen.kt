@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.wardrobe
+﻿package com.deepak.periodsaathi.ui.screens.wardrobe
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -37,12 +37,12 @@ fun WardrobeScreen(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
     ) {
         // Left side - Accessories grid
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Wardrobe", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = "Wardrobe", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -52,7 +52,7 @@ fun WardrobeScreen(
                     modifier = Modifier.padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "⭐", fontSize = 20.sp)
+                    Text(text = "â­", fontSize = 20.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "$totalPoints pts", color = WarmGold, fontWeight = FontWeight.Bold)
                 }
@@ -91,30 +91,30 @@ fun WardrobeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "Your Saathi", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = "Your Saathi", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Mascot display with equipped items
                 Box(contentAlignment = Alignment.Center) {
-                    Text(text = "😊", fontSize = 80.sp)
+                    Text(text = "ðŸ˜Š", fontSize = 80.sp)
 
                     // Equipped accessories around mascot
                     if ("1" in equippedItems) {
-                        Text(text = "👑", fontSize = 24.sp, modifier = Modifier.offset(x = 40.dp, y = (-30).dp))
+                        Text(text = "ðŸ‘‘", fontSize = 24.sp, modifier = Modifier.offset(x = 40.dp, y = (-30).dp))
                     }
                     if ("2" in equippedItems) {
-                        Text(text = "🎀", fontSize = 20.sp, modifier = Modifier.offset(x = (-40).dp, y = (-20).dp))
+                        Text(text = "ðŸŽ€", fontSize = 20.sp, modifier = Modifier.offset(x = (-40).dp, y = (-20).dp))
                     }
                     if ("3" in equippedItems) {
-                        Text(text = "👓", fontSize = 24.sp, modifier = Modifier.offset(y = 30.dp))
+                        Text(text = "ðŸ‘“", fontSize = 24.sp, modifier = Modifier.offset(y = 30.dp))
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(text = if (equippedItems.isEmpty()) "No items equipped" else "${equippedItems.size} items equipped",
-                    color = SoftLavender, fontSize = 12.sp)
+                    color = OnSurfaceVariant, fontSize = 12.sp)
             }
         }
     }
@@ -158,7 +158,7 @@ private fun AccessoryCard(
 
             Text(
                 text = accessory.name,
-                color = Color.White,
+                color = OnSurface,
                 fontSize = 12.sp,
                 fontWeight = if (isEquipped) FontWeight.Bold else FontWeight.Normal
             )
@@ -180,3 +180,4 @@ private fun AccessoryCard(
         }
     }
 }
+

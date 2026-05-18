@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.challenges
+﻿package com.deepak.periodsaathi.ui.screens.challenges
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -33,15 +33,15 @@ fun ChallengesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Challenges", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Challenges", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Active challenges horizontal scroll
-        Text(text = "Active Challenges", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(text = "Active Challenges", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -57,7 +57,7 @@ fun ChallengesScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Completed challenges
-        Text(text = "Completed", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(text = "Completed", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -97,26 +97,26 @@ private fun ActiveChallengeCard(challenge: Challenge, onTap: () -> Unit) {
                 Text(text = challenge.emoji, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = challenge.title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text(text = challenge.duration, fontSize = 10.sp, color = SoftLavender)
+                    Text(text = challenge.title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                    Text(text = challenge.duration, fontSize = 10.sp, color = OnSurfaceVariant)
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = challenge.description, fontSize = 11.sp, color = SoftLavender)
+            Text(text = challenge.description, fontSize = 11.sp, color = OnSurfaceVariant)
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Progress bar
             LinearProgressIndicator(
-                progress = { animatedProgress },
+                progress = animatedProgress,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = BlushPink,
-                trackColor = SoftLavender.copy(alpha = 0.2f)
+                trackColor = OnSurfaceVariant.copy(alpha = 0.2f)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -125,7 +125,7 @@ private fun ActiveChallengeCard(challenge: Challenge, onTap: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "${(animatedProgress * 100).toInt()}% complete", fontSize = 10.sp, color = SoftLavender)
+                Text(text = "${(animatedProgress * 100).toInt()}% complete", fontSize = 10.sp, color = OnSurfaceVariant)
                 Text(text = "+${challenge.pointsReward} pts", fontSize = 10.sp, color = WarmGold, fontWeight = FontWeight.Bold)
             }
         }
@@ -145,13 +145,14 @@ private fun CompletedChallengeCard(challenge: Challenge) {
             Text(text = challenge.emoji, fontSize = 32.sp)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = challenge.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text(text = challenge.description, fontSize = 12.sp, color = SoftLavender)
+                Text(text = challenge.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                Text(text = challenge.description, fontSize = 12.sp, color = OnSurfaceVariant)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = "🏆", fontSize = 20.sp)
+                Text(text = "ðŸ†", fontSize = 20.sp)
                 Text(text = "+${challenge.pointsReward}", color = WarmGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
+

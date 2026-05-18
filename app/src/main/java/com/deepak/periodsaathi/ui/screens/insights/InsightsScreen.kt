@@ -31,10 +31,10 @@ fun InsightsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Insights", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Insights", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -49,9 +49,9 @@ fun InsightsScreen(
                 ) {
                     Text(text = "🔍", fontSize = 64.sp)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Still gathering data...", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = "Still gathering data...", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Track $cyclesLogged of 3 cycles to see insights", color = SoftLavender)
+                    Text(text = "Track $cyclesLogged of 3 cycles to see insights", color = OnSurfaceVariant)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -66,7 +66,7 @@ fun InsightsScreen(
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 item {
-                    Text(text = "Your Patterns", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Text(text = "Your Patterns", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -101,14 +101,14 @@ private fun InsightCard(insight: PatternInsight) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = insight.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = insight.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = insight.description, color = SoftLavender, fontSize = 14.sp)
+                Text(text = insight.description, color = OnSurfaceVariant, fontSize = 14.sp)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Confidence: ", color = SoftLavender, fontSize = 12.sp)
+                    Text(text = "Confidence: ", color = OnSurfaceVariant, fontSize = 12.sp)
                     Text(text = "${(animatedProgress * 100).toInt()}%", color = Color(insight.color), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 

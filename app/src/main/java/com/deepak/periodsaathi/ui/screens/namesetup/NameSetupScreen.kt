@@ -24,6 +24,9 @@ import com.deepak.periodsaathi.ui.theme.BabyBlue
 import com.deepak.periodsaathi.ui.theme.BlushPink
 import com.deepak.periodsaathi.ui.theme.DeepRose
 import com.deepak.periodsaathi.ui.theme.SoftLavender
+import com.deepak.periodsaathi.ui.theme.Background
+import com.deepak.periodsaathi.ui.theme.OnSurface
+import com.deepak.periodsaathi.ui.theme.OnSurfaceVariant
 
 @Composable
 fun NameSetupScreen(
@@ -41,11 +44,7 @@ fun NameSetupScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A0E2E), Color(0xFF2D1B4E))
-                )
-            )
+            .background(Background)
     ) {
         Column(
             modifier = Modifier
@@ -54,7 +53,7 @@ fun NameSetupScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "🌸", fontSize = 64.sp)
+            Text(text = "ðŸŒ¸", fontSize = 64.sp)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -62,7 +61,7 @@ fun NameSetupScreen(
                 text = "Welcome to Period Saathi!",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = OnSurface,
                 textAlign = TextAlign.Center
             )
 
@@ -71,7 +70,7 @@ fun NameSetupScreen(
             Text(
                 text = "What should we call you?",
                 fontSize = 16.sp,
-                color = SoftLavender,
+                color = OnSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -80,17 +79,17 @@ fun NameSetupScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { viewModel.updateName(it) },
-                placeholder = { Text("Your name", color = SoftLavender) },
+                placeholder = { Text("Your name", color = OnSurfaceVariant) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.headlineSmall.copy(
-                    color = Color.White,
+                    color = OnSurface,
                     textAlign = TextAlign.Center
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { viewModel.saveName(fromGoogle) }),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = BlushPink,
-                    unfocusedBorderColor = SoftLavender.copy(alpha = 0.5f),
+                    unfocusedBorderColor = OnSurfaceVariant.copy(alpha = 0.5f),
                     cursorColor = BlushPink
                 ),
                 shape = RoundedCornerShape(16.dp),
@@ -110,7 +109,7 @@ fun NameSetupScreen(
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = OnSurface,
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp
                     )
@@ -125,4 +124,5 @@ fun NameSetupScreen(
         }
     }
 }
+
 

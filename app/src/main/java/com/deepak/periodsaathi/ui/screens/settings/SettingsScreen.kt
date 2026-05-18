@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.settings
+﻿package com.deepak.periodsaathi.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -39,11 +39,11 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Settings", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Settings", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -115,7 +115,7 @@ fun SettingsScreen(
         OutlinedButton(
             onClick = { viewModel.signOut() },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SoftLavender),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = OnSurfaceVariant),
             shape = RoundedCornerShape(12.dp)
         ) {
             Text("Sign Out")
@@ -127,8 +127,8 @@ fun SettingsScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete All Data?", color = Color.White) },
-            text = { Text("This action cannot be undone.", color = SoftLavender) },
+            title = { Text("Delete All Data?", color = OnSurface) },
+            text = { Text("This action cannot be undone.", color = OnSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = { viewModel.deleteAllData(); showDeleteDialog = false }) {
                     Text("Delete", color = Color.Red)
@@ -139,7 +139,7 @@ fun SettingsScreen(
                     Text("Cancel")
                 }
             },
-            containerColor = Color(0xFF1A1228)
+            containerColor = Surface
         )
     }
 }
@@ -164,9 +164,9 @@ private fun SettingsItem(title: String, value: String, onClick: () -> Unit, show
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = title, color = Color.White)
+        Text(text = title, color = OnSurface)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (value.isNotEmpty()) Text(text = value, color = SoftLavender)
+            if (value.isNotEmpty()) Text(text = value, color = OnSurfaceVariant)
             if (showArrow) Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = SoftLavender, modifier = Modifier.size(16.dp))
         }
     }
@@ -182,8 +182,8 @@ private fun SettingsToggle(title: String, subtitle: String = "", checked: Boolea
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = title, color = Color.White)
-            if (subtitle.isNotEmpty()) Text(text = subtitle, color = SoftLavender, fontSize = 12.sp)
+            Text(text = title, color = OnSurface)
+            if (subtitle.isNotEmpty()) Text(text = subtitle, color = OnSurfaceVariant, fontSize = 12.sp)
         }
         Switch(
             checked = checked,
@@ -192,3 +192,4 @@ private fun SettingsToggle(title: String, subtitle: String = "", checked: Boolea
         )
     }
 }
+

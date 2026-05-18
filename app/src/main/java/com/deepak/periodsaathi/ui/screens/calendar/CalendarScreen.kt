@@ -50,11 +50,7 @@ fun CalendarScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))
-                )
-            )
+            .background(Background)
             .padding(16.dp)
     ) {
         // Header
@@ -67,7 +63,7 @@ fun CalendarScreen(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Previous",
-                    tint = SoftLavender
+                    tint = OnSurfaceVariant
                 )
             }
 
@@ -75,14 +71,14 @@ fun CalendarScreen(
                 text = currentYearMonth.format(monthFormatter),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = OnSurface
             )
 
             IconButton(onClick = { viewModel.nextMonth() }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Next",
-                    tint = SoftLavender
+                    tint = OnSurfaceVariant
                 )
             }
         }
@@ -97,7 +93,7 @@ fun CalendarScreen(
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp,
-                    color = SoftLavender
+                    color = OnSurfaceVariant
                 )
             }
         }
@@ -186,8 +182,8 @@ private fun DayCell(
             fontSize = 14.sp,
             color = when {
                 isSelected -> Color.White
-                !dayData.isCurrentMonth -> SoftLavender.copy(alpha = 0.3f)
-                else -> Color.White
+                !dayData.isCurrentMonth -> OnSurfaceVariant.copy(alpha = 0.4f)
+                else -> OnSurface
             }
         )
     }
@@ -240,7 +236,7 @@ private fun LogEntryBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1A1228)
+        containerColor = Surface
     ) {
         Column(
             modifier = Modifier
@@ -251,13 +247,13 @@ private fun LogEntryBottomSheet(
                 text = "Log Entry",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = OnSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Flow intensity
-            Text(text = "Flow", color = SoftLavender)
+            Text(text = "Flow", color = OnSurfaceVariant)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -278,7 +274,7 @@ private fun LogEntryBottomSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Mood
-            Text(text = "Mood", color = SoftLavender)
+            Text(text = "Mood", color = OnSurfaceVariant)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -302,10 +298,10 @@ private fun LogEntryBottomSheet(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Water: ", color = SoftLavender)
-                IconButton(onClick = { if (waterGlasses > 0) waterGlasses-- }) { Text("-", color = Color.White) }
-                Text(text = "$waterGlasses glasses", color = Color.White)
-                IconButton(onClick = { waterGlasses++ }) { Text("+", color = Color.White) }
+                Text(text = "Water: ", color = OnSurfaceVariant)
+                IconButton(onClick = { if (waterGlasses > 0) waterGlasses-- }) { Text("-", color = OnSurface) }
+                Text(text = "$waterGlasses glasses", color = OnSurface)
+                IconButton(onClick = { waterGlasses++ }) { Text("+", color = OnSurface) }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

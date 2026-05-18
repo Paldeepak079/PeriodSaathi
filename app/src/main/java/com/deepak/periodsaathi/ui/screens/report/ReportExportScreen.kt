@@ -1,4 +1,4 @@
-package com.deepak.periodsaathi.ui.screens.report
+﻿package com.deepak.periodsaathi.ui.screens.report
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,25 +26,25 @@ fun ReportExportScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))))
+            .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Export Report", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Export Report", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Report preview
         GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text(text = "📊 Period Saathi Report", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = "ðŸ“Š Period Saathi Report", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Your health summary for the last $selectedCycles cycles", color = SoftLavender)
+                Text(text = "Your health summary for the last $selectedCycles cycles", color = OnSurfaceVariant)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Includes:", fontWeight = FontWeight.SemiBold, color = Color.White)
-                listOf("📅 Cycle history", "🩸 Period dates", "😊 Mood trends", "💧 Water intake", "📈 Symptom patterns").forEach {
-                    Text(text = it, color = SoftLavender, fontSize = 14.sp)
+                Text(text = "Includes:", fontWeight = FontWeight.SemiBold, color = OnSurface)
+                listOf("ðŸ“… Cycle history", "ðŸ©¸ Period dates", "ðŸ˜Š Mood trends", "ðŸ’§ Water intake", "ðŸ“ˆ Symptom patterns").forEach {
+                    Text(text = it, color = OnSurfaceVariant, fontSize = 14.sp)
                 }
             }
         }
@@ -52,7 +52,7 @@ fun ReportExportScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Cycle selector
-        Text(text = "Select cycles to include", color = SoftLavender)
+        Text(text = "Select cycles to include", color = OnSurfaceVariant)
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             listOf(3, 6).forEach { cycles ->
@@ -62,7 +62,7 @@ fun ReportExportScreen(
                     label = { Text("$cycles cycles") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = BlushPink,
-                        selectedLabelColor = Color.White
+                        selectedLabelColor = OnSurface
                     )
                 )
             }
@@ -78,7 +78,7 @@ fun ReportExportScreen(
             enabled = exportState !is ExportState.Loading,
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(text = if (exportState is ExportState.Loading) "Generating..." else "Export PDF 📄")
+            Text(text = if (exportState is ExportState.Loading) "Generating..." else "Export PDF ðŸ“„")
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -86,11 +86,11 @@ fun ReportExportScreen(
         OutlinedButton(
             onClick = { viewModel.exportCsv() },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SoftLavender),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = OnSurfaceVariant),
             enabled = exportState !is ExportState.Loading,
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(text = "Export CSV 📊")
+            Text(text = "Export CSV ðŸ“Š")
         }
 
         // Success state
@@ -104,7 +104,7 @@ fun ReportExportScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "✅", fontSize = 24.sp)
+                    Text(text = "âœ…", fontSize = 24.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Export ready!", color = MintGreen, fontWeight = FontWeight.Bold)
                 }
@@ -114,3 +114,4 @@ fun ReportExportScreen(
         Spacer(modifier = Modifier.height(80.dp))
     }
 }
+

@@ -44,11 +44,7 @@ fun DayLogScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A0E2E), Color(0xFF1A1228))
-                )
-            )
+            .background(Background)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -63,13 +59,13 @@ fun DayLogScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onBack) {
-                        Text("Cancel", color = SoftLavender)
+                        Text("Cancel", color = OnSurfaceVariant)
                     }
                     Text(
                         text = "Log Day",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = OnSurface
                     )
                     TextButton(
                         onClick = { viewModel.saveEntry() },
@@ -84,7 +80,7 @@ fun DayLogScreen(
             item {
                 GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Flow Intensity", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Flow Intensity", color = OnSurface, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             viewModel.availableFlowLevels.forEach { level ->
@@ -111,7 +107,7 @@ fun DayLogScreen(
             item {
                 GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Symptoms", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Symptoms", color = OnSurface, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -151,7 +147,7 @@ fun DayLogScreen(
             item {
                 GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Mood", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Mood", color = OnSurface, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             viewModel.availableMoods.take(4).forEach { mood ->
@@ -195,7 +191,7 @@ fun DayLogScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Water", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            Text("Water", color = OnSurface, fontWeight = FontWeight.SemiBold)
                             Text("${state.waterGlasses} glasses", color = BabyBlue, fontSize = 14.sp)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -225,8 +221,8 @@ fun DayLogScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Rest Day", color = Color.White, fontWeight = FontWeight.SemiBold)
-                            Text("Take it easy", color = SoftLavender, fontSize = 14.sp)
+                            Text("Rest Day", color = OnSurface, fontWeight = FontWeight.SemiBold)
+                            Text("Take it easy", color = OnSurfaceVariant, fontSize = 14.sp)
                         }
                         Switch(
                             checked = state.isRestDay,
@@ -241,18 +237,18 @@ fun DayLogScreen(
             item {
                 GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Notes", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Notes", color = OnSurface, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = state.notes,
                             onValueChange = { viewModel.setNotes(it) },
-                            placeholder = { Text("How are you feeling?", color = SoftLavender) },
+                            placeholder = { Text("How are you feeling?", color = OnSurfaceVariant) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(120.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = BlushPink,
-                                unfocusedBorderColor = SoftLavender.copy(alpha = 0.3f)
+                                unfocusedBorderColor = OnSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -273,7 +269,7 @@ fun DayLogScreen(
                 ) {
                     if (state.isSaving) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = OnSurface,
                             modifier = Modifier.size(24.dp),
                             strokeWidth = 2.dp
                         )
@@ -287,4 +283,5 @@ fun DayLogScreen(
         }
     }
 }
+
 

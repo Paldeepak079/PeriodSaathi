@@ -34,10 +34,10 @@ fun JournalScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1A1228), Color(0xFF0D0A14))))
+            .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Journal", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text = "Journal", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -54,8 +54,8 @@ fun JournalScreen(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BlushPink,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedTextColor = OnSurface,
+                        unfocusedTextColor = OnSurface
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -106,7 +106,7 @@ fun JournalScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(text = "Past Entries", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(text = "Past Entries", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -135,7 +135,7 @@ private fun JournalEntryCard(entry: JournalEntry, onDelete: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = dateFormat.format(Date(entry.date)), color = SoftLavender, fontSize = 12.sp)
+                    Text(text = dateFormat.format(Date(entry.date)), color = OnSurfaceVariant, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row {
                         entry.moods.forEach { Text(text = it, fontSize = 16.sp) }
@@ -143,13 +143,13 @@ private fun JournalEntryCard(entry: JournalEntry, onDelete: () -> Unit) {
                 }
 
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = SoftLavender)
+                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = OnSurfaceVariant)
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = entry.content, color = Color.White)
+            Text(text = entry.content, color = OnSurface)
 
             Spacer(modifier = Modifier.height(8.dp))
 
