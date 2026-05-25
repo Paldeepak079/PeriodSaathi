@@ -4,6 +4,9 @@ Your empathetic Android period companion — built with Kotlin, Jetpack Compose,
 
 > **saathi** (साथी) — *companion, friend* (Hindi)
 
+![Uploading banner.png…]()
+
+
 ## Architecture
 
 ```
