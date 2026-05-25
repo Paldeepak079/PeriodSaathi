@@ -29,8 +29,12 @@ class MoodMapViewModel @Inject constructor(
     private val _selectedDay = MutableStateFlow<LocalDate?>(null)
     val selectedDay: StateFlow<LocalDate?> = _selectedDay.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
+            _isLoading.value = true
             cycleDao.getAllEntries().collect { entries ->
                 _moodData.value = entries
                     .filter { it.mood != null }
@@ -40,6 +44,7 @@ class MoodMapViewModel @Inject constructor(
                         date to MoodData(mood = entry.mood!!, date = entry.date)
                     }
             }
+            _isLoading.value = false
         }
     }
 

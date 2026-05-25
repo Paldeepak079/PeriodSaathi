@@ -1,14 +1,20 @@
 package com.deepak.periodsaathi.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.deepak.periodsaathi.data.dao.SettingsDao
+import com.deepak.periodsaathi.data.model.CycleSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OnboardingViewModel @Inject constructor() : ViewModel() {
+class OnboardingViewModel @Inject constructor(
+    private val settingsDao: SettingsDao
+) : ViewModel() {
 
     private val _currentPage = MutableStateFlow(0)
     val currentPage: StateFlow<Int> = _currentPage.asStateFlow()
@@ -23,11 +29,17 @@ class OnboardingViewModel @Inject constructor() : ViewModel() {
     }
 
     fun skip() {
-        _isComplete.value = true
+        viewModelScope.launch {
+            settingsDao.upsertSettings(CycleSettings())
+            _isComplete.value = true
+        }
     }
 
     fun completeOnboarding() {
-        _isComplete.value = true
+        viewModelScope.launch {
+            settingsDao.upsertSettings(CycleSettings())
+            _isComplete.value = true
+        }
     }
 
     fun onPageChanged(page: Int) {

@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,6 +36,9 @@ class DayLogViewModel @Inject constructor(
 
     private val _saveComplete = MutableSharedFlow<Unit>()
     val saveComplete: SharedFlow<Unit> = _saveComplete.asSharedFlow()
+
+    private val _saveError = MutableSharedFlow<String>()
+    val saveError: SharedFlow<String> = _saveError.asSharedFlow()
 
     private val flowLevels = listOf("Light", "Medium", "Heavy")
     private val symptomOptions = listOf("Cramps", "Headache", "Bloating", "Fatigue", "Nausea", "Backache", "Mood Swings")
@@ -85,19 +87,39 @@ class DayLogViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.value = _state.value.copy(isSaving = true)
-            val entry = CycleEntry(
-                date = s.dateEpoch,
-                flowIntensity = s.flowIntensity,
-                symptoms = s.symptoms.joinToString(","),
-                mood = s.mood,
-                waterGlasses = s.waterGlasses,
-                notes = s.notes.ifEmpty { null },
-                isRestDay = s.isRestDay
-            )
-            cycleRepository.logCycleEntry(entry)
-            _state.value = _state.value.copy(isSaving = false)
-            _saveComplete.emit(Unit)
+            try {
+                val existing = cycleRepository.getEntryByDate(s.dateEpoch)
+                val entry = if (existing != null) {
+                    existing.copy(
+                        flowIntensity = s.flowIntensity,
+                        symptoms = s.symptoms.joinToString(","),
+                        mood = s.mood,
+                        waterGlasses = s.waterGlasses,
+                        notes = s.notes.ifEmpty { null },
+                        isRestDay = s.isRestDay
+                    )
+                } else {
+                    CycleEntry(
+                        date = s.dateEpoch,
+                        flowIntensity = s.flowIntensity,
+                        symptoms = s.symptoms.joinToString(","),
+                        mood = s.mood,
+                        waterGlasses = s.waterGlasses,
+                        notes = s.notes.ifEmpty { null },
+                        isRestDay = s.isRestDay
+                    )
+                }
+                if (existing != null) {
+                    cycleRepository.updateEntry(entry)
+                } else {
+                    cycleRepository.logCycleEntry(entry)
+                }
+                _state.value = _state.value.copy(isSaving = false)
+                _saveComplete.emit(Unit)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(isSaving = false)
+                _saveError.emit("Failed to save: ${e.message}")
+            }
         }
     }
 }
-

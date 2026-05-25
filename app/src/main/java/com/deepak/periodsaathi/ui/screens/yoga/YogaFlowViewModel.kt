@@ -24,13 +24,14 @@ class YogaFlowViewModel @Inject constructor() : ViewModel() {
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _timeRemaining = MutableStateFlow(240) // 4 minutes
-    val timeRemaining: StateFlow<Int> = _timeRemaining.asStateFlow()
+    private val _poseElapsed = MutableStateFlow(0)
+    val poseElapsed: StateFlow<Int> = _poseElapsed.asStateFlow()
 
     private val _breathingPhase = MutableStateFlow(BreathingPhase.IDLE)
     val breathingPhase: StateFlow<BreathingPhase> = _breathingPhase.asStateFlow()
 
     private var timerJob: Job? = null
+    private var breathingJob: Job? = null
 
     val poses = listOf(
         Pose("Child's Pose", "Kneel and sit back on heels, arms extended forward", "Relieves stress and fatigue", 45),
@@ -46,58 +47,80 @@ class YogaFlowViewModel @Inject constructor() : ViewModel() {
             startTimer()
             startBreathingCycle()
         } else {
-            timerJob?.cancel()
-            _breathingPhase.value = BreathingPhase.IDLE
+            pauseAll()
         }
     }
 
     fun nextPose() {
         if (_currentPoseIndex.value < poses.size - 1) {
             _currentPoseIndex.value += 1
+            _poseElapsed.value = 0
         }
     }
 
     fun previousPose() {
         if (_currentPoseIndex.value > 0) {
             _currentPoseIndex.value -= 1
+            _poseElapsed.value = 0
         }
     }
 
     fun exit() {
+        pauseAll()
+        _currentPoseIndex.value = 0
+        _poseElapsed.value = 0
         _isPlaying.value = false
+        _breathingPhase.value = BreathingPhase.IDLE
+    }
+
+    private fun pauseAll() {
         timerJob?.cancel()
+        timerJob = null
+        breathingJob?.cancel()
+        breathingJob = null
         _breathingPhase.value = BreathingPhase.IDLE
     }
 
     private fun startTimer() {
         timerJob = viewModelScope.launch {
-            while (_timeRemaining.value > 0 && _isPlaying.value) {
+            while (_isPlaying.value) {
                 delay(1000)
-                _timeRemaining.value -= 1
+                if (!_isPlaying.value) break
 
-                // Auto advance pose
+                _poseElapsed.value += 1
+
                 val currentPoseDuration = poses[_currentPoseIndex.value].duration
-                val elapsed = 240 - _timeRemaining.value
-                val poseElapsed = elapsed % 240
-                if (poseElapsed >= currentPoseDuration) {
-                    nextPose()
+                if (_poseElapsed.value >= currentPoseDuration) {
+                    if (_currentPoseIndex.value < poses.size - 1) {
+                        _currentPoseIndex.value += 1
+                        _poseElapsed.value = 0
+                    } else {
+                        _isPlaying.value = false
+                        pauseAll()
+                        break
+                    }
                 }
-            }
-            if (_timeRemaining.value == 0) {
-                _isPlaying.value = false
             }
         }
     }
 
     private fun startBreathingCycle() {
-        viewModelScope.launch {
+        breathingJob = viewModelScope.launch {
             while (_isPlaying.value) {
                 _breathingPhase.value = BreathingPhase.INHALE
                 delay(4000)
+                if (!_isPlaying.value) break
+
                 _breathingPhase.value = BreathingPhase.HOLD
                 delay(2000)
+                if (!_isPlaying.value) break
+
                 _breathingPhase.value = BreathingPhase.EXHALE
                 delay(6000)
+                if (!_isPlaying.value) break
+            }
+            if (!_isPlaying.value) {
+                _breathingPhase.value = BreathingPhase.IDLE
             }
         }
     }

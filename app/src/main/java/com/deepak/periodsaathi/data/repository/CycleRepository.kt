@@ -24,6 +24,8 @@ import javax.inject.Singleton
 
 interface CycleRepository {
     suspend fun logCycleEntry(entry: CycleEntry)
+    suspend fun getEntryByDate(date: Long): CycleEntry?
+    suspend fun updateEntry(entry: CycleEntry)
     fun getMonthEntries(year: Int, month: Int): Flow<List<CycleEntry>>
     fun predictNextPeriod(): Flow<PeriodPrediction>
     fun getCurrentCycleDay(): Flow<Int>
@@ -41,6 +43,14 @@ class CycleRepositoryImpl @Inject constructor(
 
     override suspend fun logCycleEntry(entry: CycleEntry) {
         cycleDao.insertEntry(entry)
+    }
+
+    override suspend fun getEntryByDate(date: Long): CycleEntry? {
+        return cycleDao.getEntryByDate(date).first()
+    }
+
+    override suspend fun updateEntry(entry: CycleEntry) {
+        cycleDao.updateEntry(entry)
     }
 
     override fun getMonthEntries(year: Int, month: Int): Flow<List<CycleEntry>> {

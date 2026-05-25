@@ -1,6 +1,9 @@
 package com.deepak.periodsaathi
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,11 +27,11 @@ import com.deepak.periodsaathi.ui.navigation.Home
 import com.deepak.periodsaathi.ui.navigation.PeriodSaathiNavGraph
 import com.deepak.periodsaathi.ui.navigation.Settings
 import com.deepak.periodsaathi.ui.navigation.Wellness
+import com.deepak.periodsaathi.ui.screens.payment.PaymentViewModel
 import com.deepak.periodsaathi.ui.theme.PeriodSaathiTheme
-
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.deepak.periodsaathi.ui.screens.splash.SplashViewModel
+import com.razorpay.Checkout
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONObject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -36,6 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setContent {
             PeriodSaathiTheme {
@@ -68,6 +72,24 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Checkout.RZP_REQUEST_CODE && data != null && data.hasExtra("response")) {
+            try {
+                val response = JSONObject(data.getStringExtra("response"))
+                val vm = PaymentViewModel.currentInstance
+                val productId = vm?.pendingProductId ?: return
+                if (resultCode == Activity.RESULT_OK && response.has("razorpay_payment_id")) {
+                    vm.onPaymentSuccess(productId, response.getString("razorpay_payment_id"))
+                } else {
+                    val code = response.optInt("code", -1)
+                    val desc = response.optString("description", "Payment failed")
+                    vm.onPaymentError(code, desc)
+                }
+            } catch (_: Exception) { }
         }
     }
 }

@@ -44,11 +44,30 @@ class CalendarViewModel @Inject constructor(
     private val _showLogSheet = MutableStateFlow(false)
     val showLogSheet: StateFlow<Boolean> = _showLogSheet.asStateFlow()
 
+    private val _showPredictorSheet = MutableStateFlow(false)
+    val showPredictorSheet: StateFlow<Boolean> = _showPredictorSheet.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     private val _fertilityMode = MutableStateFlow(FertilityMode.NEUTRAL)
     val fertilityMode: StateFlow<FertilityMode> = _fertilityMode.asStateFlow()
 
+    private val _fertilityGoal = MutableStateFlow<String?>(null)
+    val fertilityGoal: StateFlow<String?> = _fertilityGoal.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _hasEntries = MutableStateFlow<Boolean?>(null)
+    val hasEntries: StateFlow<Boolean?> = _hasEntries.asStateFlow()
+
     init {
         loadMonth()
+        viewModelScope.launch {
+            val cycles = cycleRepository.getLastNCycles(Int.MAX_VALUE).first()
+            _hasEntries.value = cycles.isNotEmpty()
+        }
     }
 
     fun previousMonth() {
@@ -73,7 +92,11 @@ class CalendarViewModel @Inject constructor(
         _showLogSheet.value = false
     }
 
-    fun logEntry(
+    fun togglePredictorSheet() {
+        _showPredictorSheet.value = !_showPredictorSheet.value
+    }
+
+fun logEntry(
         flowIntensity: Int?,
         symptoms: List<String>,
         mood: String?,
@@ -81,26 +104,32 @@ class CalendarViewModel @Inject constructor(
         notes: String?
     ) {
         viewModelScope.launch {
-            val date = _selectedDate.value ?: LocalDate.now()
-            val epochMillis = date.atStartOfDay(java.time.ZoneId.systemDefault())
-                .toInstant().toEpochMilli()
-            cycleRepository.logCycleEntry(CycleEntry(
-                date = epochMillis,
-                flowIntensity = when (flowIntensity) {
-                    1 -> "Light"
-                    2 -> "Medium"
-                    3 -> "Heavy"
-                    else -> null
-                },
-                symptoms = symptoms.joinToString(","),
-                mood = mood,
-                waterGlasses = waterGlasses,
-                notes = notes,
-                isRestDay = false
-            ))
-            loadMonth()
+            try {
+                val date = _selectedDate.value ?: LocalDate.now()
+                val epochMillis = date.atStartOfDay(java.time.ZoneId.systemDefault())
+                    .toInstant().toEpochMilli()
+                cycleRepository.logCycleEntry(CycleEntry(
+                    date = epochMillis,
+                    flowIntensity = when (flowIntensity) {
+                        1 -> "Light"
+                        2 -> "Medium"
+                        3 -> "Heavy"
+                        else -> null
+                    },
+                    symptoms = symptoms.joinToString(","),
+                    mood = mood,
+                    waterGlasses = waterGlasses,
+                    notes = notes,
+                    isRestDay = false
+                ))
+                loadMonth()
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Failed to save entry"
+            } finally {
+                hideLogSheet()
+            }
         }
-        hideLogSheet()
     }
 
     fun toggleFertilityMode() {
@@ -111,7 +140,16 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
+    fun setFertilityGoal(goal: String?) {
+        _fertilityGoal.value = goal
+    }
+
     private fun loadMonth() {
+        // Set loading to true
+        viewModelScope.launch {
+            _isLoading.value = true
+        }
+
         val yearMonth = _currentYearMonth.value
         viewModelScope.launch {
             val entries = cycleRepository.getMonthEntries(
@@ -139,6 +177,11 @@ class CalendarViewModel @Inject constructor(
             }
 
             generateCalendarDays(yearMonth, periodDates, predictedDates)
+            
+            // Set loading to false when data is loaded
+            viewModelScope.launch {
+                _isLoading.value = false
+            }
         }
     }
 

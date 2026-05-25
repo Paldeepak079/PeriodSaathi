@@ -53,7 +53,7 @@ fun NameSetupScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "ðŸŒ¸", fontSize = 64.sp)
+            Text(text = "\uD83C\uDF38", fontSize = 64.sp)
 
             Spacer(modifier = Modifier.height(24.dp))
 

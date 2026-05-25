@@ -27,7 +27,7 @@ fun ScaleButton(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1.0f,
+        targetValue = if (isPressed) 0.95f else 1.0f,
         animationSpec = if (isPressed) {
             tween(durationMillis = 120)
         } else {

@@ -19,7 +19,7 @@ class JournalViewModel @Inject constructor(
     private val journalDao: JournalDao
 ) : ViewModel() {
 
-    private val _entries = MutableStateFlow<List<JournalEntry>>(emptyList())
+private val _entries = MutableStateFlow<List<JournalEntry>>(emptyList())
     val entries: StateFlow<List<JournalEntry>> = _entries.asStateFlow()
 
     private val _draft = MutableStateFlow("")
@@ -30,6 +30,9 @@ class JournalViewModel @Inject constructor(
 
     private val _showTimeCapsule = MutableStateFlow(false)
     val showTimeCapsule: StateFlow<Boolean> = _showTimeCapsule.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -51,7 +54,7 @@ class JournalViewModel @Inject constructor(
         }
     }
 
-    fun saveEntry(isTimeCapsule: Boolean) {
+fun saveEntry(isTimeCapsule: Boolean) {
         if (_draft.value.isBlank()) return
         val entry = RoomJournalEntry(
             date = System.currentTimeMillis(),
@@ -63,7 +66,12 @@ class JournalViewModel @Inject constructor(
             capsuleRevealDate = if (isTimeCapsule) System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000 else null
         )
         viewModelScope.launch {
-            journalDao.insertEntry(entry)
+            try {
+                journalDao.insertEntry(entry)
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Failed to save journal entry"
+            }
         }
         _draft.value = ""
         _selectedMoods.value = emptySet()
@@ -71,7 +79,7 @@ class JournalViewModel @Inject constructor(
 
     fun deleteEntry(id: String) {
         viewModelScope.launch {
-            val roomEntry = journalDao.getAllEntries().first().find { it.id.toString() == id }
+            val roomEntry = journalDao.getEntryById(id.toLong())
             if (roomEntry != null) {
                 journalDao.deleteEntry(roomEntry)
             }

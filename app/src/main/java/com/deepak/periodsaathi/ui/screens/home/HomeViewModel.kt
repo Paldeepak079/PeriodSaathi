@@ -19,6 +19,7 @@ data class HomeUiState(
     val cycleDay: Int = 1,
     val totalCycleDays: Int = 28,
     val phase: CyclePhase = CyclePhase.FOLLICULAR,
+    val phaseDayInPhase: Int = 2,
     val todayEntry: CycleEntry? = null,
     val prediction: PeriodPrediction? = null,
     val waterGlasses: Int = 0,
@@ -62,12 +63,20 @@ class HomeViewModel @Inject constructor(
     private fun loadHomeData() {
         viewModelScope.launch {
             cycleRepository.getCurrentCycleDay().collect { day ->
-                _uiState.value = _uiState.value.copy(cycleDay = day)
+                val s = _uiState.value
+                _uiState.value = s.copy(
+                    cycleDay = day,
+                    phaseDayInPhase = computePhaseDayInPhase(day, s.phase, s.totalCycleDays)
+                )
             }
         }
         viewModelScope.launch {
             cycleRepository.getCurrentPhase().collect { phase ->
-                _uiState.value = _uiState.value.copy(phase = phase)
+                val s = _uiState.value
+                _uiState.value = s.copy(
+                    phase = phase,
+                    phaseDayInPhase = computePhaseDayInPhase(s.cycleDay, phase, s.totalCycleDays)
+                )
             }
         }
         viewModelScope.launch {
@@ -75,6 +84,18 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(prediction = prediction)
             }
         }
+    }
+
+    private fun computePhaseDayInPhase(cycleDay: Int, phase: CyclePhase, totalDays: Int): Int {
+        val phaseStartDay = when (phase) {
+            CyclePhase.MENSTRUAL -> 1
+            CyclePhase.FOLLICULAR -> maxOf(1, (totalDays * 0.20f).toInt() + 1)
+            CyclePhase.OVULATORY, CyclePhase.OVULATION -> maxOf(1, (totalDays * 0.55f).toInt() + 1)
+            CyclePhase.LUTEAL -> maxOf(1, (totalDays * 0.65f).toInt() + 1)
+            CyclePhase.PMS -> maxOf(1, (totalDays * 0.90f).toInt() + 1)
+            CyclePhase.UNKNOWN -> 1
+        }
+        return (cycleDay - phaseStartDay + 1).coerceAtLeast(1)
     }
 
     fun logWater(amount: Int) {

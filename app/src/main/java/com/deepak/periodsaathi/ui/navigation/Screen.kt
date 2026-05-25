@@ -22,5 +22,7 @@ import kotlinx.serialization.Serializable
 @Serializable object Challenges
 @Serializable object BreathingMode
 @Serializable object Payment
+@Serializable object PhaseCoach
 @Serializable data class DayLog(val dateEpoch: Long)
+@Serializable object TimeCapsule
 

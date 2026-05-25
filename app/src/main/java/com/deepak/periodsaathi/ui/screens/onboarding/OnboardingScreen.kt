@@ -10,6 +10,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Accessibility
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +22,15 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.deepak.periodsaathi.ui.components.ConfettiOverlay
+import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.MascotEmotion
 import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.components.SaathiMascot
@@ -48,8 +56,8 @@ private data class OnboardingPage(
 private val pages = listOf(
     OnboardingPage(
         emoji = "🌸",
-        title = "Meet your Saathi",
-        subtitle = "Your personal period companion, always here to help you track, understand, and embrace your cycle with compassion.",
+        title = "Your new best friend 💕",
+        subtitle = "She'll cheer you on, remind you to rest, and never judge you.",
         mascotEmotion = MascotEmotion.HAPPY,
         blobColor = Color(0xFFFFB6C1)
     ),
@@ -145,7 +153,7 @@ fun OnboardingScreen(
                     .fillMaxWidth()
                     .weight(1f)
             ) { page ->
-                OnboardingPageContent(page = pages[page])
+                OnboardingPageContent(page = pages[page], pageIndex = page)
             }
 
             // ── Dot Indicators ───────────────────────
@@ -185,7 +193,7 @@ fun OnboardingScreen(
             ) {
                 if (currentPage == pages.size - 1) {
                     PrimaryButton(
-                        text = "Get Started 🌸",
+                        text = "Let's Start 🌸",
                         onClick = onComplete,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -214,7 +222,32 @@ fun OnboardingScreen(
 }
 
 @Composable
-private fun OnboardingPageContent(page: OnboardingPage) {
+private fun OnboardingPageContent(page: OnboardingPage, pageIndex: Int) {
+    when (pageIndex) {
+        2 -> RewardsPage(page)
+        else -> StandardPageContent(page, pageIndex)
+    }
+}
+
+@Composable
+private fun StandardPageContent(page: OnboardingPage, pageIndex: Int) {
+    val density = LocalDensity.current
+    val bouncePx = with(density) { 8.dp.toPx() }
+
+    val mascotModifier = if (pageIndex == 0) {
+        val infiniteTransition = rememberInfiniteTransition(label = "bounce")
+        val bounceOffset by infiniteTransition.animateFloat(
+            initialValue = -bouncePx,
+            targetValue = bouncePx,
+            animationSpec = infiniteRepeatable(
+                animation = tween(600),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "bounceOffset"
+        )
+        Modifier.graphicsLayer { translationY = bounceOffset }
+    } else Modifier
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -222,13 +255,13 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Glass-framed mascot
         Box(
             modifier = Modifier
                 .size(200.dp)
                 .clip(CircleShape)
                 .background(Color.White.copy(alpha = 0.45f))
-                .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
+                .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape)
+                .then(mascotModifier),
             contentAlignment = Alignment.Center
         ) {
             SaathiMascot(
@@ -240,7 +273,6 @@ private fun OnboardingPageContent(page: OnboardingPage) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Emoji badge
         Surface(
             color = PrimaryContainer.copy(alpha = 0.5f),
             shape = RoundedCornerShape(50.dp)
@@ -266,13 +298,195 @@ private fun OnboardingPageContent(page: OnboardingPage) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = page.subtitle,
-            style = MaterialTheme.typography.bodyLarge,
-            color = OnSurfaceVariant,
-            textAlign = TextAlign.Center,
-            lineHeight = 26.sp
-        )
+        when (pageIndex) {
+            0 -> {
+                Text(
+                    text = page.subtitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = OnSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 26.sp
+                )
+            }
+            1 -> {
+                PrivacyBulletCards()
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyBulletCards() {
+    val items = listOf(
+        Triple(Icons.Rounded.Check, "No data sold. Ever.", 100),
+        Triple(Icons.Rounded.WifiOff, "Works completely offline", 200),
+        Triple(Icons.Rounded.Accessibility, "You control everything", 300)
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items.forEach { (icon, text, delay) ->
+            AnimatedVisibility(
+                visible = true,
+                enter = slideInHorizontally(
+                    animationSpec = tween(delayMillis = delay)
+                ) { it / 4 }
+            ) {
+                GlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(PrimaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = Primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RewardsPage(page: OnboardingPage) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        ConfettiOverlay(visible = true)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Final Step",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Primary
+                    )
+                    Text(
+                        text = "100% Complete",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LinearProgressIndicator(
+                    progress = { 1f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(6.dp)),
+                    color = Primary,
+                    trackColor = Color.White.copy(alpha = 0.3f),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            GlassCard(
+                modifier = Modifier
+                    .width(260.dp)
+                    .heightIn(min = 220.dp),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Surface(
+                        color = PrimaryContainer.copy(alpha = 0.3f),
+                        shape = CircleShape,
+                        modifier = Modifier.size(80.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "🌸",
+                                fontSize = 36.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "500 Points",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                        color = Primary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Onboarding Bonus Unlocked",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = OnSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                text = page.title,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 26.sp
+                ),
+                color = Primary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = page.subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = OnSurfaceVariant,
+                textAlign = TextAlign.Center,
+                lineHeight = 26.sp
+            )
+        }
     }
 }
 

@@ -1,7 +1,12 @@
 package com.deepak.periodsaathi.ui.screens.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,17 +19,23 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.MascotEmotion
 import com.deepak.periodsaathi.ui.components.SaathiMascot
 import com.deepak.periodsaathi.ui.theme.*
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 // ─────────────────────────────────────────────
 //  Login Screen  (Stitch reference: login_screen)
@@ -33,14 +44,24 @@ import com.deepak.periodsaathi.ui.theme.*
 // ─────────────────────────────────────────────
 @Composable
 fun LoginScreen(
+    navController: NavHostController? = null,
     onLoginSuccess: () -> Unit = {},
     onContinueAsGuest: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val loginState by viewModel.loginState.collectAsState()
 
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) onLoginSuccess()
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            viewModel.handleGoogleSignInResult(task, onSuccess = {
+                onLoginSuccess()
+            })
+        } else {
+            viewModel.resetState()
+        }
     }
 
     // Mesh gradient background — warm cream with soft pink/lavender blobs
@@ -152,35 +173,60 @@ fun LoginScreen(
             ) {
                 // Google button (glass style)
                 val isLoading = loginState is LoginState.Loading
-                GlassCard(
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val scale by animateFloatAsState(
+                    targetValue = if (isPressed) 0.95f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    label = "googleBtnScale"
+                )
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    onClick = { if (!isLoading) viewModel.signInWithGoogle() }
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            enabled = !isLoading
+                        ) {
+                            val intent = viewModel.signInWithGoogle()
+                            googleSignInLauncher.launch(intent)
+                        }
                 ) {
-                    Row(
+                    GlassCard(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Primary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            // Google coloured G icon using text
-                            Text("G", color = Color(0xFF4285F4), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "Continue with Google",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = OnSurface
-                            )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Primary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                GoogleLogoIcon()
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Continue with Google",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = OnSurface
+                                )
+                            }
                         }
                     }
                 }
@@ -191,18 +237,21 @@ fun LoginScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = OutlineVariant)
+                    HorizontalDivider(modifier = Modifier.width(48.dp), color = OutlineVariant)
                     Text(
                         text = "or explore as guest",
                         style = MaterialTheme.typography.labelSmall,
                         color = Outline
                     )
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = OutlineVariant)
+                    HorizontalDivider(modifier = Modifier.width(48.dp), color = OutlineVariant)
                 }
 
                 // Guest button
                 TextButton(
-                    onClick = onContinueAsGuest,
+                    onClick = {
+                        viewModel.continueAsGuest()
+                        onContinueAsGuest()
+                    },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(
@@ -283,6 +332,62 @@ private fun GradientBlob(
             )
             .blur(40.dp)
     )
+}
+
+@Composable
+private fun GoogleLogoIcon() {
+    Canvas(modifier = Modifier.size(20.dp)) {
+        val s = size.width
+        drawPath(
+            path = Path().apply {
+                moveTo(s * 0.2033f, s * 0.5201f)
+                cubicTo(s * 0.2033f, s * 0.4653f, s * 0.2090f, s * 0.4250f, s * 0.2204f, s * 0.3854f)
+                lineTo(s * 0.1354f, s * 0.3854f)
+                cubicTo(s * 0.1146f, s * 0.4250f, s * 0.1042f, s * 0.4688f, s * 0.1042f, s * 0.5208f)
+                cubicTo(s * 0.1042f, s * 0.6125f, s * 0.1319f, s * 0.6972f, s * 0.1792f, s * 0.7694f)
+                lineTo(s * 0.2458f, s * 0.7160f)
+                cubicTo(s * 0.2181f, s * 0.6701f, s * 0.2033f, s * 0.6090f, s * 0.2033f, s * 0.5201f)
+                close()
+            },
+            color = Color(0xFFFBBC05)
+        )
+        drawPath(
+            path = Path().apply {
+                moveTo(s * 0.5000f, s * 0.3076f)
+                cubicTo(s * 0.5590f, s * 0.3076f, s * 0.6069f, s * 0.3299f, s * 0.6444f, s * 0.3639f)
+                lineTo(s * 0.7104f, s * 0.2979f)
+                cubicTo(s * 0.6556f, s * 0.2479f, s * 0.5840f, s * 0.2153f, s * 0.5000f, s * 0.2153f)
+                cubicTo(s * 0.3958f, s * 0.2153f, s * 0.3028f, s * 0.2563f, s * 0.2312f, s * 0.3208f)
+                lineTo(s * 0.2972f, s * 0.3750f)
+                cubicTo(s * 0.3299f, s * 0.3354f, s * 0.3799f, s * 0.3076f, s * 0.5000f, s * 0.3076f)
+                close()
+            },
+            color = Color(0xFFEA4335)
+        )
+        drawPath(
+            path = Path().apply {
+                moveTo(s * 0.2033f, s * 0.5201f)
+                cubicTo(s * 0.2033f, s * 0.6090f, s * 0.2181f, s * 0.6701f, s * 0.2458f, s * 0.7160f)
+                lineTo(s * 0.1792f, s * 0.7694f)
+                cubicTo(s * 0.1319f, s * 0.6972f, s * 0.1042f, s * 0.6125f, s * 0.1042f, s * 0.5208f)
+                close()
+            },
+            color = Color(0xFF34A853)
+        )
+        drawPath(
+            path = Path().apply {
+                moveTo(s * 0.5000f, s * 0.7326f)
+                cubicTo(s * 0.4403f, s * 0.7326f, s * 0.4021f, s * 0.7167f, s * 0.3701f, s * 0.6910f)
+                lineTo(s * 0.3042f, s * 0.7465f)
+                cubicTo(s * 0.3493f, s * 0.7861f, s * 0.4132f, s * 0.8153f, s * 0.5000f, s * 0.8153f)
+                cubicTo(s * 0.5819f, s * 0.8153f, s * 0.6521f, s * 0.7840f, s * 0.7069f, s * 0.7361f)
+                lineTo(s * 0.6403f, s * 0.6819f)
+                cubicTo(s * 0.6049f, s * 0.7097f, s * 0.5590f, s * 0.7326f, s * 0.5000f, s * 0.7326f)
+                close()
+            },
+            color = Color(0xFF4285F4)
+        )
+    }
 }
 
 @Preview(showBackground = true)

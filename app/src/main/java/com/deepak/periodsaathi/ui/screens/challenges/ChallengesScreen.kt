@@ -149,7 +149,7 @@ private fun CompletedChallengeCard(challenge: Challenge) {
                 Text(text = challenge.description, fontSize = 12.sp, color = OnSurfaceVariant)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = "ðŸ†", fontSize = 20.sp)
+                Text(text = "\uD83C\uDFC6", fontSize = 20.sp)
                 Text(text = "+${challenge.pointsReward}", color = WarmGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }

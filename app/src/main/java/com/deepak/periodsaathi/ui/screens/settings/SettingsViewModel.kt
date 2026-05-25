@@ -24,7 +24,7 @@ class SettingsViewModel @Inject constructor(
     private val reminderDao: ReminderDao
 ) : ViewModel() {
 
-    private val _userName = MutableStateFlow("Friend")
+private val _userName = MutableStateFlow("Friend")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
     private val _cycleLength = MutableStateFlow(28)
@@ -48,6 +48,9 @@ class SettingsViewModel @Inject constructor(
     private val _premiumTier = MutableStateFlow("FREE")
     val premiumTier: StateFlow<String> = _premiumTier.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     init {
         loadSettings()
     }
@@ -64,17 +67,22 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun saveSettings() {
+private fun saveSettings() {
         viewModelScope.launch {
-            val current = settingsDao.getSettings().first() ?: CycleSettings()
-            settingsDao.upsertSettings(current.copy(
-                userName = _userName.value,
-                averageCycleLength = _cycleLength.value,
-                averagePeriodLength = _periodLength.value,
-                stealthModeEnabled = _stealthMode.value,
-                soundEnabled = _soundEnabled.value,
-                hapticEnabled = _hapticEnabled.value
-            ))
+            try {
+                val current = settingsDao.getSettings().first() ?: CycleSettings()
+                settingsDao.upsertSettings(current.copy(
+                    userName = _userName.value,
+                    averageCycleLength = _cycleLength.value,
+                    averagePeriodLength = _periodLength.value,
+                    stealthModeEnabled = _stealthMode.value,
+                    soundEnabled = _soundEnabled.value,
+                    hapticEnabled = _hapticEnabled.value
+                ))
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Failed to save settings"
+            }
         }
     }
 
@@ -100,6 +108,7 @@ class SettingsViewModel @Inject constructor(
 
     fun toggleBiometricLock() {
         _biometricLock.value = !_biometricLock.value
+        saveSettings()
     }
 
     fun toggleSound() {
@@ -122,12 +131,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
+    fun signOut(onComplete: () -> Unit = {}) {
         viewModelScope.launch {
             cycleDao.deleteAll()
             journalDao.deleteAll()
             reminderDao.deleteAll()
             settingsDao.deleteAll()
+            onComplete()
         }
     }
 }

@@ -25,6 +25,7 @@ supabase = "2.6.1"
 ktorAndroid = "2.3.12"
 playServicesAuth = "21.2.0"
 razorpay = "1.6.41"
+razorpayStandardCore = "1.6.55"
 playServicesAds = "23.4.0"
 firebaseBom = "33.6.0"
 securityCrypto = "1.1.0-alpha06"
@@ -82,6 +83,7 @@ supabase-realtime-kt = { group = "io.github.jan-tennert.supabase", name = "realt
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktorAndroid" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 razorpay-checkout = { group = "com.razorpay", name = "checkout", version.ref = "razorpay" }
+razorpay-standard-core = { group = "com.razorpay", name = "standard-core", version.ref = "razorpayStandardCore" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }

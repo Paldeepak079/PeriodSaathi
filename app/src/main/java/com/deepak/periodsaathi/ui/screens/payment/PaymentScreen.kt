@@ -1,8 +1,8 @@
 ﻿package com.deepak.periodsaathi.ui.screens.payment
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,21 +11,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
+import com.razorpay.Checkout
 
 @Composable
 fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val paymentState by viewModel.paymentState.collectAsState()
+    val activePurchases by viewModel.activePurchases.collectAsState()
+    val activity = LocalContext.current as? Activity
+
+    var currentProductId by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -33,7 +37,7 @@ fun PaymentScreen(
             .background(Background)
             .padding(16.dp)
     ) {
-        Text(text = "Go Premium ðŸŒŸ", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+        Text(text = "Go Premium", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -43,13 +47,11 @@ fun PaymentScreen(
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
-                // Current plan card
                 GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Row(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "ðŸ‘‘", fontSize = 32.sp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(text = "Current Plan", color = OnSurfaceVariant, fontSize = 12.sp)
@@ -60,15 +62,22 @@ fun PaymentScreen(
             }
 
             items(viewModel.products) { product ->
+                val isOwned = product.id in activePurchases
                 ProductCard(
                     product = product,
-                    onPurchase = { viewModel.initiatePurchase(product.id) },
-                    isLoading = paymentState is PaymentState.Loading
+                    isOwned = isOwned,
+                    onPurchase = {
+                        val options = viewModel.initiatePurchase(product.id)
+                        if (options != null && activity != null) {
+                            currentProductId = product.id
+                            Checkout().open(activity, options)
+                        }
+                    },
+                    isLoading = paymentState is PaymentState.Loading && currentProductId == product.id
                 )
             }
 
             item {
-                // Restore purchases
                 TextButton(
                     onClick = { viewModel.restorePurchases() },
                     modifier = Modifier.fillMaxWidth()
@@ -80,38 +89,61 @@ fun PaymentScreen(
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
 
-        // Success overlay
-        if (paymentState is PaymentState.Success) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                GlassCard(modifier = Modifier.padding(32.dp), shape = RoundedCornerShape(24.dp)) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "ðŸŽ‰", fontSize = 64.sp)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "Purchase Successful!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnSurface)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Welcome to Premium!", color = OnSurfaceVariant)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.resetState() },
-                            colors = ButtonDefaults.buttonColors(containerColor = BlushPink)
+        when (val state = paymentState) {
+            is PaymentState.Success -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    GlassCard(modifier = Modifier.padding(32.dp), shape = RoundedCornerShape(24.dp)) {
+                        Column(
+                            modifier = Modifier.padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Continue")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(text = "Purchase Successful!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = "Welcome to Premium!", color = OnSurfaceVariant)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.resetState() },
+                                colors = ButtonDefaults.buttonColors(containerColor = BlushPink)
+                            ) {
+                                Text("Continue")
+                            }
                         }
                     }
                 }
             }
+            is PaymentState.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    GlassCard(modifier = Modifier.padding(32.dp), shape = RoundedCornerShape(24.dp)) {
+                        Column(
+                            modifier = Modifier.padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = state.message, color = Error, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.resetState() },
+                                colors = ButtonDefaults.buttonColors(containerColor = BlushPink)
+                            ) {
+                                Text("Try Again")
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {}
         }
     }
 }
 
 @Composable
-private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boolean) {
+private fun ProductCard(product: Product, isOwned: Boolean, onPurchase: () -> Unit, isLoading: Boolean) {
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -148,7 +180,6 @@ private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boo
 
             product.features.forEach { feature ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "âœ“", color = MintGreen)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = feature, color = OnSurfaceVariant, fontSize = 14.sp)
                 }
@@ -160,15 +191,21 @@ private fun ProductCard(product: Product, onPurchase: () -> Unit, isLoading: Boo
                 onClick = onPurchase,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (product.isBestValue) WarmGold else BlushPink,
-                    contentColor = if (product.isBestValue) Color.Black else Color.White
+                    containerColor = if (isOwned) MintGreen else if (product.isBestValue) WarmGold else BlushPink,
+                    contentColor = if (isOwned) Color.Black else Color.White
                 ),
-                enabled = !isLoading,
+                enabled = !isLoading && !isOwned,
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = if (isLoading) "Processing..." else "Buy Now", fontWeight = FontWeight.Bold)
+                Text(
+                    text = when {
+                        isOwned -> "Owned"
+                        isLoading -> "Processing..."
+                        else -> "Buy Now"
+                    },
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
-

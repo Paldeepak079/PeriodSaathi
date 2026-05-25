@@ -56,7 +56,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
+    fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>, onSuccess: () -> Unit = {}) {
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
             val result = googleSignInManager.handleSignInResult(task)
@@ -68,6 +68,7 @@ class LoginViewModel @Inject constructor(
                         photoUrl = account.photoUrl?.toString()
                     )
                     _loginState.value = LoginState.Success
+                    onSuccess()
                 }
             } else {
                 _loginState.value = LoginState.Error(result.errorMessage ?: "Google Sign-In failed")

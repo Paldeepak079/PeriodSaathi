@@ -148,9 +148,9 @@ dependencies {
 
     // Razorpay
     implementation(libs.razorpay.checkout) {
-        exclude(group = "com.razorpay", module = "core")
-        exclude(group = "com.razorpay", module = "standard-core")
+        exclude(group = "com.razorpay")
     }
+    implementation(libs.razorpay.standard.core)
 
     // AdMob
     implementation(libs.play.services.ads)

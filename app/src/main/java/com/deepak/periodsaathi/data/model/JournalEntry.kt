@@ -1,9 +1,10 @@
 package com.deepak.periodsaathi.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "journal_entries")
+@Entity(tableName = "journal_entries", indices = [Index(value = ["date"])])
 data class JournalEntry(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,8 @@ fun HomeScreen(
     onNavigateToCalendar: () -> Unit = {},
     onNavigateToDayLog: (Long) -> Unit = {},
     onNavigateToBreathing: () -> Unit = {},
+    onNavigateToInsights: () -> Unit = {},
+    onNavigateToPhaseCoach: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -103,10 +106,30 @@ fun HomeScreen(
                 )
             }
 
+            // ── AI Premium Forecast Card ────────────
+            item {
+                AiForecastCard(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp)
+                )
+            }
+
+            // ── Pattern Detective Notification Card ──
+            item {
+                PatternDetectiveCard(
+                    onViewInsights = onNavigateToInsights,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp)
+                )
+            }
+
             // ── Hero glass card (week + mascot) ──────
             item {
                 HeroCard(
                     cycleDay = uiState.cycleDay,
+                    isRestDay = uiState.showRestDay,
                     mascotTip = getMascotTip(uiState.mascotTipIndex),
                     mascotEmotion = uiState.mascotEmotion.toComponentEmotion(),
                     onMascotTap = { viewModel.onMascotTapped() },
@@ -116,16 +139,16 @@ fun HomeScreen(
                 )
             }
 
-            // ── Rest Day Banner ──────────────────────
-            if (uiState.showRestDay) {
-                item {
-                    RestDayBanner(
-                        onDismiss = { viewModel.dismissRestDay() },
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 12.dp)
-                    )
-                }
+            // ── Current Status Dashboard ──────────────
+            item {
+                StatusDashboard(
+                    phaseName = uiState.phase.name.lowercase().replaceFirstChar { it.uppercase() },
+                    phaseDay = uiState.phaseDayInPhase,
+                    phaseTotalDays = 5,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                )
             }
 
             // ── Quick Log Row ────────────────────────
@@ -134,19 +157,37 @@ fun HomeScreen(
                     onLogFlow = onNavigateToCalendar,
                     onLogWater = { viewModel.logWater(1) },
                     onLogMeals = { /* TODO: food log */ },
-                    onLogMedicine = { /* TODO: medicine log */ }
+                    onLogMedicine = { /* TODO: medicine log */ },
+                    onPhaseCoach = onNavigateToPhaseCoach
+                )
+            }
+
+            // ── Daily Insights Section ────────────────
+            item {
+                DailyInsightsSection(
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
             // ── Insights Bento ───────────────────────
             item {
                 InsightsBento(
-                    waterGlasses = uiState.waterGlasses,
                     streakCount = uiState.streakCount,
-                    phase = uiState.phase,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(top = 8.dp)
+                )
+            }
+
+            // ── Phase Coach Banner ──────────────────
+            item {
+                PhaseCoachBanner(
+                    phaseName = uiState.phase.name.lowercase().replaceFirstChar { it.uppercase() },
+                    phaseDay = uiState.phaseDayInPhase,
+                    onViewCoachGuide = onNavigateToPhaseCoach,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 12.dp)
                 )
             }
         }
@@ -205,6 +246,7 @@ private fun HomeTopBar(
         color = Color.White.copy(alpha = 0.6f),
         modifier = Modifier
             .fillMaxWidth()
+            .blur(20.dp)
             .border(width = 0.dp, color = Color.Transparent)
     ) {
         Row(
@@ -316,6 +358,7 @@ private fun WellnessRing(percent: Int) {
 @Composable
 private fun HeroCard(
     cycleDay: Int,
+    isRestDay: Boolean = false,
     mascotTip: String,
     mascotEmotion: ComponentMascotEmotion,
     onMascotTap: () -> Unit,
@@ -327,7 +370,7 @@ private fun HeroCard(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             // Week strip
-            WeekStrip(cycleDay = cycleDay)
+            WeekStrip(cycleDay = cycleDay, isRestDay = isRestDay)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -366,7 +409,7 @@ private fun HeroCard(
 }
 
 @Composable
-private fun WeekStrip(cycleDay: Int) {
+private fun WeekStrip(cycleDay: Int, isRestDay: Boolean = false) {
     val today = LocalDate.now()
     val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
 
@@ -389,26 +432,45 @@ private fun WeekStrip(cycleDay: Int) {
                     style = MaterialTheme.typography.labelSmall,
                     color = OnSurfaceVariant
                 )
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(
-                            when {
-                                isToday -> Error
-                                else -> Color.Transparent
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = dayNum.toString(),
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = when {
-                            isToday -> OnError
-                            else -> OnSurface
+                Box {
+                    if (isToday && isRestDay) {
+                        Surface(
+                            color = OnErrorContainer,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(y = (-22).dp)
+                        ) {
+                            Text(
+                                text = "\uD83D\uDCCF REST DAY",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
                         }
-                    )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when {
+                                    isToday -> Error
+                                    else -> Color.Transparent
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = dayNum.toString(),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = when {
+                                isToday -> OnError
+                                else -> OnSurface
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -420,7 +482,8 @@ private fun QuickLogSection(
     onLogFlow: () -> Unit,
     onLogWater: () -> Unit,
     onLogMeals: () -> Unit,
-    onLogMedicine: () -> Unit
+    onLogMedicine: () -> Unit,
+    onPhaseCoach: () -> Unit = {}
 ) {
     Column(modifier = Modifier.padding(top = 8.dp)) {
         Text(
@@ -434,9 +497,6 @@ private fun QuickLogSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                QuickLogChip(label = "🩸 Flow", onClick = onLogFlow)
-            }
-            item {
                 QuickLogChip(label = "💧 Water", onClick = onLogWater)
             }
             item {
@@ -444,6 +504,12 @@ private fun QuickLogSection(
             }
             item {
                 QuickLogChip(label = "💊 Medicine", onClick = onLogMedicine)
+            }
+            item {
+                QuickLogChip(label = "🩸 Flow", onClick = onLogFlow)
+            }
+            item {
+                QuickLogChip(label = "🧘 Coach", onClick = onPhaseCoach)
             }
         }
     }
@@ -469,16 +535,13 @@ private fun QuickLogChip(label: String, onClick: () -> Unit) {
 
 @Composable
 private fun InsightsBento(
-    waterGlasses: Int,
     streakCount: Int,
-    phase: CyclePhase,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Sleep card (placeholder)
         BentoCard(
             modifier = Modifier.weight(1f),
             iconEmoji = "🌙",
@@ -486,33 +549,12 @@ private fun InsightsBento(
             value = "7h 20m",
             containerColor = SecondaryContainer.copy(0.5f)
         )
-        // BPM card (placeholder)
         BentoCard(
             modifier = Modifier.weight(1f),
             iconEmoji = "❤️",
             label = "Streak",
             value = "$streakCount days",
             containerColor = PrimaryContainer.copy(0.5f)
-        )
-    }
-    Spacer(modifier = Modifier.height(12.dp))
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        BentoCard(
-            modifier = Modifier.weight(1f),
-            iconEmoji = "💧",
-            label = "Water",
-            value = "$waterGlasses/8 glasses",
-            containerColor = TertiaryContainer.copy(0.5f)
-        )
-        BentoCard(
-            modifier = Modifier.weight(1f),
-            iconEmoji = "🌸",
-            label = "Phase",
-            value = phase.name.lowercase().replaceFirstChar { it.uppercase() },
-            containerColor = PrimaryFixed.copy(0.5f)
         )
     }
 }
@@ -608,6 +650,345 @@ private fun RestDayBanner(onDismiss: () -> Unit, modifier: Modifier = Modifier) 
             }
             TextButton(onClick = onDismiss) {
                 Text("OK", color = Primary)
+            }
+        }
+    }
+}
+
+// ── AI Premium Forecast Card ───────────────────────────────────────────────────
+
+@Composable
+private fun AiForecastCard(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "aiPulse")
+    val cloudAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "cloudAlpha"
+    )
+
+    GlassCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        tint = TertiaryContainer
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Surface(
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp),
+                color = Tertiary,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "AI",
+                    color = OnTertiary,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+            }
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "☁️",
+                    fontSize = 48.sp,
+                    modifier = Modifier.graphicsLayer { alpha = cloudAlpha }
+                )
+                Column {
+                    Text(
+                        text = "Low Energy Day",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = OnTertiaryContainer
+                    )
+                    Text(
+                        text = "AI Cycle Whisperer Premium Forecast",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnTertiaryContainer.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── Pattern Detective Notification Card ────────────────────────────────────────
+
+@Composable
+private fun PatternDetectiveCard(
+    onViewInsights: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val amber = Color(0xFFFFB74D)
+
+    GlassCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Surface(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight(),
+                color = amber,
+                shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+            ) {}
+            Row(
+                modifier = Modifier.weight(1f).padding(start = 12.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(text = "🔍", fontSize = 24.sp)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "We noticed something interesting",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = OnSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Your sleep patterns seem to affect your cramps. Check Insights for details.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = onViewInsights) {
+                            Text("View Insights", color = Primary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Current Status Dashboard (3-column bento) ──────────────────────────────────
+
+@Composable
+private fun StatusDashboard(
+    phaseName: String,
+    phaseDay: Int,
+    phaseTotalDays: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        GlassCard(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "$phaseName Phase",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = "$phaseDay",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                        color = Primary
+                    )
+                    Text(
+                        text = "/ $phaseTotalDays Days",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(SurfaceContainerHigh)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(fraction = phaseDay.toFloat() / phaseTotalDays.coerceAtLeast(1))
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Primary)
+                    )
+                }
+            }
+        }
+        GlassCard(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "💧", fontSize = 28.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Flow",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant
+                )
+                Text(
+                    text = "Medium",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = OnSurface
+                )
+            }
+        }
+        GlassCard(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "🥰", fontSize = 28.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Mood",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant
+                )
+                Text(
+                    text = "Cuddly",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = OnSurface
+                )
+            }
+        }
+    }
+}
+
+// ── Daily Insights Section ─────────────────────────────────────────────────────
+
+@Composable
+private fun DailyInsightsSection(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Daily Insights",
+            style = MaterialTheme.typography.labelMedium,
+            color = OnSurfaceVariant,
+            modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                GlassCard(
+                    modifier = Modifier.width(200.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "🧘", fontSize = 32.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "5-Min Restorative Yoga",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = OnSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Gentle stretches for cramp relief",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceVariant
+                        )
+                    }
+                }
+            }
+            item {
+                GlassCard(
+                    modifier = Modifier.width(200.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "🍵", fontSize = 32.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Ginger & Chamomile Blend",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = OnSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Soothing herbal tea for relaxation",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Phase Coach Banner ─────────────────────────────────────────────────────────
+
+@Composable
+private fun PhaseCoachBanner(
+    phaseName: String,
+    phaseDay: Int,
+    onViewCoachGuide: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(listOf(Primary, PrimaryContainer))
+                )
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "PHASE COACH",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = "Day $phaseDay of ${phaseName} Phase",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                }
+                Surface(
+                    color = Color.White.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(24.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.4f))
+                ) {
+                    Text(
+                        text = "View Coach Guide",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable { onViewCoachGuide() }.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }

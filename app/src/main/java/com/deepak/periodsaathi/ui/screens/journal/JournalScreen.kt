@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -110,15 +111,42 @@ fun JournalScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(entries) { entry ->
-                JournalEntryCard(
-                    entry = entry,
-                    onDelete = { viewModel.deleteEntry(entry.id) }
-                )
-            }
+        if (entries.isEmpty()) {
+            JournalEmptyState()
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(entries) { entry ->
+                    JournalEntryCard(
+                        entry = entry,
+                        onDelete = { viewModel.deleteEntry(entry.id) }
+                    )
+                }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+                item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun JournalEmptyState() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "📝", fontSize = 48.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Journal entries will appear here",
+                fontSize = 16.sp,
+                color = OnSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

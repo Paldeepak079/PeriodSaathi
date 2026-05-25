@@ -3,12 +3,8 @@ package com.deepak.periodsaathi.ui.screens.partner
 import android.content.Intent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,45 +32,43 @@ fun PartnerModeScreen(
     val partnerName by viewModel.partnerName.collectAsState()
     val context = LocalContext.current
 
+    val selectedRequest = viewModel.careRequests.firstOrNull { it.id in selectedRequests }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val buttonScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "buttonPulse"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Partner Mode",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = OnSurface
-            )
-
-            TextButton(onClick = { /* Show privacy info */ }) {
-                Text("🔒 Privacy", color = OnSurfaceVariant)
-            }
-        }
-
-        // Privacy note
         GlassCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "✅", fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Zero health data shared. Only your selected care requests.",
+                    text = "Partner Mode 💌",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Send a care request — no medical details shared",
                     color = OnSurfaceVariant,
-                    fontSize = 12.sp
+                    fontSize = 16.sp
                 )
             }
         }
@@ -91,19 +85,25 @@ fun PartnerModeScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Care request cards
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(viewModel.careRequests) { request ->
-                CareRequestCard(
-                    request = request,
-                    isSelected = request.id in selectedRequests,
-                    onToggle = { viewModel.toggleRequest(request.id) }
-                )
+        val rows = viewModel.careRequests.chunked(2)
+        rows.forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                row.forEach { request ->
+                    CareRequestCard(
+                        request = request,
+                        isSelected = request.id in selectedRequests,
+                        onToggle = { viewModel.toggleRequest(request.id) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (row.size < 2) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         // Custom message
@@ -121,6 +121,102 @@ fun PartnerModeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Preview Card
+        GlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Preview for $partnerName",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                if (selectedRequest != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = selectedRequest.emoji, fontSize = 28.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Priya needs you:",
+                                fontWeight = FontWeight.Bold,
+                                color = OnPrimaryContainer,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = "\"${selectedRequest.text}\"",
+                                fontWeight = FontWeight.Bold,
+                                color = Primary,
+                                fontSize = 18.sp
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "Select a care request above",
+                        color = OnSurfaceVariant,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Notification Mockup
+        if (selectedRequest != null) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Surface(
+                    modifier = Modifier.widthIn(max = 280.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF1A1A2E)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Primary,
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "+",
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Period Saathi • Now",
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "New Care Request",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "Priya needs you: \"${selectedRequest.text}\"",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Send button
         Button(
             onClick = {
@@ -131,7 +227,7 @@ fun PartnerModeScreen(
                         append("💕 Care request for $partnerName:\n\n")
                         selected.forEach { append("${it.emoji} ${it.text}\n") }
                         if (customMessage.isNotBlank()) {
-                            append("\n💬 ${customMessage}")
+                            append("\n💬 $customMessage")
                         }
                     }
                     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -141,16 +237,26 @@ fun PartnerModeScreen(
                     context.startActivity(Intent.createChooser(intent, "Send via"))
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .scale(if (selectedRequests.isNotEmpty()) buttonScale else 1f)
+                .background(
+                    brush = if (selectedRequests.isNotEmpty())
+                        Brush.horizontalGradient(listOf(SoftLavender, BlushPink))
+                    else
+                        Brush.horizontalGradient(listOf(SoftLavender, SoftLavender)),
+                    shape = RoundedCornerShape(50.dp)
+                ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedRequests.isEmpty()) SoftLavender else BlushPink
+                containerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent
             ),
             enabled = selectedRequests.isNotEmpty() && sendState !is SendState.Sending,
             shape = RoundedCornerShape(50.dp)
         ) {
             Text(
                 text = when (sendState) {
-                    is SendState.Idle -> "Send Care Request 💌"
+                    is SendState.Idle -> "Send to $partnerName 💌"
                     is SendState.Sending -> "Sending..."
                     is SendState.Sent -> "Sent! 💌"
                 },
@@ -167,7 +273,8 @@ fun PartnerModeScreen(
 private fun CareRequestCard(
     request: CareRequest,
     isSelected: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
@@ -181,8 +288,7 @@ private fun CareRequestCard(
     )
 
     GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .scale(scale)
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)

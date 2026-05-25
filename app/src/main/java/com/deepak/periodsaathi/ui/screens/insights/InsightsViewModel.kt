@@ -30,8 +30,12 @@ class InsightsViewModel @Inject constructor(
     private val _insights = MutableStateFlow<List<PatternInsight>>(emptyList())
     val insights: StateFlow<List<PatternInsight>> = _insights.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
         viewModelScope.launch {
+            _isLoading.value = true
             val cycles = cycleRepository.getLastNCycles(Int.MAX_VALUE).first()
             val cycleCount = cycles.size
             _cyclesLogged.value = cycleCount
@@ -40,6 +44,7 @@ class InsightsViewModel @Inject constructor(
             if (cycleCount >= 3) {
                 computeInsights(cycles)
             }
+            _isLoading.value = false
         }
     }
 

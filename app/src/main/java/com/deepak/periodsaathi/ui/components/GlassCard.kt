@@ -8,6 +8,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
@@ -25,11 +27,26 @@ fun GlassCard(
     val cardContent = @Composable {
         Surface(
             shape = shape,
-            color = Color.White.copy(alpha = 0.45f),
+            color = Color.Transparent,
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.6f)),
             modifier = modifier
         ) {
-            Column(content = content)
+            Column(
+                modifier = Modifier.drawBehind {
+                    drawRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.6f),
+                                Color.White.copy(alpha = 0.4f)
+                            ),
+                            start = Offset.Zero,
+                            end = Offset(size.width, size.height)
+                        ),
+                        size = size
+                    )
+                },
+                content = content
+            )
         }
     }
 

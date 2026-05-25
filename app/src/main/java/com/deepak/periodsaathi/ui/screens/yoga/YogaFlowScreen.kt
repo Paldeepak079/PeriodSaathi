@@ -3,6 +3,7 @@ package com.deepak.periodsaathi.ui.screens.yoga
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -35,19 +39,20 @@ fun YogaFlowScreen(
 ) {
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPoseIndex by viewModel.currentPoseIndex.collectAsState()
-    val timeRemaining by viewModel.timeRemaining.collectAsState()
+    val poseElapsed by viewModel.poseElapsed.collectAsState()
     val breathingPhase by viewModel.breathingPhase.collectAsState()
     val currentPose = viewModel.poses[currentPoseIndex]
+    val poseRemaining = (currentPose.duration - poseElapsed).coerceAtLeast(0)
+    val nextPoses = viewModel.poses.drop(currentPoseIndex + 1).take(2)
 
     val breathingRadius = remember { Animatable(120f) }
 
-    LaunchedEffect(isPlaying, breathingPhase) {
+    LaunchedEffect(isPlaying) {
         if (isPlaying) {
-            when (breathingPhase) {
-                BreathingPhase.INHALE -> breathingRadius.animateTo(170f, tween(4000))
-                BreathingPhase.HOLD -> {}
-                BreathingPhase.EXHALE -> breathingRadius.animateTo(120f, tween(6000))
-                else -> {}
+            while (isActive) {
+                breathingRadius.animateTo(170f, tween(4000))
+                delay(2000)
+                breathingRadius.animateTo(120f, tween(6000))
             }
         }
     }
@@ -101,19 +106,66 @@ fun YogaFlowScreen(
                 fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Up Next suggestions
+            if (nextPoses.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "Up Next",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = SoftLavender.copy(alpha = 0.6f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                nextPoses.forEachIndexed { index, pose ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color.White.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = pose.name,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = pose.description.take(40) + if (pose.description.length > 40) "..." else "",
+                                    color = SoftLavender.copy(alpha = 0.6f),
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Text(
+                                text = "❯",
+                                color = SoftLavender.copy(alpha = 0.4f),
+                                fontSize = 18.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Breathing circle
             BreathingCircle(
                 radius = breathingRadius.value,
-                phase = breathingPhase
+                phase = if (isPlaying) breathingPhase else BreathingPhase.IDLE
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Timer
+            // Timer - per-pose remaining
             Text(
-                text = formatTime(timeRemaining),
+                text = formatTime(poseRemaining),
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = BlushPink
@@ -129,7 +181,8 @@ fun YogaFlowScreen(
                             .size(if (index == currentPoseIndex) 12.dp else 8.dp)
                             .background(
                                 if (index == currentPoseIndex) BlushPink else SoftLavender.copy(alpha = 0.3f),
-                                shape = MaterialTheme.shapes.small)
+                                shape = MaterialTheme.shapes.small
+                            )
                     )
                 }
             }
@@ -142,7 +195,7 @@ fun YogaFlowScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = { viewModel.previousPose() }) {
-                    Text("← Previous", color = SoftLavender)
+                    Text("Previous", color = SoftLavender)
                 }
 
                 FloatingActionButton(
@@ -157,7 +210,7 @@ fun YogaFlowScreen(
                 }
 
                 TextButton(onClick = { viewModel.nextPose() }) {
-                    Text("Next →", color = SoftLavender)
+                    Text("Next", color = SoftLavender)
                 }
             }
         }
@@ -171,7 +224,7 @@ private fun BreathingCircle(radius: Float, phase: BreathingPhase) {
             BreathingPhase.INHALE -> BabyBlue
             BreathingPhase.HOLD -> SoftLavender
             BreathingPhase.EXHALE -> BlushPink
-            else -> SoftLavender
+            BreathingPhase.IDLE -> SoftLavender
         },
         animationSpec = tween(1000),
         label = "breathColor"
@@ -204,7 +257,7 @@ private fun BreathingCircle(radius: Float, phase: BreathingPhase) {
                 BreathingPhase.INHALE -> "Breathe In..."
                 BreathingPhase.HOLD -> "Hold..."
                 BreathingPhase.EXHALE -> "Breathe Out..."
-                else -> "Press Play"
+                BreathingPhase.IDLE -> "Press Play"
             },
             color = Color.White,
             fontSize = 20.sp,

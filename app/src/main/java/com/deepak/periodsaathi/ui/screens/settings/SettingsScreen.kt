@@ -24,6 +24,7 @@ import com.deepak.periodsaathi.ui.theme.*
 fun SettingsScreen(
     onNavigateToPayment: () -> Unit = {},
     onNavigateToReport: () -> Unit = {},
+    onSignOut: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val userName by viewModel.userName.collectAsState()
@@ -113,7 +114,7 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedButton(
-            onClick = { viewModel.signOut() },
+            onClick = { viewModel.signOut(onSignOut) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = OnSurfaceVariant),
             shape = RoundedCornerShape(12.dp)
@@ -192,4 +193,3 @@ private fun SettingsToggle(title: String, subtitle: String = "", checked: Boolea
         )
     }
 }
-
