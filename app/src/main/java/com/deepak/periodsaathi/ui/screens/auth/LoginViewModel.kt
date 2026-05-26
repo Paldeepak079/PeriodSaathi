@@ -59,19 +59,35 @@ class LoginViewModel @Inject constructor(
     fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>, onSuccess: () -> Unit = {}) {
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            val result = googleSignInManager.handleSignInResult(task)
-            if (result.success) {
-                result.account?.let { account ->
-                    _userProfile.value = UserProfile(
-                        name = account.displayName ?: "",
-                        email = account.email ?: "",
-                        photoUrl = account.photoUrl?.toString()
-                    )
-                    _loginState.value = LoginState.Success
-                    onSuccess()
+            try {
+                val result = googleSignInManager.handleSignInResult(task)
+                if (result.success) {
+                    result.account?.let { account ->
+                        _userProfile.value = UserProfile(
+                            name = account.displayName ?: "",
+                            email = account.email ?: "",
+                            photoUrl = account.photoUrl?.toString()
+                        )
+                        _loginState.value = LoginState.Success
+                        onSuccess()
+                    } ?: run {
+                        _loginState.value = LoginState.Error("Sign-in succeeded but no account data returned.")
+                    }
+                } else {
+                    _loginState.value = LoginState.Error(result.errorMessage ?: "Google Sign-In failed")
                 }
-            } else {
-                _loginState.value = LoginState.Error(result.errorMessage ?: "Google Sign-In failed")
+            } catch (e: Exception) {
+                // Safety net: catches any unexpected exception including from malformed sign-in data
+                val msg = when {
+                    e is ApiException && e.statusCode == 10 ->
+                        "Google Sign-In is not configured correctly for this app build. " +
+                        "Please ensure the SHA-1 fingerprint is registered in the Google Cloud Console."
+                    e is ApiException ->
+                        "Sign in failed (code: ${e.statusCode})"
+                    else ->
+                        "An unexpected error occurred during sign-in. Please try again."
+                }
+                _loginState.value = LoginState.Error(msg)
             }
         }
     }
@@ -103,6 +119,23 @@ class LoginViewModel @Inject constructor(
 
     fun resetState() {
         _loginState.value = LoginState.Idle
+    }
+
+    /**
+     * Called when the Activity result handler itself catches an unexpected exception
+     * (e.g. getSignedInAccountFromIntent throws before we even get to handleGoogleSignInResult).
+     */
+    fun handleRawException(e: Exception) {
+        val msg = when {
+            e is ApiException && e.statusCode == 10 ->
+                "Google Sign-In is not configured for this build. " +
+                "Please register the SHA-1 fingerprint in Google Cloud Console."
+            e is ApiException ->
+                "Sign in failed (code: ${e.statusCode})"
+            else ->
+                "An unexpected sign-in error occurred. Please try again."
+        }
+        _loginState.value = LoginState.Error(msg)
     }
 
     fun signOut() {

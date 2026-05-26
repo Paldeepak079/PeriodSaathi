@@ -54,13 +54,37 @@ fun LoginScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            viewModel.handleGoogleSignInResult(task, onSuccess = {
-                onLoginSuccess()
-            })
-        } else {
-            viewModel.resetState()
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                // Happy path: user completed account selection
+                if (result.data != null) {
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                    viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
+                } else {
+                    // RESULT_OK but no data — treat as cancelled
+                    viewModel.resetState()
+                }
+            }
+            Activity.RESULT_CANCELED -> {
+                // User pressed Back — just reset to Idle, no error shown
+                viewModel.resetState()
+            }
+            else -> {
+                // Any other non-OK code (DEVELOPER_ERROR returns -1 / RESULT_CANCELED through
+                // the system, but the actual ApiException is in result.data).
+                // Safely try to extract the ApiException error code without crashing.
+                if (result.data != null) {
+                    try {
+                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
+                    } catch (e: Exception) {
+                        // getSignedInAccountFromIntent itself can throw — catch and delegate
+                        viewModel.handleRawException(e)
+                    }
+                } else {
+                    viewModel.resetState()
+                }
+            }
         }
     }
 

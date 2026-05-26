@@ -5,9 +5,8 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
-import androidx.fragment.app.FragmentActivity
 import androidx.core.content.ContextCompat
-import java.util.concurrent.Executor
+import androidx.fragment.app.FragmentActivity
 
 enum class BiometricStatus {
     Available,
@@ -30,16 +29,27 @@ class AppBiometricManager(private val context: Context) {
         }
     }
 
+    /**
+     * Launches the native biometric prompt.
+     *
+     * @param activity        The host FragmentActivity.
+     * @param onSuccess       Called when the user is authenticated successfully.
+     * @param onFailed        Called when a single biometric attempt fails (wrong finger, etc.).
+     *                        The prompt stays open for retries — do NOT dismiss the screen here.
+     * @param onError         Called with [errString] and [errorCode] when a terminal error occurs.
+     *                        Use [errorCode] to distinguish between hardware errors (route to PIN)
+     *                        and user cancellations (show retry message).
+     */
     fun authenticate(
         activity: FragmentActivity,
         onSuccess: () -> Unit,
         onFailed: () -> Unit,
-        onError: (String) -> Unit
+        onError: (errString: String, errorCode: Int) -> Unit
     ) {
-        val executor: Executor = ContextCompat.getMainExecutor(context)
+        val executor = ContextCompat.getMainExecutor(context)
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Wake up Saathi \uD83C\uDF38")
+            .setTitle("Wake up Saathi 🌸")
             .setSubtitle("Verify to access Period Saathi")
             .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
             .build()
@@ -57,7 +67,7 @@ class AppBiometricManager(private val context: Context) {
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    onError(errString.toString())
+                    onError(errString.toString(), errorCode)
                 }
             }
         )
@@ -67,4 +77,3 @@ class AppBiometricManager(private val context: Context) {
 
     fun canAuthenticate(): Boolean = isBiometricAvailable() == BiometricStatus.Available
 }
-

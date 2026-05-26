@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Period Saathi — Skills Graph</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #FFF8F2;
+    color: #2D2D2D;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #874E58;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #655781;
+    margin-bottom: 24px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 16px;
+    padding: 16px 24px;
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-card .num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #874E58;
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: #655781;
+    margin-top: 2px;
+  }
+
+  /* Force graph */
+  #graph {
+    width: 100%;
+    height: 400px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.8);
+    margin-bottom: 24px;
+    display: block;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 20px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .card .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .card .icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .card .name {
+    font-size: 16px; font-weight: 700; color: #2D2D2D;
+  }
+  .card .version {
+    font-size: 12px; color: #874E58; font-weight: 600;
+    background: rgba(135,78,88,0.1);
+    padding: 2px 10px; border-radius: 20px;
+    margin-left: auto;
+  }
+  .card .detail {
+    font-size: 13px; color: #655781;
+    margin-bottom: 4px;
+  }
+  .card .detail strong {
+    color: #2D2D2D;
+  }
+  .card .badges {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .badge {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(101,87,129,0.1);
+    color: #655781;
+  }
+  .badge.green {
+    background: rgba(76,175,80,0.12);
+    color: #2E7D32;
+  }
+  .badge.amber {
+    background: rgba(255,152,0,0.12);
+    color: #E65100;
+  }
+  .badge.blue {
+    background: rgba(33,150,243,0.12);
+    color: #1565C0;
+  }
+  .badge.purple {
+    background: rgba(156,39,176,0.12);
+    color: #6A1B9A;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin: 16px 0 24px;
+    font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.commit { background: #E65100; }
+  .legend-dot.weekly { background: #1565C0; }
+  .legend-dot.manual { background: #9E9E9E; }
+  .legend-dot.updating { background: #2E7D32; }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+
+<h1>Period Saathi Skills Graph</h1>
+<div class="subtitle">Interactive knowledge graph of all agent skills &middot; <span id="timestamp"></span></div>
+
+<!-- Stats -->
+<div class="stats" id="stats"></div>
+
+<!-- D3 Force Graph -->
+<svg id="graph"></svg>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot updating" style="background:#2E7D32"></span> Auto-update (commit)</span>
+  <span class="legend-item"><span class="legend-dot weekly" style="background:#1565C0"></span> Auto-update (weekly)</span>
+  <span class="legend-item"><span class="legend-dot manual" style="background:#9E9E9E"></span> Manual only</span>
+  <span class="legend-item"><span class="legend-dot commit"></span> Node size = connections</span>
+</div>
+
+<!-- Cards -->
+<div class="grid" id="cards"></div>
+
+<div class="footer">
+  Period Saathi &mdash; Open <code style="background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:4px;">prompts/SKILLS_DASHBOARD.md</code> for details
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ── Skill data ──────────────────────────────────────
+const skills = [
+  { name:"graphify", ver:"0.4.21", interval:"commit", source:"ALJAZEERAPLUS/graphify", color:"#E65100", group:"project", desc:"Knowledge graphs & community clustering" },
+  { name:"understand-anything", ver:"1.0.0", interval:"commit", source:"Lum1104/Understand-Anything", color:"#E65100", group:"project", desc:"Codebase knowledge graphs" },
+  { name:"agent-almanac", ver:"1.0.0", interval:"weekly", source:"BehiSecc/awesome-claude-skills", color:"#1565C0", group:"project", desc:"69,000+ Claude skills" },
+  { name:"ai-code-review", ver:"1.0.0", interval:"weekly", source:"nuekkis/AI-Code-Review", color:"#1565C0", group:"project", desc:"Automated PR review" },
+  { name:"ai-review", ver:"1.0.0", interval:"weekly", source:"Nikita-Filonov/ai-review", color:"#1565C0", group:"project", desc:"AI-powered PR review" },
+  { name:"awesome-ai-agents", ver:"1.0.0", interval:"weekly", source:"ARUNAGIRINATHAN-K/awesome-ai-agents-2026", color:"#1565C0", group:"project", desc:"2026 agent frameworks" },
+  { name:"caveman", ver:"1.0.0", interval:"weekly", source:"JuliusBrussee/caveman", color:"#1565C0", group:"project", desc:"75% token compression" },
+  { name:"smol-developer", ver:"1.0.0", interval:"weekly", source:"smol-ai/developer", color:"#1565C0", group:"project", desc:"Auto-scaffold code" },
+  { name:"supabase", ver:"0.1.2", interval:"weekly", source:"supabase/agent-skills", color:"#1565C0", group:"agent", desc:"Supabase SDK + Auth + DB" },
+  { name:"supabase-postgres", ver:"1.1.1", interval:"weekly", source:"supabase/agent-skills", color:"#1565C0", group:"agent", desc:"Postgres best practices" },
+  { name:"openspec-apply", ver:"1.0", interval:"manual", source:"local", color:"#9E9E9E", group:"project", desc:"Implement changes" },
+  { name:"openspec-archive", ver:"1.0", interval:"manual", source:"local", color:"#9E9E9E", group:"project", desc:"Archive changes" },
+  { name:"openspec-explore", ver:"1.0", interval:"manual", source:"local", color:"#9E9E9E", group:"project", desc:"Explore ideas" },
+  { name:"openspec-propose", ver:"1.0", interval:"manual", source:"local", color:"#9E9E9E", group:"project", desc:"Propose changes" },
+];
+
+// Interval colors for graph
+function intervalColor(i) {
+  if (i === "commit") return "#2E7D32";
+  if (i === "weekly") return "#1565C0";
+  return "#9E9E9E";
+}
+
+// ── Timestamp ───────────────────────────────────────
+document.getElementById("timestamp").textContent = new Date().toLocaleString();
+
+// ── Stats ───────────────────────────────────────────
+const total = skills.length;
+const commit = skills.filter(s => s.interval === "commit").length;
+const weekly = skills.filter(s => s.interval === "weekly").length;
+const manual = skills.filter(s => s.interval === "manual").length;
+
+document.getElementById("stats").innerHTML = `
+  <div class="stat-card"><div class="num">${total}</div><div class="label">Total Skills</div></div>
+  <div class="stat-card"><div class="num">${commit}</div><div class="label">Commit-triggered</div></div>
+  <div class="stat-card"><div class="num">${weekly}</div><div class="label">Weekly Updates</div></div>
+  <div class="stat-card"><div class="num">${manual}</div><div class="label">Manual Only</div></div>
+`;
+
+// ── Force Graph ─────────────────────────────────────
+const width = document.getElementById('graph').clientWidth || 900;
+const height = 400;
+const svg = d3.select("#graph");
+
+const g = svg.append("g");
+
+const zoom = d3.zoom().scaleExtent([0.3, 3]).on("zoom", (e) => {
+  g.attr("transform", e.transform);
+});
+svg.call(zoom);
+
+// Nodes: center hub (project) + each skill
+const nodes = [
+  { id: "period-saathi", label: "Period Saathi", group: "hub", color: "#874E58", radius: 22 },
+  ...skills.map((s,i) => ({
+    id: s.name,
+    label: s.name,
+    group: s.group,
+    color: s.color,
+    radius: s.interval === "commit" ? 12 : s.interval === "weekly" ? 10 : 8,
+    ver: s.ver,
+    interval: s.interval,
+  }))
+];
+
+const links = skills.map(s => ({
+  source: "period-saathi",
+  target: s.name,
+  distance: s.interval === "commit" ? 80 : s.interval === "weekly" ? 120 : 160,
+}));
+
+const simulation = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.distance))
+  .force("charge", d3.forceManyBody().strength(-200))
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .force("collision", d3.forceCollide().radius(d => d.radius + 8));
+
+// Links
+const link = g.append("g")
+  .selectAll("line")
+  .data(links)
+  .join("line")
+  .attr("stroke", "#D0BFEF")
+  .attr("stroke-width", 1.5)
+  .attr("stroke-opacity", 0.5);
+
+// Nodes
+const node = g.append("g")
+  .selectAll("circle")
+  .data(nodes)
+  .join("circle")
+  .attr("r", d => d.radius)
+  .attr("fill", d => d.color)
+  .attr("stroke", d => d.group === "hub" ? "#FFB6C1" : "white")
+  .attr("stroke-width", d => d.group === "hub" ? 3 : 2)
+  .style("cursor", "pointer")
+  .call(drag(simulation));
+
+// Labels
+const label = g.append("g")
+  .selectAll("text")
+  .data(nodes)
+  .join("text")
+  .text(d => d.label)
+  .attr("font-size", d => d.group === "hub" ? 14 : 11)
+  .attr("font-weight", d => d.group === "hub" ? 800 : 600)
+  .attr("fill", d => d.group === "hub" ? "white" : "#2D2D2D")
+  .attr("text-anchor", "middle")
+  .attr("dy", d => d.group === "hub" ? 5 : -d.radius - 6)
+  .style("pointer-events", "none");
+
+// Tooltip
+node.append("title").text(d => `${d.label}${d.ver ? ' v' + d.ver : ''}`);
+
+simulation.on("tick", () => {
+  link
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+  node
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y);
+  label
+    .attr("x", d => d.x)
+    .attr("y", d => d.y);
+});
+
+function drag(simulation) {
+  function dragstarted(e, d) {
+    if (!e.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  function dragged(e, d) {
+    d.fx = e.x;
+    d.fy = e.y;
+  }
+  function dragended(e, d) {
+    if (!e.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  return d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended);
+}
+
+// ── Cards ───────────────────────────────────────────
+const colorMap = {
+  project: { bg: "#874E58", label: "Project Skill" },
+  agent: { bg: "#655781", label: "Agent Skill" },
+};
+
+const intervalLabel = { commit: "Auto (commit)", weekly: "Auto (weekly)", manual: "Manual" };
+
+document.getElementById("cards").innerHTML = skills.map(s => {
+  const c = s.color;
+  const groupInfo = colorMap[s.group] || { bg: "#999", label: s.group };
+  return `<div class="card">
+    <div class="header">
+      <div class="icon" style="background:${c}">${s.name[0].toUpperCase()}</div>
+      <div class="name">${s.name}</div>
+      <div class="version">v${s.ver}</div>
+    </div>
+    <div class="detail"><strong>Type:</strong> ${groupInfo.label}</div>
+    <div class="detail"><strong>Source:</strong> ${s.source}</div>
+    <div class="detail"><strong>Update:</strong> ${intervalLabel[s.interval] || s.interval}</div>
+    <div class="badges">
+      <span class="badge ${s.interval === 'commit' ? 'green' : s.interval === 'weekly' ? 'blue' : 'amber'}">${intervalLabel[s.interval] || s.interval}</span>
+      <span class="badge ${s.group === 'project' ? 'purple' : ''}">${groupInfo.label}</span>
+    </div>
+  </div>`;
+}).join("");
+
+</script>
+</body>
+</html>

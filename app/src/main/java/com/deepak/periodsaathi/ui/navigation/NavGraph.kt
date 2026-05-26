@@ -11,19 +11,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.deepak.periodsaathi.security.StealthModeManager
+
 import com.deepak.periodsaathi.ui.lock.LockScreen
 import com.deepak.periodsaathi.ui.lock.PinEntryScreen
 import com.deepak.periodsaathi.ui.screens.auth.LoginScreen
 import com.deepak.periodsaathi.ui.screens.breathing.BreathingModeScreen
 import com.deepak.periodsaathi.ui.screens.calendar.CalendarScreen
 import com.deepak.periodsaathi.ui.screens.challenges.ChallengesScreen
+import com.deepak.periodsaathi.ui.screens.community.SecretChatsScreen
 import com.deepak.periodsaathi.ui.screens.daylog.DayLogScreen
 import com.deepak.periodsaathi.ui.screens.home.HomeScreen
 import com.deepak.periodsaathi.ui.screens.phasecoach.PhaseCoachScreen
@@ -69,13 +70,10 @@ fun PeriodSaathiNavGraph(
             onNavigateToLock = { navController.navigate(Lock) { popUpTo<Splash> { inclusive = true } } }
         ) }
         composable<Lock> {
-            val context = LocalContext.current
             var showPin by remember { mutableStateOf(false) }
             if (showPin) {
-                val stealthModeManager = remember { StealthModeManager(context) }
                 PinEntryScreen(
-                    stealthModeManager = stealthModeManager,
-                    pinVerified = {
+                    onPinVerified = {
                         navController.navigate(Home) { popUpTo<Lock> { inclusive = true } }
                     },
                     onBack = { showPin = false }
@@ -90,8 +88,7 @@ fun PeriodSaathiNavGraph(
             }
         }
         composable<Onboarding> { OnboardingScreen(
-            onComplete = { navController.navigate(Login) { popUpTo<Onboarding> { inclusive = true } } },
-            onSkip = { navController.navigate(Login) { popUpTo<Onboarding> { inclusive = true } } }
+            onComplete = { navController.navigate(Login) { popUpTo<Onboarding> { inclusive = true } } }
         ) }
         composable<Login> { LoginScreen(
             navController = navController,
@@ -145,6 +142,8 @@ fun PeriodSaathiNavGraph(
         composable<BreathingMode> { BreathingModeScreen(onExit = { navController.popBackStack() }) }
         composable<Payment> { PaymentScreen() }
         composable<TimeCapsule> { TimeCapsuleScreen(onNavigateBack = { navController.popBackStack() }) }
+        composable<Community> { SecretChatsScreen() }
+        composable<PartnerDashboard> { PartnerModeScreen() }
         composable<DayLog> { backStackEntry ->
             val dayLog = backStackEntry.toRoute<DayLog>()
             DayLogScreen(

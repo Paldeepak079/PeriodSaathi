@@ -183,6 +183,9 @@ dependencies {
     // PDF generation
     implementation(libs.itext7.core)
 
+    // Lottie animations (bio-visualization engine)
+    implementation(libs.lottie.compose)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

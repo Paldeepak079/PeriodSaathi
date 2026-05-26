@@ -20,8 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.GridView
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -56,8 +58,9 @@ val bottomNavTabs = listOf(
     NavTab("Home", Icons.Rounded.Home, Home, "Home tab"),
     NavTab("Calendar", Icons.Rounded.CalendarMonth, Calendar, "Calendar tab"),
     NavTab("Wellness", Icons.Rounded.Favorite, Wellness, "Wellness tab"),
-    NavTab("More", Icons.Rounded.GridView, Settings, "More tab"),
+    NavTab("Secret Chats", Icons.Rounded.Lock, Community, "Secret Chats tab"),
 )
+
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {

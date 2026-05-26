@@ -1,0 +1,88 @@
+{
+  "$schema": "https://opencode.ai/schemas/opencode.json",
+  "version": 1,
+  "skills": {
+    "agent-almanac": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/BehiSecc/awesome-claude-skills.git",
+      "version": "1.0.0"
+    },
+    "ai-code-review": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/nuekkis/AI-Code-Review.git",
+      "version": "1.0.0"
+    },
+    "ai-review": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/Nikita-Filonov/ai-review.git",
+      "version": "1.0.0"
+    },
+    "awesome-ai-agents": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/ARUNAGIRINATHAN-K/awesome-ai-agents-2026.git",
+      "version": "1.0.0"
+    },
+    "caveman": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "npm:caveman",
+      "version": "1.0.0"
+    },
+    "graphify": {
+      "autoUpdate": true,
+      "updateInterval": "commit",
+      "source": "https://github.com/ALJAZEERAPLUS/graphify.git",
+      "version": "0.4.21"
+    },
+    "openspec-apply-change": {
+      "autoUpdate": false,
+      "source": "local",
+      "version": "1.0"
+    },
+    "openspec-archive-change": {
+      "autoUpdate": false,
+      "source": "local",
+      "version": "1.0"
+    },
+    "openspec-explore": {
+      "autoUpdate": false,
+      "source": "local",
+      "version": "1.0"
+    },
+    "openspec-propose": {
+      "autoUpdate": false,
+      "source": "local",
+      "version": "1.0"
+    },
+    "smol-developer": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "npm:smol-developer",
+      "version": "1.0.0"
+    },
+    "understand-anything": {
+      "autoUpdate": true,
+      "updateInterval": "commit",
+      "source": "https://github.com/Lum1104/Understand-Anything.git",
+      "version": "1.0.0"
+    },
+    "supabase": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/supabase/agent-skills.git",
+      "path": ".agents/skills/supabase",
+      "version": "0.1.2"
+    },
+    "supabase-postgres-best-practices": {
+      "autoUpdate": true,
+      "updateInterval": "weekly",
+      "source": "https://github.com/supabase/agent-skills.git",
+      "path": ".agents/skills/supabase-postgres-best-practices",
+      "version": "1.1.1"
+    }
+  }
+}

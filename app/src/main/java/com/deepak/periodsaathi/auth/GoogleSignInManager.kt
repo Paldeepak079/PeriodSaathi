@@ -75,6 +75,10 @@ class GoogleSignInManager @Inject constructor(
 
     private fun getErrorMessage(statusCode: Int): String {
         return when (statusCode) {
+            // DEVELOPER_ERROR — package name / SHA-1 fingerprint mismatch in Google Cloud Console
+            10 -> "Google Sign-In setup error. Please contact support. (DEVELOPER_ERROR)"
+            7 -> "Network error. Please check your internet connection and try again."
+            8 -> "Internal error. Please try again."
             12500 -> "Sign in cancelled"
             12501 -> "Sign in interrupted"
             12502 -> "No account found. Please add a Google account to your device."

@@ -19,6 +19,7 @@ data class HomeUiState(
     val cycleDay: Int = 1,
     val totalCycleDays: Int = 28,
     val phase: CyclePhase = CyclePhase.FOLLICULAR,
+    val selectedTabPhase: CyclePhase = CyclePhase.FOLLICULAR,
     val phaseDayInPhase: Int = 2,
     val todayEntry: CycleEntry? = null,
     val prediction: PeriodPrediction? = null,
@@ -29,7 +30,8 @@ data class HomeUiState(
     val showRestDay: Boolean = false,
     val showConfetti: Boolean = false,
     val isFirstLaunch: Boolean = false,
-    val mascotTipIndex: Int = 0
+    val mascotTipIndex: Int = 0,
+    val mascotTipText: String = "Remember to stay hydrated! 💧"
 )
 
 data class CycleEntry(
@@ -56,6 +58,51 @@ class HomeViewModel @Inject constructor(
         "Listen to your body 💪"
     )
 
+    private val phaseTips = mapOf(
+        CyclePhase.MENSTRUAL to listOf(
+            "Rest up — your body is doing important work 🛌",
+            "Stay warm and cozy with a heating pad ☕",
+            "Iron-rich foods help replenish your energy 🥩",
+            "Gentle walks can ease cramp discomfort 🚶",
+            "You deserve extra self-care today 💕"
+        ),
+        CyclePhase.FOLLICULAR to listOf(
+            "Your energy is rising — time to move! 🏃",
+            "Nourish your body with fresh greens 🥗",
+            "Social plans? Your confidence is peaking 🗣️",
+            "Great time to start new projects 🚀",
+            "Your skin is glowing — embrace it ✨"
+        ),
+        CyclePhase.OVULATORY to listOf(
+            "Your communication superpower is active 🎯",
+            "Connection and collaboration feel effortless 🤝",
+            "Trust your intuition today 🧠",
+            "Your energy is magnetic — own it ⚡",
+            "Perfect day for a creative breakthrough 🎨"
+        ),
+        CyclePhase.LUTEAL to listOf(
+            "Slow down and listen to your body 🌿",
+            "Warm herbal tea can soothe your nerves 🍵",
+            "Journaling helps process big emotions 📝",
+            "Prioritize rest over productivity 🛋️",
+            "You're almost there — be gentle with yourself 🤗"
+        ),
+        CyclePhase.PMS to listOf(
+            "Hormones are real — be kind to yourself 🌊",
+            "Dark chocolate counts as self-care 🍫",
+            "Give yourself permission to rest 😴",
+            "Deep breaths — this too shall pass 🌬️",
+            "You're not alone in how you feel 💗"
+        ),
+        CyclePhase.UNKNOWN to listOf(
+            "Start tracking to unlock insights 📊",
+            "Every cycle tells a story 📖",
+            "Consistency is key — log daily ✅",
+            "You're building valuable self-knowledge 🧠",
+            "Welcome to your journey! 🌟"
+        )
+    )
+
     init {
         loadHomeData()
     }
@@ -73,9 +120,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             cycleRepository.getCurrentPhase().collect { phase ->
                 val s = _uiState.value
+                val newSelected = if (s.selectedTabPhase == s.phase) phase else s.selectedTabPhase
                 _uiState.value = s.copy(
                     phase = phase,
-                    phaseDayInPhase = computePhaseDayInPhase(s.cycleDay, phase, s.totalCycleDays)
+                    selectedTabPhase = newSelected,
+                    phaseDayInPhase = computePhaseDayInPhase(s.cycleDay, phase, s.totalCycleDays),
+                    mascotTipText = getPhaseTip(newSelected, s.mascotTipIndex)
                 )
             }
         }
@@ -110,9 +160,37 @@ class HomeViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(showRestDay = false)
     }
 
+    private fun getPhaseTip(phase: CyclePhase, index: Int): String {
+        val tips = phaseTips[phase] ?: mascotTips
+        return tips[index % tips.size]
+    }
+
     fun onMascotTapped() {
-        val newIndex = (_uiState.value.mascotTipIndex + 1) % mascotTips.size
-        _uiState.value = _uiState.value.copy(mascotTipIndex = newIndex)
+        val s = _uiState.value
+        val newIndex = (s.mascotTipIndex + 1)
+        _uiState.value = s.copy(
+            mascotTipIndex = newIndex,
+            mascotTipText = getPhaseTip(s.selectedTabPhase, newIndex)
+        )
+    }
+
+    fun onPhaseTabSelected(phase: CyclePhase) {
+        val emotion = when (phase) {
+            CyclePhase.MENSTRUAL -> MascotEmotion.SLEEPING
+            CyclePhase.FOLLICULAR -> MascotEmotion.HAPPY
+            CyclePhase.OVULATORY, CyclePhase.OVULATION -> MascotEmotion.EXCITED
+            CyclePhase.LUTEAL -> MascotEmotion.SUPPORTIVE
+            CyclePhase.PMS -> MascotEmotion.SUPPORTIVE
+            CyclePhase.UNKNOWN -> MascotEmotion.HAPPY
+        }
+        val s = _uiState.value
+        _uiState.value = s.copy(
+            selectedTabPhase = phase,
+            phaseDayInPhase = computePhaseDayInPhase(s.cycleDay, phase, s.totalCycleDays),
+            mascotEmotion = emotion,
+            mascotTipIndex = 0,
+            mascotTipText = getPhaseTip(phase, 0)
+        )
     }
 
     fun dismissConfetti() {

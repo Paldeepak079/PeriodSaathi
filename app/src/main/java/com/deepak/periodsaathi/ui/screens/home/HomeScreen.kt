@@ -4,7 +4,20 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +37,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -84,6 +98,15 @@ fun HomeScreen(
                 )
             }
 
+            // ── Phase Tabs ───────────────────────────
+            item {
+                PhaseTabRow(
+                    selectedPhase = uiState.selectedTabPhase,
+                    onPhaseSelected = { phase -> viewModel.onPhaseTabSelected(phase) },
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
             // ── Medical disclaimer (first launch) ────
             if (uiState.isFirstLaunch) {
                 item {
@@ -130,9 +153,12 @@ fun HomeScreen(
                 HeroCard(
                     cycleDay = uiState.cycleDay,
                     isRestDay = uiState.showRestDay,
-                    mascotTip = getMascotTip(uiState.mascotTipIndex),
+                    mascotTip = uiState.mascotTipText,
                     mascotEmotion = uiState.mascotEmotion.toComponentEmotion(),
                     onMascotTap = { viewModel.onMascotTapped() },
+                    onDismissTip = { viewModel.onMascotTapped() },
+                    onShareTip = { /* TODO: share sheet */ },
+                    onSaveTip = { /* TODO: save tip */ },
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 16.dp)
@@ -142,7 +168,7 @@ fun HomeScreen(
             // ── Current Status Dashboard ──────────────
             item {
                 StatusDashboard(
-                    phaseName = uiState.phase.name.lowercase().replaceFirstChar { it.uppercase() },
+                    phaseName = uiState.selectedTabPhase.displayName,
                     phaseDay = uiState.phaseDayInPhase,
                     phaseTotalDays = 5,
                     modifier = Modifier
@@ -182,12 +208,20 @@ fun HomeScreen(
             // ── Phase Coach Banner ──────────────────
             item {
                 PhaseCoachBanner(
-                    phaseName = uiState.phase.name.lowercase().replaceFirstChar { it.uppercase() },
+                    phaseName = uiState.selectedTabPhase.displayName,
                     phaseDay = uiState.phaseDayInPhase,
                     onViewCoachGuide = onNavigateToPhaseCoach,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(top = 12.dp)
+                )
+            }
+
+            // ── Cycle-Synced Insights Hub ───────────
+            item {
+                CycleInsightsHub(
+                    selectedPhase = uiState.selectedTabPhase,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
@@ -362,25 +396,73 @@ private fun HeroCard(
     mascotTip: String,
     mascotEmotion: ComponentMascotEmotion,
     onMascotTap: () -> Unit,
+    onDismissTip: () -> Unit = {},
+    onShareTip: () -> Unit = {},
+    onSaveTip: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var swipeOffset by remember { mutableStateOf(0f) }
+    var dismissed by remember { mutableStateOf(false) }
+    val swipeThreshold = 200f
+    val animSwipeOffset = remember { Animatable(0f) }
+    val swipeScope = rememberCoroutineScope()
+
+    LaunchedEffect(dismissed) {
+        if (dismissed) {
+            animSwipeOffset.animateTo(
+                targetValue = -swipeThreshold * 2,
+                animationSpec = tween(250)
+            )
+            delay(50)
+            swipeOffset = 0f
+            dismissed = false
+            onDismissTip()
+            animSwipeOffset.animateTo(0f, spring())
+        }
+    }
+
     GlassCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(24.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .offset(x = animSwipeOffset.value.dp)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (swipeOffset < -swipeThreshold) {
+                            dismissed = true
+                        } else if (swipeOffset > swipeThreshold) {
+                            swipeOffset = 0f
+                            swipeScope.launch { animSwipeOffset.snapTo(0f) }
+                            onSaveTip()
+                        } else {
+                            swipeScope.launch {
+                                animSwipeOffset.animateTo(0f, spring(dampingRatio = 0.6f))
+                            }
+                        }
+                        swipeOffset = 0f
+                    },
+                    onHorizontalDrag = { _, dragAmount ->
+                        swipeOffset += dragAmount
+                        swipeScope.launch {
+                            animSwipeOffset.snapTo(
+                                swipeOffset.coerceIn(-swipeThreshold * 1.5f, swipeThreshold * 1.5f)
+                            )
+                        }
+                    }
+                )
+            }
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Week strip
             WeekStrip(cycleDay = cycleDay, isRestDay = isRestDay)
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Mascot + speech bubble
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Speech bubble
                 Surface(
                     color = Color.White.copy(alpha = 0.8f),
                     shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp),
@@ -403,6 +485,60 @@ private fun HeroCard(
                         onTap = onMascotTap
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onDismissTip,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Dismiss tip",
+                        tint = OnSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = onShareTip,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = "Share tip",
+                        tint = OnSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = onSaveTip,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Save tip",
+                        tint = Color(0xFFE91E63),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text(
+                    text = "Insights are for educational purposes and do not replace professional medical advice.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant.copy(alpha = 0.5f),
+                    textAlign = TextAlign.Center,
+                    fontSize = 10.sp,
+                    lineHeight = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
@@ -994,15 +1130,195 @@ private fun PhaseCoachBanner(
     }
 }
 
-private fun getMascotTip(index: Int): String {
-    val tips = listOf(
-        "Hydrate yourself today! 💧",
-        "Gentle stretching can help with cramps 🧘",
-        "You're doing great! Keep tracking 🌟",
-        "Self-care is important today 💕",
-        "Listen to your body 💪"
+@Composable
+private fun PhaseTabRow(
+    selectedPhase: CyclePhase,
+    onPhaseSelected: (CyclePhase) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val tabs = listOf(
+        CyclePhase.MENSTRUAL,
+        CyclePhase.FOLLICULAR,
+        CyclePhase.OVULATORY,
+        CyclePhase.LUTEAL
     )
-    return tips[index % tips.size]
+    val selectedIndex = tabs.indexOf(selectedPhase).coerceAtLeast(0)
+    var containerWidth by remember { mutableStateOf(0) }
+    val density = LocalDensity.current
+    val tabWidth = if (containerWidth > 0) {
+        with(density) { (containerWidth / tabs.size).toDp() }
+    } else 0.dp
+
+    val indicatorOffset by animateDpAsState(
+        targetValue = tabWidth * selectedIndex.toFloat(),
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "tabIndicator"
+    )
+
+    Surface(
+        color = Color.White.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(28.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .onGloballyPositioned { coordinates ->
+                    containerWidth = coordinates.size.width
+                }
+        ) {
+            Surface(
+                color = Primary,
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier
+                    .offset(x = indicatorOffset)
+                    .width((tabWidth - 4.dp).coerceAtLeast(0.dp))
+                    .fillMaxHeight()
+                    .padding(vertical = 4.dp)
+            ) {}
+
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                tabs.forEach { phase ->
+                    val isSelected = phase == selectedPhase
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onPhaseSelected(phase) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = phase.displayName,
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else OnSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val phaseMediaContent = mapOf(
+    CyclePhase.MENSTRUAL to listOf(
+        "5-Min Guided Cramp Relief Meditation" to "Gentle breathing for period comfort",
+        "Restorative Yoga for Pelvic Relief" to "Slow stretches to release tension",
+        "Breathing Through Discomfort" to "3-minute calming breathwork"
+    ),
+    CyclePhase.FOLLICULAR to listOf(
+        "Understanding Your Energy Spike" to "Harness your follicular superpower",
+        "Creative Visualization Exercise" to "5-min visioning for your goals",
+        "Morning Vitality Ritual" to "Energize your body & mind"
+    ),
+    CyclePhase.OVULATORY to listOf(
+        "Communication Superpower" to "Speak with clarity & confidence",
+        "Confidence Affirmations" to "Boost your self-expression energy",
+        "Social Energy Meditation" to "Connect authentically with others"
+    ),
+    CyclePhase.LUTEAL to listOf(
+        "Wind Down Bedtime Practice" to "Gentle yoga nidra for deep rest",
+        "Stress Release Breathing" to "4-7-8 breath to calm your nervous system",
+        "Self-Compassion Meditation" to "Soften into patience & kindness"
+    )
+)
+
+@Composable
+private fun CycleInsightsHub(
+    selectedPhase: CyclePhase,
+    modifier: Modifier = Modifier
+) {
+    val mediaItems = phaseMediaContent[selectedPhase] ?: phaseMediaContent[CyclePhase.FOLLICULAR]!!
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Cycle-Synced Insights",
+                style = MaterialTheme.typography.labelMedium,
+                color = OnSurfaceVariant
+            )
+            Text(
+                text = "Audio \uD83C\uDFA7",
+                fontSize = 11.sp,
+                color = Primary,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(mediaItems.size) { index ->
+                val (title, description) = mediaItems[index]
+                var isPlaying by remember { mutableStateOf(false) }
+
+                GlassCard(
+                    modifier = Modifier.width(220.dp),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isPlaying) Primary else Color.White.copy(alpha = 0.6f)
+                                )
+                                .clickable { isPlaying = !isPlaying },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (isPlaying) "Pause" else "Play",
+                                tint = if (isPlaying) OnPrimary else Primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            ),
+                            color = OnSurface,
+                            maxLines = 2
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceVariant,
+                            fontSize = 11.sp,
+                            maxLines = 2
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)

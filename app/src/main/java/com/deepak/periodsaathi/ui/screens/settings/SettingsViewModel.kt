@@ -6,13 +6,16 @@ import com.deepak.periodsaathi.data.dao.CycleDao
 import com.deepak.periodsaathi.data.dao.JournalDao
 import com.deepak.periodsaathi.data.dao.ReminderDao
 import com.deepak.periodsaathi.data.dao.SettingsDao
+import com.deepak.periodsaathi.data.datastore.UserPreferences
 import com.deepak.periodsaathi.data.model.CycleSettings
 import com.deepak.periodsaathi.security.StealthModeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,8 +24,19 @@ class SettingsViewModel @Inject constructor(
     private val settingsDao: SettingsDao,
     private val cycleDao: CycleDao,
     private val journalDao: JournalDao,
-    private val reminderDao: ReminderDao
+    private val reminderDao: ReminderDao,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
+
+    /** Dark mode preference — backed by DataStore, drives global 500ms theme crossfade. */
+    val isDarkMode: StateFlow<Boolean> = userPreferences.isDarkMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun toggleDarkMode() {
+        viewModelScope.launch {
+            userPreferences.setDarkMode(!isDarkMode.value)
+        }
+    }
 
 private val _userName = MutableStateFlow("Friend")
     val userName: StateFlow<String> = _userName.asStateFlow()

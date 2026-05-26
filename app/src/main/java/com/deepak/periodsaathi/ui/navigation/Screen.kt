@@ -25,4 +25,5 @@ import kotlinx.serialization.Serializable
 @Serializable object PhaseCoach
 @Serializable data class DayLog(val dateEpoch: Long)
 @Serializable object TimeCapsule
-
+@Serializable object Community   // Secret Chats tab
+@Serializable object PartnerDashboard

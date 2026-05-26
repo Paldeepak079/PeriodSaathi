@@ -1,0 +1,43 @@
+name: Weekly Skill Updates
+
+on:
+  schedule:
+    # Runs every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup PowerShell
+        uses: actions/setup-powershell@v1
+
+      - name: Run update-skills.ps1
+        shell: pwsh
+        run: |
+          .\.agent\scripts\update-skills.ps1
+        continue-on-error: true
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push updates
+        if: steps.git-check.outputs.has_changes == 'true'
+        run: |
+          git config user.name "Period Saathi Bot"
+          git config user.email "bot@periodsaathi.app"
+          git add -A
+          git commit -m "chore: auto-update skills [skip ci]"
+          git push

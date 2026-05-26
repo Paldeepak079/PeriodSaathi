@@ -37,6 +37,8 @@ coreTesting = "2.2.0"
 hiltAndroidTesting = "2.51.1"
 sqlcipher = "4.5.4"
 sqliteKtx = "2.4.0"
+lottie = "6.6.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -94,6 +96,8 @@ glance-material3 = { group = "androidx.glance", name = "glance-material3", versi
 itext7-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "itext" }
 sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqliteKtx" }
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+
 
 # Testing
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
