@@ -1,6 +1,7 @@
 package com.deepak.periodsaathi.ui.screens.home
 
 import androidx.lifecycle.ViewModel
+import java.time.LocalDate
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.repository.CycleRepository
 import com.deepak.periodsaathi.domain.model.CyclePhase
@@ -11,6 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.deepak.periodsaathi.ui.components.BiologicalState
+import com.deepak.periodsaathi.domain.HealthQueryEngine
+import com.deepak.periodsaathi.domain.HealthQueryInput
+import com.deepak.periodsaathi.domain.HealthQueryResult
+import com.deepak.periodsaathi.domain.QueryType
 
 enum class MascotEmotion { HAPPY, EXCITED, SLEEPING, SUPPORTIVE }
 
@@ -27,11 +33,13 @@ data class HomeUiState(
     val streakCount: Int = 0,
     val points: Int = 0,
     val mascotEmotion: MascotEmotion = MascotEmotion.HAPPY,
+    val biologicalState: BiologicalState = BiologicalState.LINING_PHASE,
     val showRestDay: Boolean = false,
     val showConfetti: Boolean = false,
     val isFirstLaunch: Boolean = false,
     val mascotTipIndex: Int = 0,
-    val mascotTipText: String = "Remember to stay hydrated! 💧"
+    val mascotTipText: String = "Remember to stay hydrated! 💧",
+    val healthQueryResult: HealthQueryResult? = null
 )
 
 data class CycleEntry(
@@ -44,7 +52,8 @@ data class CycleEntry(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    private val healthQueryEngine: HealthQueryEngine
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -183,11 +192,20 @@ class HomeViewModel @Inject constructor(
             CyclePhase.PMS -> MascotEmotion.SUPPORTIVE
             CyclePhase.UNKNOWN -> MascotEmotion.HAPPY
         }
+        val bioState = when (phase) {
+            CyclePhase.MENSTRUAL -> BiologicalState.MENSTRUATION
+            CyclePhase.FOLLICULAR -> BiologicalState.FOLLICLE_GROWTH
+            CyclePhase.OVULATORY, CyclePhase.OVULATION -> BiologicalState.OVULATION
+            CyclePhase.LUTEAL -> BiologicalState.LINING_PHASE
+            CyclePhase.PMS -> BiologicalState.LINING_PHASE
+            CyclePhase.UNKNOWN -> BiologicalState.DEFAULT
+        }
         val s = _uiState.value
         _uiState.value = s.copy(
             selectedTabPhase = phase,
             phaseDayInPhase = computePhaseDayInPhase(s.cycleDay, phase, s.totalCycleDays),
             mascotEmotion = emotion,
+            biologicalState = bioState,
             mascotTipIndex = 0,
             mascotTipText = getPhaseTip(phase, 0)
         )
@@ -203,5 +221,26 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         loadHomeData()
+    }
+
+    fun assessHealth(queryType: QueryType) {
+        // Simple evaluation based on current cycle info.
+        // For a more comprehensive evaluation, we might need more user info.
+        // Assuming average last period based on phaseDay.
+        val lastPeriod = LocalDate.now().minusDays(
+            (_uiState.value.cycleDay - 1).toLong()
+        )
+        val result = healthQueryEngine.assess(
+            HealthQueryInput(
+                queryType = queryType,
+                lastPeriodDate = lastPeriod,
+                cycleLength = _uiState.value.totalCycleDays
+            )
+        )
+        _uiState.value = _uiState.value.copy(healthQueryResult = result)
+    }
+
+    fun dismissHealthQuery() {
+        _uiState.value = _uiState.value.copy(healthQueryResult = null)
     }
 }

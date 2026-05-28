@@ -3,6 +3,8 @@ package com.deepak.periodsaathi.ui.screens.insights
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.repository.CycleRepository
+import com.deepak.periodsaathi.domain.PredictionEngine
+import com.deepak.periodsaathi.domain.PredictionResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +20,8 @@ data class PatternInsight(val title: String, val description: String, val confid
 
 @HiltViewModel
 class InsightsViewModel @Inject constructor(
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    private val predictionEngine: PredictionEngine
 ) : ViewModel() {
 
     private val _cyclesLogged = MutableStateFlow(0)
@@ -30,6 +33,9 @@ class InsightsViewModel @Inject constructor(
     private val _insights = MutableStateFlow<List<PatternInsight>>(emptyList())
     val insights: StateFlow<List<PatternInsight>> = _insights.asStateFlow()
 
+    private val _prediction = MutableStateFlow<PredictionResult?>(null)
+    val prediction: StateFlow<PredictionResult?> = _prediction.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -40,6 +46,12 @@ class InsightsViewModel @Inject constructor(
             val cycleCount = cycles.size
             _cyclesLogged.value = cycleCount
             _minimumCyclesReached.value = cycleCount >= 3
+
+            // Run rule-based prediction engine
+            val flatEntries = cycles.flatten()
+            if (flatEntries.isNotEmpty()) {
+                _prediction.value = predictionEngine.predict(flatEntries)
+            }
 
             if (cycleCount >= 3) {
                 computeInsights(cycles)

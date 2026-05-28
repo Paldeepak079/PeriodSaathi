@@ -21,12 +21,15 @@ import androidx.navigation.toRoute
 import com.deepak.periodsaathi.ui.lock.LockScreen
 import com.deepak.periodsaathi.ui.lock.PinEntryScreen
 import com.deepak.periodsaathi.ui.screens.auth.LoginScreen
+import com.deepak.periodsaathi.ui.screens.auth.LoginViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.screens.breathing.BreathingModeScreen
 import com.deepak.periodsaathi.ui.screens.calendar.CalendarScreen
 import com.deepak.periodsaathi.ui.screens.challenges.ChallengesScreen
 import com.deepak.periodsaathi.ui.screens.community.SecretChatsScreen
 import com.deepak.periodsaathi.ui.screens.daylog.DayLogScreen
 import com.deepak.periodsaathi.ui.screens.home.HomeScreen
+import com.deepak.periodsaathi.ui.screens.hotbag.HotBagSafetyScreen
 import com.deepak.periodsaathi.ui.screens.phasecoach.PhaseCoachScreen
 import com.deepak.periodsaathi.ui.screens.insights.InsightsScreen
 import com.deepak.periodsaathi.ui.screens.journal.JournalScreen
@@ -43,6 +46,8 @@ import com.deepak.periodsaathi.ui.screens.timecapsule.TimeCapsuleScreen
 import com.deepak.periodsaathi.ui.screens.wardrobe.WardrobeScreen
 import com.deepak.periodsaathi.ui.screens.wellness.WellnessScreen
 import com.deepak.periodsaathi.ui.screens.yoga.YogaFlowScreen
+import com.deepak.periodsaathi.ui.screens.friend.FriendScreen
+import com.deepak.periodsaathi.ui.screens.chat.ChatScreen
 
 @Composable
 fun PeriodSaathiNavGraph(
@@ -112,12 +117,26 @@ fun PeriodSaathiNavGraph(
                 onComplete = { navController.navigate(Home) { popUpTo<NameSetup> { inclusive = true } } }
             )
         }
-        composable<Home> { HomeScreen(
-            onNavigateToCalendar = { navController.navigate(Calendar) },
-            onNavigateToDayLog = { navController.navigate(DayLog(it)) },
-            onNavigateToBreathing = { navController.navigate(BreathingMode) },
-            onNavigateToPhaseCoach = { navController.navigate(PhaseCoach) }
-        ) }
+        composable<Home> {
+            val loginViewModel: LoginViewModel = hiltViewModel()
+            HomeScreen(
+                onNavigateToCalendar = { navController.navigate(Calendar) },
+                onNavigateToDayLog = { navController.navigate(DayLog(it)) },
+                onNavigateToBreathing = { navController.navigate(BreathingMode) },
+                onNavigateToPhaseCoach = { navController.navigate(PhaseCoach) },
+                onNavigateToPartner = { navController.navigate(PartnerMode) },
+                onNavigateToSettings = { navController.navigate(Settings) },
+                onNavigateToPayment = { navController.navigate(Payment) },
+                onNavigateToChat = { navController.navigate(Chat) },
+                onNavigateToFriend = { navController.navigate(Friend) },
+                onLogout = {
+                    loginViewModel.signOut()
+                    navController.navigate(Login) {
+                        popUpTo<Home> { inclusive = true }
+                    }
+                }
+            )
+        }
         composable<PhaseCoach> { PhaseCoachScreen() }
         composable<Calendar> { CalendarScreen(
             onNavigateToDayLog = { navController.navigate(DayLog(it)) }
@@ -144,6 +163,7 @@ fun PeriodSaathiNavGraph(
         composable<TimeCapsule> { TimeCapsuleScreen(onNavigateBack = { navController.popBackStack() }) }
         composable<Community> { SecretChatsScreen() }
         composable<PartnerDashboard> { PartnerModeScreen() }
+        composable<HotBagSafety> { HotBagSafetyScreen(onBack = { navController.popBackStack() }) }
         composable<DayLog> { backStackEntry ->
             val dayLog = backStackEntry.toRoute<DayLog>()
             DayLogScreen(
@@ -151,6 +171,7 @@ fun PeriodSaathiNavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+        composable<Friend> { FriendScreen(onBack = { navController.popBackStack() }) }
+        composable<Chat> { ChatScreen(onBack = { navController.popBackStack() }) }
     }
 }
-

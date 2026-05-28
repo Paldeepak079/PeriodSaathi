@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.domain.model.CyclePhase
+import com.deepak.periodsaathi.domain.HealthQueryResult
+import com.deepak.periodsaathi.domain.QueryType
 import com.deepak.periodsaathi.ui.components.*
 import com.deepak.periodsaathi.ui.theme.*
 import java.time.LocalDate
@@ -51,13 +53,13 @@ import java.util.Locale
 
 import com.deepak.periodsaathi.ui.components.MascotEmotion as ComponentMascotEmotion
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  Home Screen (Stitch reference: home_dashboard)
 //  Background: Warm cream (#FFF8F2)
 //  Style: Glassmorphism cards, week strip, mascot speech bubble
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/** Map HomeViewModel.MascotEmotion → SaathiMascot component enum */
+/** Map HomeViewModel.MascotEmotion â†’ SaathiMascot component enum */
 private fun MascotEmotion.toComponentEmotion(): ComponentMascotEmotion = when (this) {
     MascotEmotion.HAPPY -> ComponentMascotEmotion.HAPPY
     MascotEmotion.EXCITED -> ComponentMascotEmotion.EXCITED
@@ -72,15 +74,178 @@ fun HomeScreen(
     onNavigateToBreathing: () -> Unit = {},
     onNavigateToInsights: () -> Unit = {},
     onNavigateToPhaseCoach: () -> Unit = {},
+    onNavigateToPartner: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToPayment: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {},
+    onNavigateToFriend: () -> Unit = {},
+    onLogout: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var showSignOutDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
+    if (showSignOutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSignOutDialog = false },
+            title = {
+                Text(
+                    text = "Sign Out 🌸",
+                    fontWeight = FontWeight.Bold,
+                    color = Primary,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to sign out? Your data will remain safely on this device, but you will need to log in again to sync online.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSignOutDialog = false
+                        onLogout()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Sign Out", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showSignOutDialog = false }
+                ) {
+                    Text("Cancel", color = Primary.copy(0.7f), fontWeight = FontWeight.SemiBold)
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = Color.White,
+            tonalElevation = 6.dp
+        )
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = true,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = Background,
+                modifier = Modifier.width(300.dp)
+            ) {
+                Spacer(Modifier.height(32.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+                            scope.launch { drawerState.close() }
+                            onNavigateToPayment()
+                        }
+                        .padding(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = uiState.userName.firstOrNull()?.toString() ?: "P",
+                            color = OnPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = uiState.userName.ifBlank { "Guest User" },
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = Primary
+                    )
+                    Text("Free Plan", color = OnSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                }
+                Divider(color = OutlineVariant)
+                Spacer(Modifier.height(16.dp))
+                NavigationDrawerItem(
+                    icon = { Text("👭", fontSize = 18.sp) },
+                    label = { Text("Friend", fontWeight = FontWeight.SemiBold) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToFriend()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    icon = { Text("👥", fontSize = 18.sp) },
+                    label = { Text("Partner Mode", fontWeight = FontWeight.SemiBold) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToPartner()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    icon = { Text("⚙️", fontSize = 18.sp) },
+                    label = { Text("Settings", fontWeight = FontWeight.SemiBold) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToSettings()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    icon = { Text("⭐", fontSize = 18.sp) },
+                    label = { Text("Premium", fontWeight = FontWeight.SemiBold) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToPayment()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    badge = { Icon(Icons.Default.Favorite, "Premium", tint = BlushPink, modifier = Modifier.size(16.dp)) }
+                )
+                NavigationDrawerItem(
+                    icon = { Text("💬", fontSize = 18.sp) },
+                    label = { Text("Ask Saathi", fontWeight = FontWeight.SemiBold) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToChat()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = OutlineVariant.copy(0.5f), modifier = Modifier.padding(horizontal = 24.dp))
+                Spacer(Modifier.height(8.dp))
+                NavigationDrawerItem(
+                    icon = { Text("🚪", fontSize = 18.sp) },
+                    label = { Text("Sign Out", fontWeight = FontWeight.SemiBold, color = Color(0xFFE53935)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        showSignOutDialog = true
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+        }
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Background)
+        ) {
         // Background blobs
         HomeMeshBackground()
 
@@ -90,15 +255,16 @@ fun HomeScreen(
                 .systemBarsPadding(),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            // ── Top App Bar ──────────────────────────
+            // â”€â”€ Top App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 HomeTopBar(
                     userName = uiState.userName,
-                    onNotificationsClick = { /* TODO: notifications */ }
+                    onProfileClick = { scope.launch { drawerState.open() } },
+                    onNotificationsClick = { }
                 )
             }
 
-            // ── Phase Tabs ───────────────────────────
+            // â”€â”€ Phase Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 PhaseTabRow(
                     selectedPhase = uiState.selectedTabPhase,
@@ -107,7 +273,9 @@ fun HomeScreen(
                 )
             }
 
-            // ── Medical disclaimer (first launch) ────
+
+
+            // â”€â”€ Medical disclaimer (first launch) â”€â”€â”€â”€
             if (uiState.isFirstLaunch) {
                 item {
                     MedicalDisclaimerBanner(
@@ -117,19 +285,19 @@ fun HomeScreen(
                 }
             }
 
-            // ── Greeting + Wellness Score ────────────
+            // â”€â”€ Greeting + Wellness Score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 GreetingRow(
                     name = uiState.userName,
                     cycleDay = uiState.cycleDay,
-                    wellnessPercent = 82, // TODO: from uiState
+                    wellnessPercent = ((uiState.waterGlasses / 8f) * 100).toInt().coerceAtMost(100),
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
                         .padding(top = 8.dp, bottom = 16.dp)
                 )
             }
 
-            // ── AI Premium Forecast Card ────────────
+            // â”€â”€ AI Premium Forecast Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 AiForecastCard(
                     modifier = Modifier
@@ -138,7 +306,7 @@ fun HomeScreen(
                 )
             }
 
-            // ── Pattern Detective Notification Card ──
+            // â”€â”€ Pattern Detective Notification Card â”€â”€
             item {
                 PatternDetectiveCard(
                     onViewInsights = onNavigateToInsights,
@@ -148,7 +316,7 @@ fun HomeScreen(
                 )
             }
 
-            // ── Hero glass card (week + mascot) ──────
+            // â”€â”€ Hero glass card (week + mascot) â”€â”€â”€â”€â”€â”€
             item {
                 HeroCard(
                     cycleDay = uiState.cycleDay,
@@ -157,15 +325,15 @@ fun HomeScreen(
                     mascotEmotion = uiState.mascotEmotion.toComponentEmotion(),
                     onMascotTap = { viewModel.onMascotTapped() },
                     onDismissTip = { viewModel.onMascotTapped() },
-                    onShareTip = { /* TODO: share sheet */ },
-                    onSaveTip = { /* TODO: save tip */ },
+                    onShareTip = { },
+                    onSaveTip = { },
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 16.dp)
                 )
             }
 
-            // ── Current Status Dashboard ──────────────
+            // â”€â”€ Current Status Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 StatusDashboard(
                     phaseName = uiState.selectedTabPhase.displayName,
@@ -177,25 +345,25 @@ fun HomeScreen(
                 )
             }
 
-            // ── Quick Log Row ────────────────────────
+            // â”€â”€ Quick Log Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 QuickLogSection(
                     onLogFlow = onNavigateToCalendar,
                     onLogWater = { viewModel.logWater(1) },
-                    onLogMeals = { /* TODO: food log */ },
-                    onLogMedicine = { /* TODO: medicine log */ },
+                    onLogMeals = { },
+                    onLogMedicine = { },
                     onPhaseCoach = onNavigateToPhaseCoach
                 )
             }
 
-            // ── Daily Insights Section ────────────────
+            // â”€â”€ Daily Insights Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 DailyInsightsSection(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
-            // ── Insights Bento ───────────────────────
+            // â”€â”€ Insights Bento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 InsightsBento(
                     streakCount = uiState.streakCount,
@@ -205,7 +373,7 @@ fun HomeScreen(
                 )
             }
 
-            // ── Phase Coach Banner ──────────────────
+            // â”€â”€ Phase Coach Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 PhaseCoachBanner(
                     phaseName = uiState.selectedTabPhase.displayName,
@@ -217,31 +385,34 @@ fun HomeScreen(
                 )
             }
 
-            // ── Cycle-Synced Insights Hub ───────────
+            // â”€â”€ Cycle-Synced Insights Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             item {
                 CycleInsightsHub(
                     selectedPhase = uiState.selectedTabPhase,
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
+            // â”€â”€ Health Query Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item {
+                HealthQuerySection(
+                    onQuerySelect = { queryType -> viewModel.assessHealth(queryType) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
         }
 
-        // ── FAB ─────────────────────────────────────
-        FloatingActionButton(
-            onClick = { onNavigateToDayLog(System.currentTimeMillis()) },
-            containerColor = Primary,
-            contentColor = OnPrimary,
-            shape = CircleShape,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 88.dp, end = 16.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Log today")
+        uiState.healthQueryResult?.let { result ->
+            HealthQueryResultModal(
+                result = result,
+                onDismiss = { viewModel.dismissHealthQuery() }
+            )
         }
+
+    }
     }
 }
 
-// ── Sub-composables ───────────────────────────────────────────────────────────
+// â”€â”€ Sub-composables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun HomeMeshBackground() {
@@ -274,6 +445,7 @@ private fun HomeMeshBackground() {
 @Composable
 private fun HomeTopBar(
     userName: String,
+    onProfileClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
     Surface(
@@ -299,7 +471,8 @@ private fun HomeTopBar(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(PrimaryContainer),
+                        .background(PrimaryContainer)
+                        .springClickable { onProfileClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -335,7 +508,7 @@ private fun GreetingRow(
     ) {
         Column {
             Text(
-                text = "Hey ${name.ifBlank { "there" }} 🌸",
+                text = "Hey ${name.ifBlank { "there" }} ðŸŒ¸",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 26.sp
@@ -633,19 +806,19 @@ private fun QuickLogSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                QuickLogChip(label = "💧 Water", onClick = onLogWater)
+                QuickLogChip(label = "ðŸ’§ Water", onClick = onLogWater)
             }
             item {
-                QuickLogChip(label = "🍽 Meals", onClick = onLogMeals)
+                QuickLogChip(label = "ðŸ½ Meals", onClick = onLogMeals)
             }
             item {
-                QuickLogChip(label = "💊 Medicine", onClick = onLogMedicine)
+                QuickLogChip(label = "ðŸ’Š Medicine", onClick = onLogMedicine)
             }
             item {
-                QuickLogChip(label = "🩸 Flow", onClick = onLogFlow)
+                QuickLogChip(label = "ðŸ©¸ Flow", onClick = onLogFlow)
             }
             item {
-                QuickLogChip(label = "🧘 Coach", onClick = onPhaseCoach)
+                QuickLogChip(label = "ðŸ§˜ Coach", onClick = onPhaseCoach)
             }
         }
     }
@@ -680,14 +853,14 @@ private fun InsightsBento(
     ) {
         BentoCard(
             modifier = Modifier.weight(1f),
-            iconEmoji = "🌙",
+            iconEmoji = "ðŸŒ™",
             label = "Sleep",
             value = "7h 20m",
             containerColor = SecondaryContainer.copy(0.5f)
         )
         BentoCard(
             modifier = Modifier.weight(1f),
-            iconEmoji = "❤️",
+            iconEmoji = "â¤ï¸",
             label = "Streak",
             value = "$streakCount days",
             containerColor = PrimaryContainer.copy(0.5f)
@@ -740,7 +913,7 @@ private fun MedicalDisclaimerBanner(onDismiss: () -> Unit, modifier: Modifier = 
     GlassCard(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "⚕️ Medical Disclaimer",
+                text = "âš•ï¸ Medical Disclaimer",
                 fontWeight = FontWeight.Bold,
                 color = Primary,
                 style = MaterialTheme.typography.titleSmall
@@ -769,11 +942,11 @@ private fun RestDayBanner(onDismiss: () -> Unit, modifier: Modifier = Modifier) 
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "🛌", fontSize = 28.sp)
+            Text(text = "ðŸ›Œ", fontSize = 28.sp)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "🛏 REST DAY",
+                    text = "ðŸ› REST DAY",
                     fontWeight = FontWeight.Bold,
                     color = OnErrorContainer,
                     style = MaterialTheme.typography.labelMedium
@@ -791,7 +964,7 @@ private fun RestDayBanner(onDismiss: () -> Unit, modifier: Modifier = Modifier) 
     }
 }
 
-// ── AI Premium Forecast Card ───────────────────────────────────────────────────
+// â”€â”€ AI Premium Forecast Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun AiForecastCard(modifier: Modifier = Modifier) {
@@ -831,7 +1004,7 @@ private fun AiForecastCard(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "☁️",
+                    text = "â˜ï¸",
                     fontSize = 48.sp,
                     modifier = Modifier.graphicsLayer { alpha = cloudAlpha }
                 )
@@ -852,7 +1025,7 @@ private fun AiForecastCard(modifier: Modifier = Modifier) {
     }
 }
 
-// ── Pattern Detective Notification Card ────────────────────────────────────────
+// â”€â”€ Pattern Detective Notification Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun PatternDetectiveCard(
@@ -878,7 +1051,7 @@ private fun PatternDetectiveCard(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(text = "🔍", fontSize = 24.sp)
+                Text(text = "ðŸ”", fontSize = 24.sp)
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "We noticed something interesting",
@@ -906,7 +1079,7 @@ private fun PatternDetectiveCard(
     }
 }
 
-// ── Current Status Dashboard (3-column bento) ──────────────────────────────────
+// â”€â”€ Current Status Dashboard (3-column bento) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun StatusDashboard(
@@ -972,7 +1145,7 @@ private fun StatusDashboard(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "💧", fontSize = 28.sp)
+                Text(text = "ðŸ’§", fontSize = 28.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Flow",
@@ -994,7 +1167,7 @@ private fun StatusDashboard(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "🥰", fontSize = 28.sp)
+                Text(text = "ðŸ¥°", fontSize = 28.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Mood",
@@ -1011,7 +1184,7 @@ private fun StatusDashboard(
     }
 }
 
-// ── Daily Insights Section ─────────────────────────────────────────────────────
+// â”€â”€ Daily Insights Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun DailyInsightsSection(modifier: Modifier = Modifier) {
@@ -1032,7 +1205,7 @@ private fun DailyInsightsSection(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "🧘", fontSize = 32.sp)
+                        Text(text = "ðŸ§˜", fontSize = 32.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "5-Min Restorative Yoga",
@@ -1054,7 +1227,7 @@ private fun DailyInsightsSection(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "🍵", fontSize = 32.sp)
+                        Text(text = "ðŸµ", fontSize = 32.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Ginger & Chamomile Blend",
@@ -1074,7 +1247,7 @@ private fun DailyInsightsSection(modifier: Modifier = Modifier) {
     }
 }
 
-// ── Phase Coach Banner ─────────────────────────────────────────────────────────
+// â”€â”€ Phase Coach Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun PhaseCoachBanner(
@@ -1328,3 +1501,115 @@ fun HomeScreenPreview() {
         HomeScreen()
     }
 }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HealthQueryResultModal(
+    result: HealthQueryResult,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+            Text(
+                text = result.question,
+                style = MaterialTheme.typography.titleMedium,
+                color = OnSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = result.headline,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = result.explanation,
+                style = MaterialTheme.typography.bodyMedium,
+                color = OnSurface
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Action Items",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = OnSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            result.actionItems.forEach { action ->
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Text("•", modifier = Modifier.padding(end = 8.dp), color = Primary)
+                    Text(text = action, style = MaterialTheme.typography.bodyMedium, color = OnSurface)
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = result.disclaimer,
+                style = MaterialTheme.typography.labelSmall,
+                color = OnSurfaceVariant.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+fun HealthQuerySection(
+    onQuerySelect: (QueryType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "Ask Period Saathi",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = OnSurface,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            HealthQueryChip(text = "Am I pregnant?", onClick = { onQuerySelect(QueryType.PREGNANCY_RISK) }, modifier = Modifier.weight(1f))
+            HealthQueryChip(text = "Why is it late?", onClick = { onQuerySelect(QueryType.LATE_PERIOD) }, modifier = Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            HealthQueryChip(text = "Normal cramps?", onClick = { onQuerySelect(QueryType.CRAMPS_NORMAL) }, modifier = Modifier.weight(1f))
+            HealthQueryChip(text = "Acne breakout?", onClick = { onQuerySelect(QueryType.ACNE_REASONS) }, modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun HealthQueryChip(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.5f),
+        modifier = modifier.springClickable(onClick = onClick)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = Primary,
+            modifier = Modifier.padding(vertical = 12.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+

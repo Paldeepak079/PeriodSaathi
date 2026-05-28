@@ -1,0 +1,85 @@
+{
+  "tips": [
+    {
+      "id": "tip_1",
+      "title": "Ginger Turmeric Infusion",
+      "instructions": "Slice 1 inch of fresh ginger root and boil in 2 cups of water for 10 minutes. Add 1/2 teaspoon of pure organic turmeric powder and a pinch of black pepper (to increase curcumin absorption). Simmer for 2 minutes, strain, and stir in raw honey.",
+      "benefits": "Gingerols in ginger block pain-producing inflammatory pathways (COX-2) similar to NSAIDs, while curcumin in turmeric reduces uterine spasms.",
+      "painLevel": "severe",
+      "category": "desi"
+    },
+    {
+      "id": "tip_2",
+      "title": "Fennel Seed (Saunf) Decoction",
+      "instructions": "Boil 1 teaspoon of fennel seeds in 1 cup of water for 5 minutes. Strain and drink warm twice a day.",
+      "benefits": "Fennel contains anethole, a natural muscle relaxant that relieves uterine contractions and eases abdominal bloating.",
+      "painLevel": "moderate",
+      "category": "ayurveda"
+    },
+    {
+      "id": "tip_3",
+      "title": "Chamomile & Lavender Tea",
+      "instructions": "Steep one chamomile tea bag and three dried lavender buds in boiling water for 7 minutes. Drink warm before bed.",
+      "benefits": "Chamomile contains glycine, which acts as a gentle spasmolytic on uterine walls, and lavender lowers nervous tension.",
+      "painLevel": "mild",
+      "category": "remedy"
+    },
+    {
+      "id": "tip_4",
+      "title": "Warm Castor Oil Pack",
+      "instructions": "Soak a clean flannel cloth in cold-pressed castor oil, apply it directly to the lower abdomen, wrap with a plastic film, and place a hot water bottle over it for 30 minutes.",
+      "benefits": "Ricinoleic acid in castor oil penetrates tissues to improve lymphatic flow, clear congestion, and relax pelvic muscles.",
+      "painLevel": "severe",
+      "category": "ayurveda"
+    },
+    {
+      "id": "tip_5",
+      "title": "Peppermint Oil Inhalation",
+      "instructions": "Diffuse 4 drops of peppermint essential oil in your room, or dilute 1 drop with coconut oil and gently massage onto your temples or lower back.",
+      "benefits": "Menthol creates a cooling sensation, blocks pain receptors, and helps relieve headaches and muscle fatigue.",
+      "painLevel": "mild",
+      "category": "remedy"
+    }
+  ],
+  "exercises": [
+    {
+      "name": "Cat-Cow Stretch (Marjaryasana)",
+      "durationMinutes": 5,
+      "steps": [
+        "Start on your hands and knees in a tabletop position.",
+        "Inhale, drop your belly, and lift your chin and tailbone (Cow pose).",
+        "Exhale, draw your belly button to your spine, and round your back toward the ceiling (Cat pose).",
+        "Repeat smoothly in coordination with your breath for 5 minutes."
+      ],
+      "benefits": "Stretches the spine, pelvis, and neck, easing tension in the lower back and opening the pelvic area.",
+      "painLevelsSupported": ["mild", "moderate", "severe"],
+      "animationPath": "cat_cow_stretch"
+    },
+    {
+      "name": "Child's Pose (Balasana)",
+      "durationMinutes": 5,
+      "steps": [
+        "Kneel on the floor, touch your big toes together, and sit on your heels.",
+        "Separate your knees about hip-width apart.",
+        "Exhale and lay your torso down between your thighs, stretching your arms out front.",
+        "Rest your forehead on the mat and hold for deep restorative breathing."
+      ],
+      "benefits": "Gently stretches the hips, thighs, and lower back. Calms the central nervous system and relieves severe cramps.",
+      "painLevelsSupported": ["moderate", "severe"],
+      "animationPath": "childs_pose_balasana"
+    },
+    {
+      "name": "Restorative Cycle Flow",
+      "durationMinutes": 8,
+      "steps": [
+        "Begin sitting comfortably with your spine erect.",
+        "Gently roll your shoulders clockwise and counterclockwise to release upper body stress.",
+        "Extend your legs forward, and slide your hands down toward your shins in a gentle seated forward fold.",
+        "Lie on your back, bring the soles of your feet together, and let your knees fall open (Supta Baddha Konasana)."
+      ],
+      "benefits": "Promotes pelvic circulation, relieves abdominal pressure, and restores overall energy levels.",
+      "painLevelsSupported": ["mild", "moderate"],
+      "animationPath": "mix_of_all"
+    }
+  ]
+}

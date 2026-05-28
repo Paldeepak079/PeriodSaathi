@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.ContextWrapper
 import androidx.fragment.app.FragmentActivity
 import com.deepak.periodsaathi.security.AppBiometricManager
 import com.deepak.periodsaathi.security.BiometricStatus
@@ -85,13 +86,22 @@ private fun isFatalBiometricError(errorCode: Int): Boolean = errorCode in listOf
     BiometricPrompt.ERROR_LOCKOUT_PERMANENT
 )
 
+private fun android.content.Context.findActivity(): FragmentActivity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is FragmentActivity) return context
+        context = context.baseContext
+    }
+    return null
+}
+
 @Composable
 fun LockScreen(
     onUnlocked: () -> Unit,
     onPinFallback: () -> Unit
 ) {
     val context = LocalContext.current
-    val activity = context as? FragmentActivity
+    val activity = context.findActivity()
 
     val density = LocalDensity.current
     val screenHeightDp = 800f

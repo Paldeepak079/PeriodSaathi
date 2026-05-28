@@ -26,4 +26,18 @@ import kotlinx.serialization.Serializable
 @Serializable data class DayLog(val dateEpoch: Long)
 @Serializable object TimeCapsule
 @Serializable object Community   // Secret Chats tab
+@Serializable object Friend       // Friends list & invites screen
+@Serializable object PartnerInvite
+@Serializable object PartnerJoin
 @Serializable object PartnerDashboard
+@Serializable object PartnerInsights
+@Serializable object PartnerQuiz
+@Serializable data class PartnerQuizDetail(val quizId: String)
+@Serializable object PartnerSettings
+@Serializable object HotBagSafety
+@Serializable object Chat         // AI chatbot screen
+@Serializable object Profile      // Profile screen
+@Serializable object Privacy      // Privacy policy screen
+@Serializable object Support      // Support screen
+
+

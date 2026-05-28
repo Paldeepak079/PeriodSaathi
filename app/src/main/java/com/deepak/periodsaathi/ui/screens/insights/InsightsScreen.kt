@@ -21,9 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.deepak.periodsaathi.domain.PredictionResult
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.ShimmerHomeScreen
 import com.deepak.periodsaathi.ui.theme.*
+import java.time.format.DateTimeFormatter
 
 private fun deriveTag(title: String): String = when {
     title.contains("Cycle", ignoreCase = true) -> "Cycle Pattern"
@@ -41,6 +43,7 @@ fun InsightsScreen(
     val cyclesLogged by viewModel.cyclesLogged.collectAsState()
     val insights by viewModel.insights.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val prediction by viewModel.prediction.collectAsState()
 
     Box(
         modifier = Modifier
@@ -58,7 +61,6 @@ fun InsightsScreen(
                     color = OnSurface,
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (cyclesLogged < 3) {
@@ -67,6 +69,10 @@ fun InsightsScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        item {
+                            // Show prediction card even with < 3 cycles if we have any data
+                            prediction?.let { pred -> PredictionCard(prediction = pred) }
+                        }
                         item {
                             DetectiveEmptyState(
                                 cyclesLogged = cyclesLogged,
@@ -83,6 +89,10 @@ fun InsightsScreen(
                     ) {
                         item { InsightsHeader() }
 
+                        prediction?.let { pred ->
+                            item { PredictionCard(prediction = pred) }
+                        }
+
                         items(insights) { insight ->
                             InsightCard(insight = insight)
                         }
@@ -98,6 +108,8 @@ fun InsightsScreen(
         }
     }
 }
+
+// ── Sub-composables ─────────────────────────────────────────────────────
 
 @Composable
 private fun InsightsHeader() {
@@ -140,9 +152,7 @@ private fun InsightCard(insight: PatternInsight) {
                     .clip(RoundedCornerShape(topEnd = 2.dp, bottomEnd = 2.dp))
                     .background(Color(insight.color))
             )
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column(modifier = Modifier.weight(1f).padding(top = 16.dp, bottom = 16.dp, end = 16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -156,7 +166,6 @@ private fun InsightCard(insight: PatternInsight) {
                         color = Color(insight.color),
                         letterSpacing = 0.5.sp
                     )
-
                     Surface(
                         shape = RoundedCornerShape(9999.dp),
                         color = Color(insight.color).copy(alpha = 0.15f)
@@ -170,25 +179,96 @@ private fun InsightCard(insight: PatternInsight) {
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = insight.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurface
-                )
-
+                Text(text = insight.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = OnSurface)
                 Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = insight.description,
-                    fontSize = 14.sp,
-                    color = OnSurfaceVariant
-                )
+                Text(text = insight.description, fontSize = 14.sp, color = OnSurfaceVariant)
             }
         }
+    }
+}
+
+@Composable
+private fun PredictionCard(prediction: PredictionResult) {
+    val fmt = DateTimeFormatter.ofPattern("MMM d")
+    GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(Icons.Rounded.CalendarMonth, null, tint = Primary, modifier = Modifier.size(20.dp))
+                Text(
+                    "Next Period Prediction",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = Primary
+                )
+                Spacer(Modifier.weight(1f))
+                Surface(shape = RoundedCornerShape(99.dp), color = Primary.copy(alpha = 0.15f)) {
+                    Text(
+                        "${prediction.confidencePercent}% confidence",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = Primary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                PredictionStat(
+                    label = "Next Period",
+                    value = prediction.nextPeriodDate.format(fmt),
+                    color = BlushPink
+                )
+                PredictionStat(
+                    label = "Ovulation",
+                    value = prediction.ovulationDate.format(fmt),
+                    color = SoftLavender
+                )
+                PredictionStat(
+                    label = "Fertile Window",
+                    value = "${prediction.fertileWindowStart.format(fmt)}–${prediction.fertileWindowEnd.format(fmt)}",
+                    color = BabyBlue
+                )
+            }
+
+            if (prediction.patterns.isNotEmpty()) {
+                HorizontalDivider(color = OutlineVariant.copy(0.5f))
+                Text(
+                    "Detected Patterns",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = OnSurfaceVariant
+                )
+                prediction.patterns.forEach { pattern ->
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(pattern.emoji, fontSize = 14.sp)
+                        Column {
+                            Text(
+                                pattern.title,
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = OnSurface
+                            )
+                            Text(pattern.description, style = MaterialTheme.typography.bodySmall, color = OnSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PredictionStat(label: String, value: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            value,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
+            color = color
+        )
+        Text(label, style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
     }
 }
 
@@ -202,15 +282,9 @@ private fun TriggerHeatmap() {
             fontWeight = FontWeight.SemiBold,
             color = OnSurface
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
         val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             dayLabels.forEach { label ->
                 Text(
                     text = label,
@@ -222,21 +296,14 @@ private fun TriggerHeatmap() {
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(6.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             dayLabels.indices.forEach { index ->
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(
-                            OnSurfaceVariant.copy(alpha = (index + 1) * 0.1f)
-                        )
+                        .background(OnSurfaceVariant.copy(alpha = (index + 1) * 0.1f))
                 )
             }
         }
@@ -250,9 +317,7 @@ private fun DetectiveEmptyState(
 ) {
     GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -265,31 +330,22 @@ private fun DetectiveEmptyState(
             ) {
                 Text(text = "🔍", fontSize = 48.sp)
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = "Still gathering clues...",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Primary
             )
-
             Spacer(modifier = Modifier.height(8.dp))
-
             Text(
-                text = if (cyclesLogged == 0) {
-                    "Start tracking your cycle to discover patterns"
-                } else {
-                    "Your detective companion is analyzing $cyclesLogged of 3 cycles"
-                },
+                text = if (cyclesLogged == 0) "Start tracking your cycle to discover patterns"
+                       else "Your detective companion is analyzing $cyclesLogged of 3 cycles",
                 fontSize = 14.sp,
                 color = OnSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             Button(
                 onClick = onNavigateToDayLog,
                 shape = RoundedCornerShape(9999.dp),
@@ -297,9 +353,7 @@ private fun DetectiveEmptyState(
             ) {
                 Text(text = "Log Today's Habits")
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
                 color = BlushPink,
@@ -322,13 +376,11 @@ private fun RecommendedActions() {
             fontWeight = FontWeight.SemiBold,
             color = OnSurface
         )
-
         val actions = listOf(
             Triple(Icons.Rounded.Bedtime, "Prioritize 7+ hours of sleep", "To mitigate predicted cramp intensity tomorrow."),
             Triple(Icons.Rounded.WaterDrop, "Stay hydrated", "Drink at least 8 glasses of water daily."),
             Triple(Icons.Rounded.DirectionsWalk, "Gentle exercise", "Light walking helps reduce PMS symptoms.")
         )
-
         actions.forEach { (icon, title, desc) ->
             GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
                 Row(
@@ -336,10 +388,7 @@ private fun RecommendedActions() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(SecondaryContainer),
+                        modifier = Modifier.size(48.dp).clip(CircleShape).background(SecondaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -349,25 +398,12 @@ private fun RecommendedActions() {
                             modifier = Modifier.size(24.dp)
                         )
                     }
-
                     Spacer(modifier = Modifier.width(12.dp))
-
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = title,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = OnSurface
-                        )
-                        Text(
-                            text = desc,
-                            fontSize = 12.sp,
-                            color = OnSurfaceVariant
-                        )
+                        Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
+                        Text(text = desc, fontSize = 12.sp, color = OnSurfaceVariant)
                     }
-
                     Spacer(modifier = Modifier.width(8.dp))
-
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowRight,
                         contentDescription = null,

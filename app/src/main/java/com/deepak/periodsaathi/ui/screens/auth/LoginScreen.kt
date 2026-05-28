@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.deepak.periodsaathi.ui.components.GlassCard
@@ -50,41 +51,25 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val loginState by viewModel.loginState.collectAsState()
+    val context = LocalContext.current
 
+    // Legacy fallback launcher (used if Credential Manager unavailable)
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        when (result.resultCode) {
-            Activity.RESULT_OK -> {
-                // Happy path: user completed account selection
-                if (result.data != null) {
-                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                    viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
-                } else {
-                    // RESULT_OK but no data — treat as cancelled
-                    viewModel.resetState()
-                }
-            }
-            Activity.RESULT_CANCELED -> {
-                // User pressed Back — just reset to Idle, no error shown
+        try {
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
+            } else if (result.data != null) {
+                // Non-OK code but we have data (could be DEVELOPER_ERROR passed back)
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
+            } else {
                 viewModel.resetState()
             }
-            else -> {
-                // Any other non-OK code (DEVELOPER_ERROR returns -1 / RESULT_CANCELED through
-                // the system, but the actual ApiException is in result.data).
-                // Safely try to extract the ApiException error code without crashing.
-                if (result.data != null) {
-                    try {
-                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                        viewModel.handleGoogleSignInResult(task, onSuccess = { onLoginSuccess() })
-                    } catch (e: Exception) {
-                        // getSignedInAccountFromIntent itself can throw — catch and delegate
-                        viewModel.handleRawException(e)
-                    }
-                } else {
-                    viewModel.resetState()
-                }
-            }
+        } catch (e: Exception) {
+            viewModel.handleRawException(e)
         }
     }
 
@@ -219,8 +204,19 @@ fun LoginScreen(
                             indication = null,
                             enabled = !isLoading
                         ) {
-                            val intent = viewModel.signInWithGoogle()
-                            googleSignInLauncher.launch(intent)
+                            // Primary path: Credential Manager (no main thread freeze) with legacy fallback
+                            viewModel.signInWithCredentialManager(
+                                activityContext = context,
+                                onFallback = {
+                                    try {
+                                        googleSignInLauncher.launch(viewModel.signInWithGoogle())
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("GoogleSignIn", "Legacy sign-in fallback failed", e)
+                                        viewModel.handleRawException(e)
+                                    }
+                                },
+                                onSuccess = { onLoginSuccess() }
+                            )
                         }
                 ) {
                     GlassCard(

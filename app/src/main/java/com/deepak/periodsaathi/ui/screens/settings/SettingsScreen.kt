@@ -1,4 +1,4 @@
-﻿package com.deepak.periodsaathi.ui.screens.settings
+package com.deepak.periodsaathi.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,6 +29,7 @@ fun SettingsScreen(
 ) {
     val userName by viewModel.userName.collectAsState()
     val cycleLength by viewModel.cycleLength.collectAsState()
+    val periodLength by viewModel.periodLength.collectAsState()
     val stealthMode by viewModel.stealthMode.collectAsState()
     val biometricLock by viewModel.biometricLock.collectAsState()
     val soundEnabled by viewModel.soundEnabled.collectAsState()
@@ -52,7 +53,7 @@ fun SettingsScreen(
         SettingsSection("Profile") {
             SettingsItem(title = "Name", value = userName, onClick = { })
             SettingsItem(title = "Cycle Length", value = "$cycleLength days", onClick = { })
-            SettingsItem(title = "Period Length", value = "5 days", onClick = { })
+            SettingsItem(title = "Period Length", value = "$periodLength days", onClick = { })
         }
 
         Spacer(modifier = Modifier.height(16.dp))

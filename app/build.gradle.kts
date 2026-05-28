@@ -60,6 +60,7 @@ android {
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -83,6 +84,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDirs("src/main/java")
+        }
     }
 
     testOptions {
@@ -145,6 +152,10 @@ dependencies {
 
     // Google Sign-In
     implementation(libs.play.services.auth)
+    // Credential Manager (modern Google Sign-In — no main thread freeze)
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     // Razorpay
     implementation(libs.razorpay.checkout) {
@@ -185,6 +196,10 @@ dependencies {
 
     // Lottie animations (bio-visualization engine)
     implementation(libs.lottie.compose)
+
+    // Media3 ExoPlayer for yoga video sessions
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-ui:1.4.1")
 
     // Testing
     testImplementation(libs.junit)

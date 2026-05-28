@@ -3,6 +3,7 @@ package com.deepak.periodsaathi.ui.screens.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.datastore.UserPreferences
+import com.deepak.periodsaathi.ui.components.BiologicalState
 import com.deepak.periodsaathi.ui.components.MascotEmotion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,20 +16,25 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 sealed class OnboardingQuestion {
+    abstract val id: String
+    abstract val title: String
+    abstract val subtitle: String
+    abstract val mascotEmotion: MascotEmotion
+
     data class SingleChoice(
-        val id: String,
-        val title: String,
-        val subtitle: String,
+        override val id: String,
+        override val title: String,
+        override val subtitle: String,
         val options: List<String>,
-        val mascotEmotion: MascotEmotion
+        override val mascotEmotion: MascotEmotion
     ) : OnboardingQuestion()
 
     data class MultiChoice(
-        val id: String,
-        val title: String,
-        val subtitle: String,
+        override val id: String,
+        override val title: String,
+        override val subtitle: String,
         val options: List<String>,
-        val mascotEmotion: MascotEmotion
+        override val mascotEmotion: MascotEmotion
     ) : OnboardingQuestion()
 }
 
@@ -79,26 +85,30 @@ data class OnboardingUiState(
     val selectedPeriodLength: String? = null,
     val lastPeriodDate: String = LocalDate.now().minusDays(14).format(DateTimeFormatter.ISO_LOCAL_DATE),
     val mascotEmotion: MascotEmotion = MascotEmotion.HAPPY,
+    val biologicalState: BiologicalState = BiologicalState.LINING_PHASE,
     val isSaving: Boolean = false
 ) {
     val totalSteps: Int get() = questions.size + 1
     val isSummaryStep: Boolean get() = currentStep >= questions.size
     val currentQuestion: OnboardingQuestion? get() = questions.getOrNull(currentStep)
-    val canGoNext: Boolean get() = when {
-        isSummaryStep -> true
-        currentQuestion == null -> false
-        currentQuestion.id == "goals" -> selectedGoals.isNotEmpty()
-        currentQuestion.id == "birth_control" -> selectedBirthControl != null
-        currentQuestion.id == "cycle_length" -> selectedCycleLength != null
-        currentQuestion.id == "period_length" -> selectedPeriodLength != null
-        currentQuestion.id == "last_period" -> lastPeriodDate.isNotBlank()
-        else -> false
+    val canGoNext: Boolean get() {
+        if (isSummaryStep) return true
+        val q = currentQuestion ?: return false
+        return when (q.id) {
+            "goals" -> selectedGoals.isNotEmpty()
+            "birth_control" -> selectedBirthControl != null
+            "cycle_length" -> selectedCycleLength != null
+            "period_length" -> selectedPeriodLength != null
+            "last_period" -> lastPeriodDate.isNotBlank()
+            else -> false
+        }
     }
 }
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val settingsDao: com.deepak.periodsaathi.data.dao.SettingsDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
@@ -112,7 +122,15 @@ class OnboardingViewModel @Inject constructor(
             } else {
                 goals.add(option)
             }
-            state.copy(selectedGoals = goals)
+            
+            // Map the selected goals to a biological state for the Lottie animation engine
+            val newBioState = when {
+                goals.contains("Get Pregnant") -> BiologicalState.FOLLICLE_GROWTH
+                goals.contains("Track My Cycle") -> BiologicalState.LINING_PHASE
+                else -> BiologicalState.DEFAULT
+            }
+            
+            state.copy(selectedGoals = goals, biologicalState = newBioState)
         }
     }
 
@@ -163,16 +181,33 @@ class OnboardingViewModel @Inject constructor(
     fun completeOnboarding(onDone: () -> Unit) {
         val s = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
+        val cycleLen = parseCycleLength(s.selectedCycleLength)
+        val periodLen = parsePeriodLength(s.selectedPeriodLength)
+        val lastPeriodStart = s.lastPeriodDate.ifBlank {
+            LocalDate.now().minusDays(14).format(DateTimeFormatter.ISO_LOCAL_DATE)
+        }
         viewModelScope.launch {
             try {
+                // Save to DataStore
                 userPreferences.saveOnboardingData(
                     goals = s.selectedGoals.map { goalToKey(it) },
                     birthControl = s.selectedBirthControl?.let { bcToKey(it) } ?: "none",
-                    cycleLength = parseCycleLength(s.selectedCycleLength),
-                    periodLength = parsePeriodLength(s.selectedPeriodLength),
-                    lastPeriodStart = s.lastPeriodDate.ifBlank {
-                        LocalDate.now().minusDays(14).format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    }
+                    cycleLength = cycleLen,
+                    periodLength = periodLen,
+                    lastPeriodStart = lastPeriodStart
+                )
+                // Also save to Room for consistency
+                val lastPeriodEpoch = try {
+                    java.time.LocalDate.parse(lastPeriodStart)
+                        .atStartOfDay(java.time.ZoneId.systemDefault())
+                        .toInstant().toEpochMilli()
+                } catch (_: Exception) { null }
+                settingsDao.upsertSettings(
+                    com.deepak.periodsaathi.data.model.CycleSettings(
+                        averageCycleLength = cycleLen,
+                        averagePeriodLength = periodLen,
+                        lastPeriodStartDate = lastPeriodEpoch
+                    )
                 )
                 onDone()
             } catch (_: Exception) {

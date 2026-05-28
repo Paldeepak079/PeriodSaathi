@@ -2,6 +2,7 @@ package com.deepak.periodsaathi.ui.screens.onboarding
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -29,6 +30,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.data.model.OnboardingResponse
 import com.deepak.periodsaathi.ui.components.*
 import com.deepak.periodsaathi.ui.theme.*
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -43,6 +46,22 @@ fun OnboardingScreen(
     val state by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { state.totalSteps })
+    val haptic = LocalHapticFeedback.current
+
+    // ── KEY FIX: sync pager with ViewModel step ──────────────────────────
+    // Without this, goToNextStep() updates the state but the HorizontalPager
+    // never scrolls — making the Continue button appear dead.
+    LaunchedEffect(state.currentStep) {
+        if (pagerState.currentPage != state.currentStep) {
+            pagerState.animateScrollToPage(
+                page = state.currentStep,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+    }
 
     val blobColor by animateColorAsState(
         targetValue = when (state.mascotEmotion) {
@@ -115,9 +134,8 @@ fun OnboardingScreen(
             }
 
             if (!state.isSummaryStep) {
-                MascotReactionGuide(
-                    emotion = state.mascotEmotion,
-                    size = 100.dp,
+                CycleInteractionCanvas(
+                    biologicalState = state.biologicalState,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
@@ -154,7 +172,10 @@ fun OnboardingScreen(
                 ) {
                     PrimaryButton(
                         text = if (state.currentStep < state.totalSteps - 1) "Continue" else "Start Your Journey",
-                        onClick = { viewModel.goToNextStep() },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.goToNextStep()
+                        },
                         enabled = state.canGoNext && !state.isSaving,
                         isLoading = state.isSaving
                     )

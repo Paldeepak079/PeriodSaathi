@@ -71,13 +71,25 @@ private val _userName = MutableStateFlow("Friend")
 
     private fun loadSettings() {
         viewModelScope.launch {
-            val settings = settingsDao.getSettings().first() ?: CycleSettings()
-            _userName.value = settings.userName
-            _cycleLength.value = settings.averageCycleLength
-            _periodLength.value = settings.averagePeriodLength
-            _stealthMode.value = settings.stealthModeEnabled
-            _soundEnabled.value = settings.soundEnabled
-            _hapticEnabled.value = settings.hapticEnabled
+            val settings = settingsDao.getSettings().first()
+            // Prefer DataStore values (set during onboarding) over Room defaults
+            val dsName = userPreferences.userName.first()
+            val dsCycleLen = userPreferences.cycleLength.first()
+            val dsPeriodLen = userPreferences.periodLength.first()
+            _userName.value = if (settings?.userName.isNullOrBlank()) dsName.ifBlank { "Friend" } else settings!!.userName
+            _cycleLength.value = if (settings?.averageCycleLength == 28 && dsCycleLen != 28) dsCycleLen else settings?.averageCycleLength ?: dsCycleLen
+            _periodLength.value = if (settings?.averagePeriodLength == 5 && dsPeriodLen != 5) dsPeriodLen else settings?.averagePeriodLength ?: dsPeriodLen
+            _stealthMode.value = settings?.stealthModeEnabled ?: false
+            _soundEnabled.value = settings?.soundEnabled ?: true
+            _hapticEnabled.value = settings?.hapticEnabled ?: true
+            // Sync DataStore values back to Room for consistency
+            if (settings == null) {
+                settingsDao.upsertSettings(CycleSettings(
+                    userName = _userName.value,
+                    averageCycleLength = _cycleLength.value,
+                    averagePeriodLength = _periodLength.value
+                ))
+            }
         }
     }
 

@@ -1,312 +1,261 @@
 package com.deepak.periodsaathi.ui.screens.partner
 
-import android.content.Intent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 
+enum class PartnerSubScreen {
+    ROLE_SELECTION,
+    INVITE,
+    JOIN,
+    DASHBOARD,
+    INSIGHTS,
+    QUIZZES,
+    QUIZ_DETAIL,
+    SETTINGS
+}
+
 @Composable
 fun PartnerModeScreen(
     viewModel: PartnerViewModel = hiltViewModel()
 ) {
-    val selectedRequests by viewModel.selectedRequests.collectAsState()
-    val customMessage by viewModel.customMessage.collectAsState()
-    val sendState by viewModel.sendState.collectAsState()
-    val partnerName by viewModel.partnerName.collectAsState()
-    val context = LocalContext.current
+    val connectionState by viewModel.connectionState.collectAsState()
+    
+    // Internal navigation state to orchestrate all partner sub-screens cleanly
+    var currentSubScreen by remember { mutableStateOf(PartnerSubScreen.ROLE_SELECTION) }
+    var selectedQuizId by remember { mutableStateOf("") }
 
-    val selectedRequest = viewModel.careRequests.firstOrNull { it.id in selectedRequests }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val buttonScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "buttonPulse"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        // Header
-        GlassCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Partner Mode 💌",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Send a care request — no medical details shared",
-                    color = OnSurfaceVariant,
-                    fontSize = 16.sp
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Partner name
-        Text(
-            text = "Send to $partnerName 💕",
-            color = OnSurface,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Care request cards
-        val rows = viewModel.careRequests.chunked(2)
-        rows.forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                row.forEach { request ->
-                    CareRequestCard(
-                        request = request,
-                        isSelected = request.id in selectedRequests,
-                        onToggle = { viewModel.toggleRequest(request.id) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (row.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        // Custom message
-        OutlinedTextField(
-            value = customMessage,
-            onValueChange = { viewModel.updateCustomMessage(it) },
-            label = { Text("Add a personal message (optional)") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = BlushPink,
-                unfocusedBorderColor = SoftLavender
-            ),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Preview Card
-        GlassCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Preview for $partnerName",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OnSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                if (selectedRequest != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = selectedRequest.emoji, fontSize = 28.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Priya needs you:",
-                                fontWeight = FontWeight.Bold,
-                                color = OnPrimaryContainer,
-                                fontSize = 20.sp
-                            )
-                            Text(
-                                text = "\"${selectedRequest.text}\"",
-                                fontWeight = FontWeight.Bold,
-                                color = Primary,
-                                fontSize = 18.sp
-                            )
-                        }
-                    }
+    // Synchronize current sub-screen based on Room database connection status in real-time
+    LaunchedEffect(connectionState) {
+        when (connectionState) {
+            is ConnectionUIState.Connected -> {
+                val state = connectionState as ConnectionUIState.Connected
+                if (state.isPrimary) {
+                    currentSubScreen = PartnerSubScreen.SETTINGS
                 } else {
-                    Text(
-                        text = "Select a care request above",
-                        color = OnSurfaceVariant,
-                        fontSize = 14.sp
-                    )
+                    currentSubScreen = PartnerSubScreen.DASHBOARD
+                }
+            }
+            is ConnectionUIState.ActiveInvite -> {
+                currentSubScreen = PartnerSubScreen.INVITE
+            }
+            else -> {
+                // If revoked or idle and not actively choosing JOIN/INVITE, reset to selection
+                if (currentSubScreen != PartnerSubScreen.JOIN && currentSubScreen != PartnerSubScreen.INVITE) {
+                    currentSubScreen = PartnerSubScreen.ROLE_SELECTION
                 }
             }
         }
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
+    AnimatedContent(
+        targetState = currentSubScreen,
+        transitionSpec = {
+            fadeIn(spring()) togetherWith fadeOut(spring())
+        },
+        label = "partnerScreenTransition"
+    ) { subScreen ->
+        when (subScreen) {
+            PartnerSubScreen.ROLE_SELECTION -> {
+                RoleSelectionGatewayView(
+                    onSelectPrimary = { currentSubScreen = PartnerSubScreen.INVITE },
+                    onSelectPartner = { currentSubScreen = PartnerSubScreen.JOIN }
+                )
+            }
+            
+            PartnerSubScreen.INVITE -> {
+                PartnerInviteScreen(
+                    viewModel = viewModel,
+                    onBack = { currentSubScreen = PartnerSubScreen.ROLE_SELECTION },
+                    onNavigateToDashboard = { currentSubScreen = PartnerSubScreen.SETTINGS }
+                )
+            }
 
-        // Notification Mockup
-        if (selectedRequest != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Surface(
-                    modifier = Modifier.widthIn(max = 280.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF1A1A2E)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = Primary,
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = "+",
-                                        color = Color.White,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Period Saathi • Now",
-                                color = Color.White.copy(alpha = 0.6f),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "New Care Request",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = "Priya needs you: \"${selectedRequest.text}\"",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 13.sp
-                        )
+            PartnerSubScreen.JOIN -> {
+                PartnerJoinScreen(
+                    viewModel = viewModel,
+                    onBack = { currentSubScreen = PartnerSubScreen.ROLE_SELECTION },
+                    onNavigateToDashboard = { currentSubScreen = PartnerSubScreen.DASHBOARD }
+                )
+            }
+
+            PartnerSubScreen.DASHBOARD -> {
+                PartnerDashboardScreen(
+                    viewModel = viewModel,
+                    onNavigateToInsights = { currentSubScreen = PartnerSubScreen.INSIGHTS },
+                    onNavigateToQuizzes = { currentSubScreen = PartnerSubScreen.QUIZZES },
+                    onNavigateToSettings = { currentSubScreen = PartnerSubScreen.SETTINGS }
+                )
+            }
+
+            PartnerSubScreen.INSIGHTS -> {
+                PartnerInsightsScreen(
+                    viewModel = viewModel,
+                    onBack = { currentSubScreen = PartnerSubScreen.DASHBOARD }
+                )
+            }
+
+            PartnerSubScreen.QUIZZES -> {
+                PartnerQuizScreen(
+                    viewModel = viewModel,
+                    onBack = { currentSubScreen = PartnerSubScreen.DASHBOARD },
+                    onNavigateToQuizDetail = { quizId ->
+                        selectedQuizId = quizId
+                        currentSubScreen = PartnerSubScreen.QUIZ_DETAIL
                     }
-                }
+                )
+            }
+
+            PartnerSubScreen.QUIZ_DETAIL -> {
+                PartnerQuizDetailScreen(
+                    quizId = selectedQuizId,
+                    viewModel = viewModel,
+                    onBack = { currentSubScreen = PartnerSubScreen.QUIZZES }
+                )
+            }
+
+            PartnerSubScreen.SETTINGS -> {
+                PartnerSettingsScreen(
+                    viewModel = viewModel,
+                    onBack = {
+                        val state = connectionState
+                        if (state is ConnectionUIState.Connected && !state.isPrimary) {
+                            currentSubScreen = PartnerSubScreen.DASHBOARD
+                        } else {
+                            // Primary settings can close back to selection if revoked, else stays
+                            currentSubScreen = PartnerSubScreen.ROLE_SELECTION
+                        }
+                    },
+                    onNavigateToInvite = {
+                        currentSubScreen = PartnerSubScreen.ROLE_SELECTION
+                    }
+                )
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Send button
-        Button(
-            onClick = {
-                if (selectedRequests.isNotEmpty()) {
-                    viewModel.sendViaShareIntent()
-                    val selected = viewModel.careRequests.filter { it.id in selectedRequests }
-                    val message = buildString {
-                        append("💕 Care request for $partnerName:\n\n")
-                        selected.forEach { append("${it.emoji} ${it.text}\n") }
-                        if (customMessage.isNotBlank()) {
-                            append("\n💬 $customMessage")
-                        }
-                    }
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, message)
-                    }
-                    context.startActivity(Intent.createChooser(intent, "Send via"))
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(if (selectedRequests.isNotEmpty()) buttonScale else 1f)
-                .background(
-                    brush = if (selectedRequests.isNotEmpty())
-                        Brush.horizontalGradient(listOf(SoftLavender, BlushPink))
-                    else
-                        Brush.horizontalGradient(listOf(SoftLavender, SoftLavender)),
-                    shape = RoundedCornerShape(50.dp)
-                ),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent
-            ),
-            enabled = selectedRequests.isNotEmpty() && sendState !is SendState.Sending,
-            shape = RoundedCornerShape(50.dp)
-        ) {
-            Text(
-                text = when (sendState) {
-                    is SendState.Idle -> "Send to $partnerName 💌"
-                    is SendState.Sending -> "Sending..."
-                    is SendState.Sent -> "Sent! 💌"
-                },
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
 @Composable
-private fun CareRequestCard(
-    request: CareRequest,
-    isSelected: Boolean,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier
+fun RoleSelectionGatewayView(
+    onSelectPrimary: () -> Unit,
+    onSelectPartner: () -> Unit
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "cardScale"
-    )
-
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) BlushPink.copy(alpha = 0.3f) else Color.Transparent,
-        label = "cardBg"
-    )
-
-    GlassCard(
-        modifier = modifier
-            .scale(scale)
-            .clip(RoundedCornerShape(16.dp))
-            .background(backgroundColor)
-            .clickable { onToggle() },
-        shape = RoundedCornerShape(16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Surface, WarmCream, SoftLavender.copy(alpha = 0.3f))
+                )
+            )
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            Text(text = request.emoji, fontSize = 36.sp)
+            Text(
+                text = "Partner Mode 💕",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = DeepRose,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = request.text,
-                color = OnSurface,
+                text = "A beautiful space for couples to share read-only cycle predictions, fertile days, and couples' communication quizzes.",
                 fontSize = 14.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                color = OnSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
+
+            Spacer(modifier = Modifier.height(36.dp))
+
+            // Option 1: Primary Tracker (Invite Partner)
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .clickable { onSelectPrimary() },
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Brush.horizontalGradient(listOf(BlushPink.copy(alpha = 0.1f), Color.Transparent)))
+                        .padding(24.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("I am tracking my cycle 🌸", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = DeepRose)
+                        Text("➔", fontSize = 18.sp, color = DeepRose)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Generate a secure 6-digit invitation code to share cycle days, fertile predictions, and daily support suggestions with your partner.",
+                        fontSize = 13.sp,
+                        color = OnSurfaceVariant,
+                        lineHeight = 18.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Option 2: Supportive Partner (Enter Code)
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .clickable { onSelectPartner() },
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Brush.horizontalGradient(listOf(SoftLavender.copy(alpha = 0.1f), Color.Transparent)))
+                        .padding(24.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("I am the partner 🤝", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = OnSecondaryContainer)
+                        Text("➔", fontSize = 18.sp, color = OnSecondaryContainer)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Enter a 6-digit sync code shared by your partner to connect, view predictions, and take couples quizzes to improve text harmony.",
+                        fontSize = 13.sp,
+                        color = OnSurfaceVariant,
+                        lineHeight = 18.sp
+                    )
+                }
+            }
         }
     }
 }

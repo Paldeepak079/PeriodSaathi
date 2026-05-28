@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.dao.SettingsDao
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,8 +30,14 @@ class SplashViewModel @Inject constructor(
 
     fun determineStartDestination() {
         viewModelScope.launch {
-            delay(1500) // Animation delay
-            val settingsData = settingsDao.getSettings().first()
+            // DB check runs immediately in parallel with the animation sequence.
+            // The SplashScreen composable only acts on NavigateTo AFTER its
+            // animation sequence completes, so there is no hard delay needed here.
+            val settingsData = try {
+                settingsDao.getSettings().first()
+            } catch (_: Exception) {
+                null
+            }
             val destination = when {
                 settingsData == null -> "Onboarding"
                 settingsData.stealthModeEnabled -> "LockScreen"

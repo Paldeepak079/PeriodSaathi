@@ -4,12 +4,15 @@ import android.content.Context
 import com.deepak.periodsaathi.data.dao.AccessoryDao
 import com.deepak.periodsaathi.data.dao.ChallengeDao
 import com.deepak.periodsaathi.data.dao.CycleDao
+import com.deepak.periodsaathi.data.dao.ForumDao
 import com.deepak.periodsaathi.data.dao.HabitDao
 import com.deepak.periodsaathi.data.dao.JournalDao
 import com.deepak.periodsaathi.data.dao.PurchaseDao
 import com.deepak.periodsaathi.data.dao.ReminderDao
+import com.deepak.periodsaathi.data.dao.PartnerDao
 import com.deepak.periodsaathi.data.dao.SettingsDao
 import com.deepak.periodsaathi.data.database.PeriodSaathiDatabase
+import com.deepak.periodsaathi.data.database.PartnerDatabase
 import com.deepak.periodsaathi.data.datastore.UserPreferences
 import dagger.Module
 import dagger.Provides
@@ -26,6 +29,17 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PeriodSaathiDatabase {
         return PeriodSaathiDatabase.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providePartnerDatabase(@ApplicationContext context: Context): PartnerDatabase {
+        return PartnerDatabase.getInstance(context)
+    }
+
+    @Provides
+    fun providePartnerDao(database: PartnerDatabase): PartnerDao {
+        return database.partnerDao()
     }
 
     @Provides
@@ -66,6 +80,11 @@ object DatabaseModule {
     @Provides
     fun provideHabitDao(database: PeriodSaathiDatabase): HabitDao {
         return database.habitDao()
+    }
+
+    @Provides
+    fun provideForumDao(database: PeriodSaathiDatabase): ForumDao {
+        return database.forumDao()
     }
 
     @Provides

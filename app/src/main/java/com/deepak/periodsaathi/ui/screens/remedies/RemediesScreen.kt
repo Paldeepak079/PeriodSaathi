@@ -1,4 +1,4 @@
-﻿package com.deepak.periodsaathi.ui.screens.remedies
+package com.deepak.periodsaathi.ui.screens.remedies
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.components.GlassCard
+import com.deepak.periodsaathi.ui.components.springClickable
 import com.deepak.periodsaathi.ui.theme.*
 
 @Composable
@@ -198,7 +199,7 @@ fun RemediesScreen(
         GlassCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onNavigateToYoga() },
+                .springClickable { onNavigateToYoga() },
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -324,7 +325,7 @@ private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
                 rotationY = rotation
                 cameraDistance = 12f * density
             }
-            .clickable { onFlip() },
+            .springClickable { onFlip() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (rotation <= 90f) DeepRose.copy(alpha = 0.2f) else BlushPink.copy(alpha = 0.2f)
