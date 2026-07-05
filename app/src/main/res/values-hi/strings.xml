@@ -28,6 +28,7 @@
     <string name="login_google_button">Google से जारी रखें</string>
     <string name="login_guest">या मेहमान के रूप में देखें</string>
     <string name="login_terms">जारी रखने से, आप हमारी शर्तों और गोपनीयता नीति से सहमत होते हैं</string>
+    <string name="login_terms_short">नियम और गोपनीयता नीति</string>
 
     <!-- Lock Screen -->
     <string name="lock_title">साथी आराम कर रही है 😴</string>
@@ -76,9 +77,13 @@
     <string name="remedy_cramps_title">ऐंठन से राहत</string>
     <string name="remedy_cramps_desc">मासिक धर्म की ऐंठन के लिए हल्का स्ट्रेच और हीट थेरेपी।</string>
     <string name="remedy_headache_title">सिरदर्द से राहत</string>
+    <string name="remedy_headache_desc">एक्यूप्रेशर पॉइंट और आराम तकनीक।</string>
     <string name="remedy_bloating_title">सूजन से राहत</string>
+    <string name="remedy_bloating_desc">हर्बल चाय के सुझाव और हल्का व्यायाम।</string>
     <string name="remedy_fatigue_title">थकान से राहत</string>
+    <string name="remedy_fatigue_desc">आयरन युक्त भोजन सुझाव और आराम टिप्स।</string>
     <string name="remedy_mood_title">मूड बूस्ट</string>
+    <string name="remedy_mood_desc">मूड बेहतर करने के लिए गतिविधियाँ और सकारात्मक विचार।</string>
 
     <!-- Partner Mode -->
     <string name="partner_title">पार्टनर मोड</string>
@@ -233,6 +238,8 @@
     <string name="export_generating">रिपोर्ट जनरेट हो रही है...</string>
 
     <!-- Notifications -->
+    <string name="notification_title">पीरियड रिमाइंडर</string>
+    <string name="notification_message">आपका पीरियड जल्द आने वाला है। तैयार रहें!</string>
     <string name="notification_channel_name">पीरियड रिमाइंडर</string>
     <string name="notification_channel_desc">पीरियड रिमाइंडर और अनुमानों के लिए सूचनाएँ</string>
     <string name="notification_wellness_title">वेलनेस टिप</string>
@@ -247,6 +254,8 @@
     <string name="error_save_failed">सहेजा नहीं जा सका। कृपया पुनः प्रयास करें।</string>
 
     <!-- Permissions -->
+    <string name="permission_notification_title">सूचनाएँ सक्षम करें</string>
+    <string name="permission_notification_message">पीरियड साथी आपको आपके साइकल, वेलनेस टिप्स और लॉगिंग प्रॉम्प्ट के लिए कोमल रिमाइंडर भेजता है।</string>
     <string name="permission_body_animation">पीरियड साथी को Wear OS डिवाइसों से स्वास्थ्य डेटा ट्रैक करने के लिए बॉडी सेंसर अनुमति चाहिए।</string>
     <string name="permission_sms_title">SMS भेजें</string>
     <string name="permission_sms_message">पीरियड साथी को SMS अनुमति तभी चाहिए जब आप अपने पार्टनर के साथ साइकल जानकारी साझा करना चाहते हैं। यह वैकल्पिक और उपयोगकर्ता द्वारा शुरू किया गया है।</string>

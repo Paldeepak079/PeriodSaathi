@@ -48,6 +48,14 @@ import com.deepak.periodsaathi.ui.screens.wellness.WellnessScreen
 import com.deepak.periodsaathi.ui.screens.yoga.YogaFlowScreen
 import com.deepak.periodsaathi.ui.screens.friend.FriendScreen
 import com.deepak.periodsaathi.ui.screens.chat.ChatScreen
+import com.deepak.periodsaathi.ui.screens.notifications.NotificationsScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerInviteScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerJoinScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerInsightsScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerQuizScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerQuizDetailScreen
+import com.deepak.periodsaathi.ui.screens.partner.PartnerSettingsScreen
+import com.deepak.periodsaathi.ui.screens.rewards.RewardsScreen
 
 @Composable
 fun PeriodSaathiNavGraph(
@@ -129,6 +137,7 @@ fun PeriodSaathiNavGraph(
                 onNavigateToPayment = { navController.navigate(Payment) },
                 onNavigateToChat = { navController.navigate(Chat) },
                 onNavigateToFriend = { navController.navigate(Friend) },
+                onNavigateToNotifications = { navController.navigate(Notifications) },
                 onLogout = {
                     loginViewModel.signOut()
                     navController.navigate(Login) {
@@ -157,13 +166,17 @@ fun PeriodSaathiNavGraph(
         ) }
         composable<ReportExport> { ReportExportScreen() }
         composable<Wardrobe> { WardrobeScreen() }
+        composable<Rewards> { RewardsScreen(
+            onNavigateToWardrobe = { navController.navigate(Wardrobe) }
+        ) }
         composable<Challenges> { ChallengesScreen() }
         composable<BreathingMode> { BreathingModeScreen(onExit = { navController.popBackStack() }) }
-        composable<Payment> { PaymentScreen() }
+        composable<Payment> { PaymentScreen(onBack = { navController.popBackStack() }) }
         composable<TimeCapsule> { TimeCapsuleScreen(onNavigateBack = { navController.popBackStack() }) }
         composable<Community> { SecretChatsScreen() }
         composable<PartnerDashboard> { PartnerModeScreen() }
         composable<HotBagSafety> { HotBagSafetyScreen(onBack = { navController.popBackStack() }) }
+        composable<Notifications> { NotificationsScreen(onBack = { navController.popBackStack() }) }
         composable<DayLog> { backStackEntry ->
             val dayLog = backStackEntry.toRoute<DayLog>()
             DayLogScreen(
@@ -173,5 +186,37 @@ fun PeriodSaathiNavGraph(
         }
         composable<Friend> { FriendScreen(onBack = { navController.popBackStack() }) }
         composable<Chat> { ChatScreen(onBack = { navController.popBackStack() }) }
+        composable<PartnerInvite> { PartnerInviteScreen(
+            viewModel = hiltViewModel(),
+            onNavigateToDashboard = { navController.navigate(PartnerDashboard) { popUpTo<PartnerInvite> { inclusive = true } } },
+            onBack = { navController.popBackStack() }
+        ) }
+        composable<PartnerJoin> { PartnerJoinScreen(
+            viewModel = hiltViewModel(),
+            onNavigateToDashboard = { navController.navigate(PartnerDashboard) { popUpTo<PartnerJoin> { inclusive = true } } },
+            onBack = { navController.popBackStack() }
+        ) }
+        composable<PartnerInsights> { PartnerInsightsScreen(
+            viewModel = hiltViewModel(),
+            onBack = { navController.popBackStack() }
+        ) }
+        composable<PartnerQuiz> { PartnerQuizScreen(
+            viewModel = hiltViewModel(),
+            onNavigateToQuizDetail = { quizId -> navController.navigate(PartnerQuizDetail(quizId)) },
+            onBack = { navController.popBackStack() }
+        ) }
+        composable<PartnerQuizDetail> { backStackEntry ->
+            val quiz = backStackEntry.toRoute<PartnerQuizDetail>()
+            PartnerQuizDetailScreen(
+                quizId = quiz.quizId,
+                viewModel = hiltViewModel(),
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable<PartnerSettings> { PartnerSettingsScreen(
+            viewModel = hiltViewModel(),
+            onNavigateToInvite = { navController.navigate(PartnerInvite) { popUpTo<PartnerSettings> { inclusive = true } } },
+            onBack = { navController.popBackStack() }
+        ) }
     }
 }

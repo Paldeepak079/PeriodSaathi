@@ -36,6 +36,8 @@ import kotlinx.serialization.Serializable
 @Serializable object PartnerSettings
 @Serializable object HotBagSafety
 @Serializable object Chat         // AI chatbot screen
+@Serializable object Notifications // Notifications screen
+@Serializable object Rewards      // Rewards shop screen
 @Serializable object Profile      // Profile screen
 @Serializable object Privacy      // Privacy policy screen
 @Serializable object Support      // Support screen

@@ -8,13 +8,15 @@ import com.deepak.periodsaathi.data.dao.ReminderDao
 import com.deepak.periodsaathi.data.dao.SettingsDao
 import com.deepak.periodsaathi.data.datastore.UserPreferences
 import com.deepak.periodsaathi.data.model.CycleSettings
-import com.deepak.periodsaathi.security.StealthModeManager
+import com.deepak.periodsaathi.ui.theme.FontOption
+import com.deepak.periodsaathi.ui.theme.ThemeCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,12 +27,24 @@ class SettingsViewModel @Inject constructor(
     private val cycleDao: CycleDao,
     private val journalDao: JournalDao,
     private val reminderDao: ReminderDao,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val themeManager: com.deepak.periodsaathi.ui.theme.ThemeManager,
+    private val fontManager: com.deepak.periodsaathi.ui.theme.FontManager
 ) : ViewModel() {
 
-    /** Dark mode preference — backed by DataStore, drives global 500ms theme crossfade. */
     val isDarkMode: StateFlow<Boolean> = userPreferences.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val selectedFont: StateFlow<FontOption> = fontManager.currentFont
+    val selectedTheme: StateFlow<ThemeCategory> = themeManager.currentTheme
+
+    init {
+        viewModelScope.launch {
+            userPreferences.userName.collect { name ->
+                _userName.value = name.ifBlank { "Friend" }
+            }
+        }
+    }
 
     fun toggleDarkMode() {
         viewModelScope.launch {
@@ -38,7 +52,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-private val _userName = MutableStateFlow("Friend")
+    fun updateFont(font: FontOption) {
+        fontManager.setFont(font)
+    }
+
+    fun updateTheme(theme: ThemeCategory) {
+        themeManager.setTheme(theme)
+    }
+
+    private val _userName = MutableStateFlow("Friend")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
     private val _cycleLength = MutableStateFlow(28)
@@ -72,17 +94,13 @@ private val _userName = MutableStateFlow("Friend")
     private fun loadSettings() {
         viewModelScope.launch {
             val settings = settingsDao.getSettings().first()
-            // Prefer DataStore values (set during onboarding) over Room defaults
-            val dsName = userPreferences.userName.first()
             val dsCycleLen = userPreferences.cycleLength.first()
             val dsPeriodLen = userPreferences.periodLength.first()
-            _userName.value = if (settings?.userName.isNullOrBlank()) dsName.ifBlank { "Friend" } else settings!!.userName
             _cycleLength.value = if (settings?.averageCycleLength == 28 && dsCycleLen != 28) dsCycleLen else settings?.averageCycleLength ?: dsCycleLen
             _periodLength.value = if (settings?.averagePeriodLength == 5 && dsPeriodLen != 5) dsPeriodLen else settings?.averagePeriodLength ?: dsPeriodLen
             _stealthMode.value = settings?.stealthModeEnabled ?: false
             _soundEnabled.value = settings?.soundEnabled ?: true
             _hapticEnabled.value = settings?.hapticEnabled ?: true
-            // Sync DataStore values back to Room for consistency
             if (settings == null) {
                 settingsDao.upsertSettings(CycleSettings(
                     userName = _userName.value,
@@ -93,7 +111,7 @@ private val _userName = MutableStateFlow("Friend")
         }
     }
 
-private fun saveSettings() {
+    private fun saveSettings() {
         viewModelScope.launch {
             try {
                 val current = settingsDao.getSettings().first() ?: CycleSettings()
@@ -102,6 +120,7 @@ private fun saveSettings() {
                     averageCycleLength = _cycleLength.value,
                     averagePeriodLength = _periodLength.value,
                     stealthModeEnabled = _stealthMode.value,
+                    biometricLockEnabled = _biometricLock.value,
                     soundEnabled = _soundEnabled.value,
                     hapticEnabled = _hapticEnabled.value
                 ))
@@ -114,6 +133,9 @@ private fun saveSettings() {
 
     fun updateUserName(name: String) {
         _userName.value = name
+        viewModelScope.launch {
+            userPreferences.setLoggedIn(name)
+        }
         saveSettings()
     }
 

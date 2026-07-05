@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.auth.CredentialManagerHelper
 import com.deepak.periodsaathi.auth.GoogleSignInManager
+import com.deepak.periodsaathi.data.datastore.UserPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
@@ -33,7 +34,8 @@ data class UserProfile(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val googleSignInManager: GoogleSignInManager,
-    private val credentialManagerHelper: CredentialManagerHelper
+    private val credentialManagerHelper: CredentialManagerHelper,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -65,14 +67,29 @@ class LoginViewModel @Inject constructor(
             try {
                 val result = credentialManagerHelper.signInWithGoogle(activityContext)
                 if (result.success) {
+                    val name = result.displayName ?: ""
                     _userProfile.value = UserProfile(
-                        name = result.displayName ?: "",
+                        name = name,
                         email = result.email ?: "",
                         photoUrl = result.photoUrl
                     )
+                    userPreferences.setLoggedIn(name)
                     _loginState.value = LoginState.Success
                     onSuccess()
                 } else {
+                    val msg = result.errorMessage ?: ""
+                    if (msg.contains("developer_error", ignoreCase = true) ||
+                        msg.contains("not configured", ignoreCase = true) ||
+                        msg.contains("DEVELOPER_ERROR", ignoreCase = true)
+                    ) {
+                        _loginState.value = LoginState.Error(
+                            "SHA-1 fingerprint not registered. Run:\n" +
+                            "cd android && ./gradlew signingReport\n" +
+                            "Copy the debug SHA-1, then add it to the OAuth client ID " +
+                            "in https://console.cloud.google.com/apis/credentials"
+                        )
+                        return@launch
+                    }
                     Log.e("GoogleSignIn", "Sign in failed: ${result.errorMessage}")
                     onFallback()
                 }
@@ -95,11 +112,13 @@ class LoginViewModel @Inject constructor(
                 val result = googleSignInManager.handleSignInResult(task)
                 if (result.success) {
                     result.account?.let { account ->
+                        val name = account.displayName ?: ""
                         _userProfile.value = UserProfile(
-                            name = account.displayName ?: "",
+                            name = name,
                             email = account.email ?: "",
                             photoUrl = account.photoUrl?.toString()
                         )
+                        userPreferences.setLoggedIn(name)
                         _loginState.value = LoginState.Success
                         onSuccess()
                     } ?: run {
@@ -124,7 +143,10 @@ class LoginViewModel @Inject constructor(
     }
 
     fun continueAsGuest() {
-        _loginState.value = LoginState.Success
+        viewModelScope.launch {
+            userPreferences.setGuestMode()
+            _loginState.value = LoginState.Success
+        }
     }
 
     fun resetState() {

@@ -1,5 +1,6 @@
 package com.deepak.periodsaathi.widget
 
+import android.content.ComponentName
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
@@ -10,6 +11,9 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
+import androidx.glance.action.Action
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
@@ -28,6 +32,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.deepak.periodsaathi.MainActivity
 import com.deepak.periodsaathi.R
 
 class CycleDayWidget : GlanceAppWidget() {
@@ -37,6 +42,9 @@ class CycleDayWidget : GlanceAppWidget() {
     )
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val state = WidgetDataRepository(context).getCycleWidgetState()
+        val openAppAction = actionForOpenApp(context)
+
         provideContent {
             val size = LocalSize.current
 
@@ -45,18 +53,56 @@ class CycleDayWidget : GlanceAppWidget() {
                     .fillMaxSize()
                     .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFFFFF8F5)))
                     .padding(8.dp)
+                    .clickable(onClick = openAppAction)
             ) {
-                if (size.width >= 220.dp) {
-                    MediumWidgetContent()
+                if (state.isError) {
+                    ErrorWidgetContent()
+                } else if (size.width >= 220.dp) {
+                    MediumWidgetContent(state)
                 } else {
-                    SmallWidgetContent()
+                    SmallWidgetContent(state)
                 }
             }
         }
     }
 
+    private fun actionForOpenApp(context: Context): Action {
+        return actionStartActivity(
+            ComponentName(context, MainActivity::class.java)
+        )
+    }
+
     @Composable
-    private fun SmallWidgetContent() {
+    private fun ErrorWidgetContent() {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "🌸",
+                style = TextStyle(fontSize = 24.sp)
+            )
+            Spacer(GlanceModifier.height(4.dp))
+            Text(
+                text = "No data yet",
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF9E9E9E))
+                )
+            )
+            Text(
+                text = "Tap to start",
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFBDBDBD))
+                )
+            )
+        }
+    }
+
+    @Composable
+    private fun SmallWidgetContent(state: CycleWidgetState) {
         Column(
             modifier = GlanceModifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
@@ -69,7 +115,7 @@ class CycleDayWidget : GlanceAppWidget() {
             )
             Spacer(GlanceModifier.height(4.dp))
             Text(
-                text = "Day 14",
+                text = "Day ${state.cycleDay}",
                 style = TextStyle(
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
@@ -77,11 +123,11 @@ class CycleDayWidget : GlanceAppWidget() {
                 )
             )
             Text(
-                text = "🌱",
+                text = state.phaseEmoji,
                 style = TextStyle(fontSize = 16.sp)
             )
             Text(
-                text = "💧 4/8",
+                text = "\uD83D\uDCA7 ${state.waterCount}/${state.totalWater}",
                 style = TextStyle(
                     fontSize = 11.sp,
                     color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF6B5B95))
@@ -91,7 +137,7 @@ class CycleDayWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun MediumWidgetContent() {
+    private fun MediumWidgetContent(state: CycleWidgetState) {
         Row(
             modifier = GlanceModifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
@@ -104,7 +150,7 @@ class CycleDayWidget : GlanceAppWidget() {
             Spacer(GlanceModifier.width(12.dp))
             Column {
                 Text(
-                    text = "Day 14",
+                    text = "Day ${state.cycleDay}",
                     style = TextStyle(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -112,14 +158,14 @@ class CycleDayWidget : GlanceAppWidget() {
                     )
                 )
                 Text(
-                    text = "🌱 Follicular",
+                    text = "${state.phaseEmoji} ${state.phaseName}",
                     style = TextStyle(
                         fontSize = 14.sp,
                         color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF6B5B95))
                     )
                 )
                 Text(
-                    text = "💧 4 of 8 glasses",
+                    text = "\uD83D\uDCA7 ${state.waterCount} of ${state.totalWater} glasses",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF6B5B95))

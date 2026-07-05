@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,7 +45,7 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.StateFlow
 
-private val CATEGORIES = listOf("all", "general", "cramps", "mood", "fertility", "vent")
+private val CATEGORIES = listOf("all", "general", "cramps", "mood", "fertility", "vent", "saved")
 
 @Composable
 fun SecretChatsScreen(
@@ -67,8 +68,11 @@ fun SecretChatsScreen(
     }
 
     val filteredPosts = remember(posts, uiState.selectedCategory, searchQuery) {
-        val baseList = if (uiState.selectedCategory == "all") posts
-                       else posts.filter { it.category == uiState.selectedCategory }
+        val baseList = when (uiState.selectedCategory) {
+            "all" -> posts
+            "saved" -> posts.filter { it.isUpvotedByMe }
+            else -> posts.filter { it.category == uiState.selectedCategory }
+        }
         if (searchQuery.isBlank()) baseList
         else {
             baseList.filter {
@@ -91,7 +95,7 @@ fun SecretChatsScreen(
             ) {
                 // Back button
                 IconButton(onClick = onBack, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Rounded.ArrowBack, null, tint = Primary)
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Primary)
                 }
 
                 // Profile button (Cute mascot image inside a circle with a notification red dot)
@@ -167,25 +171,31 @@ fun SecretChatsScreen(
                     )
                 }
 
-                // Notification Bell with Badge "1"
+                // Notification Bell with Badge (resets on tap)
+                var unreadCount by remember { mutableStateOf(1) }
                 Box(
                     modifier = Modifier.size(36.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(
-                        onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            unreadCount = 0
+                        },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(Icons.Rounded.NotificationsNone, null, tint = Primary, modifier = Modifier.size(20.dp))
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(14.dp)
-                            .align(Alignment.TopEnd)
-                            .background(Color.Red, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("1", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    if (unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(14.dp)
+                                .align(Alignment.TopEnd)
+                                .background(Color.Red, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("$unreadCount", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -201,6 +211,7 @@ fun SecretChatsScreen(
                         if (isSelected) 1.05f else 1f,
                         spring(Spring.DampingRatioMediumBouncy), label = "catScale"
                     )
+                    val label = if (cat == "saved") "🔖 Saved" else cat.replaceFirstChar { it.uppercase() }
                     FilterChip(
                         selected = isSelected,
                         onClick = {
@@ -208,8 +219,7 @@ fun SecretChatsScreen(
                             viewModel.setCategory(cat)
                         },
                         label = {
-                            Text(cat.replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.labelMedium)
+                            Text(label, style = MaterialTheme.typography.labelMedium)
                         },
                         modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale },
                         colors = FilterChipDefaults.filterChipColors(

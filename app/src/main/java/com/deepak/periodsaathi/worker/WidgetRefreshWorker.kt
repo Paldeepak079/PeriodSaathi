@@ -44,7 +44,7 @@ class WidgetRefreshWorker @AssistedInject constructor(
                 phaseName = phase.displayName,
                 phaseEmoji = phase.emoji,
                 waterCount = waterGlasses,
-                totalWater = settings.averageCycleLength
+                totalWater = 8
             )
 
             Result.success()

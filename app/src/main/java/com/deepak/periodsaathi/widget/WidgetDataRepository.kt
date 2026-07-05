@@ -38,7 +38,8 @@ class WidgetDataRepository(private val context: Context) {
                 phaseEmoji = "📊",
                 waterCount = 0,
                 totalWater = 8,
-                isLoading = false
+                isLoading = false,
+                isError = true
             )
         }
     }
@@ -47,17 +48,43 @@ class WidgetDataRepository(private val context: Context) {
         try {
             val db = PeriodSaathiDatabase.getInstance(context)
             val settings = db.settingsDao().getSettings().first()
+            val today = LocalDate.now()
+
+            val periodEntries = db.cycleDao().getPeriodEntries().first()
+            val cycleStartDates = periodEntries
+                .filter { it.flowIntensity != null }
+                .sortedBy { it.date }
+            val cyclesLogged = cycleStartDates.size
+
+            val lastEntry = cycleStartDates.lastOrNull()
+            val avgCycleLength = settings?.averageCycleLength ?: 28
+
+            val daysUntilPeriod: Int? = if (lastEntry != null) {
+                val lastStartDate = java.time.Instant.ofEpochMilli(lastEntry.date)
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                val daysSince = java.time.temporal.ChronoUnit.DAYS.between(lastStartDate, today).toInt()
+                val daysRemaining = avgCycleLength - (daysSince % avgCycleLength)
+                daysRemaining.coerceIn(0, avgCycleLength)
+            } else null
+
+            val isInPeriod = if (lastEntry != null && settings != null) {
+                val lastStartDate = java.time.Instant.ofEpochMilli(lastEntry.date)
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                val daysSince = java.time.temporal.ChronoUnit.DAYS.between(lastStartDate, today).toInt()
+                daysSince >= 0 && daysSince < (settings.averagePeriodLength)
+            } else false
 
             CountdownState(
-                daysUntilPeriod = 5,
-                isInPeriod = false,
-                cyclesLogged = 3
+                daysUntilPeriod = if (!isInPeriod) daysUntilPeriod else 0,
+                isInPeriod = isInPeriod,
+                cyclesLogged = cyclesLogged
             )
         } catch (e: Exception) {
             CountdownState(
                 daysUntilPeriod = null,
                 isInPeriod = false,
-                cyclesLogged = 0
+                cyclesLogged = 0,
+                isError = true
             )
         }
     }
@@ -95,11 +122,13 @@ data class CycleWidgetState(
     val phaseEmoji: String,
     val waterCount: Int,
     val totalWater: Int,
-    val isLoading: Boolean
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
 )
 
 data class CountdownState(
     val daysUntilPeriod: Int?,
     val isInPeriod: Boolean,
-    val cyclesLogged: Int
+    val cyclesLogged: Int,
+    val isError: Boolean = false
 )

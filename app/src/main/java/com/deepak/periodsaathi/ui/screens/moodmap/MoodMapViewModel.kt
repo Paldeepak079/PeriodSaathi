@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -35,15 +36,14 @@ class MoodMapViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _isLoading.value = true
-            cycleDao.getAllEntries().collect { entries ->
-                _moodData.value = entries
-                    .filter { it.mood != null }
-                    .associate { entry ->
-                        val date = Instant.ofEpochMilli(entry.date)
-                            .atZone(ZoneId.systemDefault()).toLocalDate()
-                        date to MoodData(mood = entry.mood!!, date = entry.date)
-                    }
-            }
+            val entries = cycleDao.getAllEntries().first()
+            _moodData.value = entries
+                .filter { it.mood != null }
+                .associate { entry ->
+                    val date = Instant.ofEpochMilli(entry.date)
+                        .atZone(ZoneId.systemDefault()).toLocalDate()
+                    date to MoodData(mood = entry.mood!!, date = entry.date)
+                }
             _isLoading.value = false
         }
     }

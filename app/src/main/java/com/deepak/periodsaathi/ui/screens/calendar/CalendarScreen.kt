@@ -1,6 +1,6 @@
 package com.deepak.periodsaathi.ui.screens.calendar
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,6 +42,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.foundation.combinedClickable
+import kotlinx.coroutines.launch
 
 @Composable
 fun CalendarScreen(
@@ -167,24 +171,38 @@ fun CalendarScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(7),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    items(calendarDays) { dayData ->
-                        DayCell(
-                            dayData = dayData,
-                            isSelected = dayData.date == selectedDate,
-                            onTap = {
-                                viewModel.selectDate(dayData.date)
-                                viewModel.showLogSheet()
-                            },
-                            onLongPress = {
-                                onNavigateToDayLog(dayData.date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC) * 1000)
-                            }
-                        )
+                AnimatedContent(
+                    targetState = currentYearMonth,
+                    transitionSpec = {
+                        if (targetState.isAfter(initialState)) {
+                            (slideInHorizontally { width -> width } + fadeIn(animationSpec = tween(350)))
+                                .togetherWith(slideOutHorizontally { width -> -width } + fadeOut(animationSpec = tween(350)))
+                        } else {
+                            (slideInHorizontally { width -> -width } + fadeIn(animationSpec = tween(350)))
+                                .togetherWith(slideOutHorizontally { width -> width } + fadeOut(animationSpec = tween(350)))
+                        }
+                    },
+                    label = "calendarTransition"
+                ) { targetMonth ->
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(7),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        items(calendarDays) { dayData ->
+                            DayCell(
+                                dayData = dayData,
+                                isSelected = dayData.date == selectedDate,
+                                onTap = {
+                                    viewModel.selectDate(dayData.date)
+                                    viewModel.showLogSheet()
+                                },
+                                onLongPress = {
+                                    onNavigateToDayLog(dayData.date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC) * 1000)
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -267,6 +285,7 @@ fun CalendarScreen(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun DayCell(
     dayData: CalendarDayData,
@@ -274,62 +293,208 @@ private fun DayCell(
     onTap: () -> Unit,
     onLongPress: () -> Unit
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.1f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "dayScale"
+    val haptic = LocalHapticFeedback.current
+    val scale = remember { Animatable(1f) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // ── Breathing/Pulse Infinite Animations ─────────────────────────────────
+    val infiniteTransition = rememberInfiniteTransition(label = "breathing")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
     )
 
-    val backgroundModifier = when {
-        dayData.isPeriodDay && !dayData.isPredicted -> Modifier
-            .clip(CircleShape)
-            .background(
-                Brush.verticalGradient(listOf(PrimaryFixed, PrimaryFixedDim))
+    // ── Mood Glow Aura ──────────────────────────────────────────────────────
+    val moodGlowBrush = remember(dayData.mood) {
+        when (dayData.mood?.lowercase() ?: "") {
+            "happy", "very happy", "excited" -> Brush.radialGradient(
+                listOf(Color(0xFFFFD54F).copy(alpha = 0.45f), Color.Transparent)
             )
-        dayData.isFertile -> Modifier
-            .clip(CircleShape)
-            .background(
-                Brush.verticalGradient(listOf(TertiaryFixed, TertiaryFixedDim))
+            "calm", "peaceful", "relaxed" -> Brush.radialGradient(
+                listOf(Color(0xFFB39DDB).copy(alpha = 0.45f), Color.Transparent)
             )
-        dayData.isPredicted -> Modifier
-            .clip(CircleShape)
-            .border(BorderStroke(2.dp, BlushPink), CircleShape)
-        isSelected -> Modifier
-            .clip(CircleShape)
-            .background(BlushPink)
-        dayData.isToday -> Modifier
-            .clip(CircleShape)
-            .border(BorderStroke(2.dp, BabyBlue), CircleShape)
-        else -> Modifier
+            "energetic", "active", "productive" -> Brush.radialGradient(
+                listOf(Color(0xFFFFF176).copy(alpha = 0.45f), Color.Transparent)
+            )
+            "tired", "sick", "lazy" -> Brush.radialGradient(
+                listOf(Color(0xFF64B5F6).copy(alpha = 0.35f), Color.Transparent)
+            )
+            "sad", "lonely", "moody" -> Brush.radialGradient(
+                listOf(Color(0xFF90A4AE).copy(alpha = 0.35f), Color.Transparent)
+            )
+            "stressed", "anxious", "annoyed" -> Brush.radialGradient(
+                listOf(Color(0xFFFF8A65).copy(alpha = 0.4f), Color.Transparent)
+            )
+            else -> null
+        }
+    }
+
+    // Jitter stress vibration logic
+    val isStressed = dayData.mood?.lowercase() in listOf("stressed", "anxious", "annoyed")
+    val jitterOffset = if (isStressed) (pulseScale * 2f - 2f).dp else 0.dp
+
+    // ── Base Container Styles ───────────────────────────────────────────────
+    val containerBorder = when {
+        isSelected -> BorderStroke(2.5.dp, MaterialTheme.colorScheme.primary)
+        dayData.isToday -> BorderStroke(2.dp, Brush.sweepGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)))
+        dayData.isPredicted -> BorderStroke(1.5.dp, MaterialTheme.colorScheme.primaryContainer.copy(0.7f))
+        else -> null
+    }
+
+    val containerBackground = when {
+        // Heavy Flow Day (Intensity 3)
+        dayData.isPeriodDay && dayData.periodIntensity == 3 -> Brush.verticalGradient(
+            listOf(Color(0xFFE53935), Color(0xFFC62828))
+        )
+        // Medium Flow Day (Intensity 2)
+        dayData.isPeriodDay && dayData.periodIntensity == 2 -> Brush.verticalGradient(
+            listOf(Color(0xFFEF5350), Color(0xFFE53935))
+        )
+        // Light Flow Day (Intensity 1)
+        dayData.isPeriodDay && dayData.periodIntensity == 1 -> Brush.verticalGradient(
+            listOf(Color(0xFFFFCDD2), Color(0xFFEF9A9A))
+        )
+        // Predicted Period
+        dayData.isPredicted -> Brush.verticalGradient(
+            listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
+        )
+        // Ovulation / Fertile
+        dayData.isFertile -> Brush.verticalGradient(
+            listOf(Color(0xFFE2FAF0), Color(0xFFC8E6C9))
+        )
+        else -> Brush.verticalGradient(
+            listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)
+        )
     }
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .padding(2.dp)
-            .scale(scale)
-            .then(backgroundModifier)
-            .clickable { onTap() },
+            .padding(4.dp)
+            .scale(scale.value)
+            .offset(x = jitterOffset, y = jitterOffset)
+            .clip(RoundedCornerShape(14.dp))
+            .combinedClickable(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.KeyboardTap)
+                    coroutineScope.launch {
+                        scale.animateTo(1.08f, animationSpec = tween(120, easing = FastOutSlowInEasing))
+                        scale.animateTo(1f, animationSpec = spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessMedium))
+                    }
+                    onTap()
+                },
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongPress()
+                }
+            ),
         contentAlignment = Alignment.Center
     ) {
-        if (dayData.isFertile) {
-            Text(
-                "🌿",
-                fontSize = 10.sp,
-                modifier = Modifier.align(Alignment.TopEnd)
+        // 1. Ambient Glow Backdrops (Mood Glows)
+        if (moodGlowBrush != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(4.dp)
+                    .background(moodGlowBrush)
             )
         }
+
+        // 2. Base Container Layer
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(2.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(containerBackground)
+                .then(
+                    if (containerBorder != null) Modifier.border(containerBorder, RoundedCornerShape(12.dp))
+                    else Modifier
+                )
+        )
+
+        // 3. Flower/Fertile/Flow Ripple Animations
+        if (dayData.isFertile) {
+            // Blooming Flower Overlay
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .background(Color(0xFF81C784).copy(alpha = 0.25f))
+            )
+        }
+
+        if (dayData.isPeriodDay && dayData.periodIntensity == 3) {
+            // Strong Ripple Ring for Heavy Flow
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .scale(pulseScale)
+                    .border(BorderStroke(1.5.dp, Color.White.copy(pulseAlpha)), CircleShape)
+            )
+        }
+
+        // 4. Center Number Text
         Text(
             text = dayData.date.dayOfMonth.toString(),
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = if (dayData.isToday || isSelected) FontWeight.ExtraBold else FontWeight.Bold,
             color = when {
-                isSelected -> Color.White
-                dayData.isPeriodDay && !dayData.isPredicted -> Color.White
-                dayData.isFertile -> Tertiary
-                !dayData.isCurrentMonth -> OnSurfaceVariant.copy(alpha = 0.4f)
-                else -> OnSurface
+                dayData.isPeriodDay && dayData.periodIntensity >= 2 -> Color.White
+                dayData.isPeriodDay && dayData.periodIntensity == 1 -> Color(0xFFC62828)
+                dayData.isFertile -> Color(0xFF2E7D32)
+                !dayData.isCurrentMonth -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                else -> MaterialTheme.colorScheme.onSurface
             }
         )
+
+        // 5. Flow Droplet Indicator Icon (Light/Medium/Heavy droplet sizes)
+        if (dayData.isPeriodDay && !dayData.isPredicted) {
+            val dropScale = when (dayData.periodIntensity) {
+                3 -> 1.0f
+                2 -> 0.8f
+                else -> 0.6f
+            }
+            Text(
+                text = "🌸", // Elegant wellness flower petal icon instead of generic drops
+                fontSize = (9 * dropScale).sp,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 3.dp).padding(end = 3.dp)
+                    .scale(pulseScale)
+            )
+        }
+
+        // 6. Logged Badges / Saathi Sparkle Pop
+        val hasLoggedData = dayData.hasLoggedSymptoms || dayData.hasLoggedWater || dayData.hasLoggedNotes || dayData.hasLoggedExercise
+        if (hasLoggedData) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(top = 2.dp).padding(end = 2.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (dayData.hasDailyGoalMet) Color(0xFFFFD54F) // Golden Bloom Coin
+                        else MaterialTheme.colorScheme.primaryContainer
+                    )
+            )
+        }
     }
 }
 

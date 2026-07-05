@@ -10,6 +10,7 @@ import com.deepak.periodsaathi.data.dao.JournalDao
 import com.deepak.periodsaathi.data.dao.PurchaseDao
 import com.deepak.periodsaathi.data.dao.ReminderDao
 import com.deepak.periodsaathi.data.dao.PartnerDao
+import com.deepak.periodsaathi.data.dao.RemedyDao
 import com.deepak.periodsaathi.data.dao.SettingsDao
 import com.deepak.periodsaathi.data.database.PeriodSaathiDatabase
 import com.deepak.periodsaathi.data.database.PartnerDatabase
@@ -85,6 +86,11 @@ object DatabaseModule {
     @Provides
     fun provideForumDao(database: PeriodSaathiDatabase): ForumDao {
         return database.forumDao()
+    }
+
+    @Provides
+    fun provideRemedyDao(database: PeriodSaathiDatabase): RemedyDao {
+        return database.remedyDao()
     }
 
     @Provides

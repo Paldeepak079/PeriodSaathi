@@ -2,11 +2,14 @@ package com.deepak.periodsaathi.ui.screens.wellness
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,6 +36,7 @@ import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.components.springClickable
 import com.deepak.periodsaathi.ui.theme.*
 import com.deepak.periodsaathi.ui.screens.wellness.components.*
+import com.deepak.periodsaathi.wellness.data.local.entities.SolutionEntity
 
 private val Mint = Color(0xFFB8F0DC)
 
@@ -209,18 +215,63 @@ fun WellnessScreen(
                         modifier = Modifier.padding(start = 4.dp)
                     )
 
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Lavender.copy(alpha = 0.2f),
-                        modifier = Modifier.clickable { viewModel.showCarePopup(true) }
-                    ) {
-                        Text(
-                            text = "Log Symptoms",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Primary,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = SoftCoral.copy(alpha = 0.2f),
+                            modifier = Modifier.clickable { viewModel.showSeverityRecommendations() }
+                        ) {
+                            Text(
+                                text = "Pain Guide",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SoftCoral,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Lavender.copy(alpha = 0.2f),
+                            modifier = Modifier.clickable { viewModel.showCarePopup(true) }
+                        ) {
+                            Text(
+                                text = "Log Symptoms",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Primary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Symptom Quick-Action Buttons
+            item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(
+                        listOf(
+                            "Cramps" to "🩸", "Bloating" to "🫧",
+                            "Headache" to "🤕", "Fatigue" to "😴"
                         )
+                    ) { (symptom, emoji) ->
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color.White.copy(alpha = 0.7f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, BlushPink.copy(alpha = 0.4f)),
+                            modifier = Modifier.clickable {
+                                viewModel.showSolutionsForSymptom(symptom.lowercase())
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(emoji, fontSize = 18.sp)
+                                Spacer(Modifier.width(6.dp))
+                                Text(symptom, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                            }
+                        }
                     }
                 }
             }
@@ -261,16 +312,18 @@ fun WellnessScreen(
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // Display tips
-                        state.remedies.forEach { tip ->
+                        state.remedies.take(3).forEach { tip ->
                             TipCard(
                                 tip = tip,
                                 onRead = { viewModel.readTip(tip.id) }
                             )
                         }
                         
-                        // Active Exercises suggestions
-                        state.exercises.forEach { exe ->
+                        if (state.remedies.size > 3) {
+                            ViewAllButton(title = "Remedies", emoji = "🌿", onClick = { viewModel.showCategoryView("remedy") })
+                        }
+                        
+                        state.exercises.take(2).forEach { exe ->
                             ExerciseCard(
                                 exercise = exe,
                                 onStartClick = {
@@ -278,6 +331,10 @@ fun WellnessScreen(
                                     activeSubScreen = "yoga"
                                 }
                             )
+                        }
+                        
+                        if (state.exercises.size > 2) {
+                            ViewAllButton(title = "Exercises", emoji = "🤸", onClick = { viewModel.showCategoryView("exercise") })
                         }
                     }
                 }
@@ -330,6 +387,77 @@ fun WellnessScreen(
                 }
             }
 
+            // === SUGGESTED FOR YOU ===
+            if (state.suggestedSolutions.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Suggested for You 🌸",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OnSurface,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+                item {
+                    GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            state.suggestedSolutions.take(3).forEach { sol ->
+                                SuggestedSolutionItem(
+                                    solution = sol,
+                                    onClick = { viewModel.showRecipeCard(sol) }
+                                )
+                            }
+                            if (state.suggestedSolutions.size > 3) {
+                                Spacer(Modifier.height(8.dp))
+                                ViewAllButton(title = "Suggested", emoji = "✨", onClick = { viewModel.showCategoryView("remedy") })
+                            }
+                        }
+                    }
+                }
+            }
+
+            // === WELLNESS CATEGORIES (View All previews) ===
+            item {
+                Text(
+                    text = "Wellness Library 📚",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OnSurface,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    wellnessCategories.take(4).forEach { cat ->
+                        val catSolutions = state.allSolutions.filter { it.category == cat.key }
+                        if (catSolutions.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("${cat.emoji} ${cat.title}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                            }
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                items(catSolutions.take(3)) { sol ->
+                                    PreviewCard(
+                                        solution = sol,
+                                        onClick = { viewModel.showRecipeCard(sol) }
+                                    )
+                                }
+                            }
+                            ViewAllButton(
+                                title = "${cat.title}s",
+                                emoji = cat.emoji,
+                                onClick = { viewModel.showCategoryView(cat.key) }
+                            )
+                        }
+                    }
+                }
+            }
+
             // 6. Detailed logs section: Diet, Hydration, Sleep, Mood
             item {
                 Text(
@@ -345,8 +473,10 @@ fun WellnessScreen(
             item {
                 HydrationTracker(
                     currentGlasses = state.waterGlasses,
+                    waterReminderEnabled = state.waterReminderEnabled,
                     onAddWater = { viewModel.logWater(1) },
-                    onAdd500ml = { viewModel.logWater(2) }
+                    onAdd500ml = { viewModel.logWater(2) },
+                    onToggleReminder = { viewModel.toggleWaterReminder() }
                 )
             }
 
@@ -462,6 +592,135 @@ fun WellnessScreen(
             visible = state.showConfetti,
             onComplete = { viewModel.dismissConfetti() }
         )
+
+        // 5. Problem-Based Solutions Bottom Sheet
+        if (state.showSolutionsSheet && state.selectedSymptom.isNotEmpty()) {
+            val symptomSolutions = state.allSolutions.filter {
+                it.symptomType == state.selectedSymptom || it.symptomType == "general"
+            }
+            SolutionsBottomSheet(
+                symptom = state.selectedSymptom,
+                solutions = symptomSolutions,
+                onDismiss = { viewModel.dismissSolutionsSheet() },
+                onSolutionClick = { viewModel.showRecipeCard(it) }
+            )
+        }
+
+        // 6. Severity Recommendations Bottom Sheet
+        if (state.showSeveritySheet) {
+            SeverityRecommendationSheet(
+                currentPainLevel = state.painLevel,
+                onDismiss = { viewModel.dismissSeveritySheet() },
+                onSelect = { level ->
+                    viewModel.logPersonalCare(state.painType, level, state.flowLevel, state.energyLevel)
+                    viewModel.dismissSeveritySheet()
+                }
+            )
+        }
+
+        // 7. Recipe Card Overlay
+        if (state.showRecipe != null) {
+            RecipeCardOverlay(
+                solution = state.showRecipe!!,
+                onDismiss = { viewModel.dismissRecipeCard() }
+            )
+        }
+
+        // 8. View All Category Screen
+        if (state.showCategoryView && state.selectedCategory.isNotEmpty()) {
+            ViewAllCategoryScreen(
+                category = state.selectedCategory,
+                allSolutions = state.allSolutions,
+                symptom = state.painType.lowercase(),
+                severity = state.painLevel.lowercase(),
+                onSolutionClick = { viewModel.showRecipeCard(it) },
+                onFavoriteToggle = { id, fav -> viewModel.toggleFavorite(id, fav) },
+                onBack = { viewModel.dismissCategoryView() }
+            )
+        }
+    }
+}
+
+@Composable
+fun SuggestedSolutionItem(
+    solution: SolutionEntity,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(BlushPink.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(solution.emoji.ifEmpty { "🌸" }, fontSize = 24.sp)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(solution.title, fontWeight = FontWeight.Bold, color = OnSurface, fontSize = 14.sp)
+            Text(solution.subtitle.ifEmpty { solution.category }, fontSize = 11.sp, color = OnSurfaceVariant)
+        }
+        if (solution.isRecipe) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(SoftCoral.copy(0.2f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text("📖", fontSize = 14.sp)
+            }
+        }
+    }
+    HorizontalDivider(color = BlushPink.copy(alpha = 0.15f))
+}
+
+@Composable
+fun PreviewCard(
+    solution: SolutionEntity,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        modifier = Modifier.width(140.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(BlushPink.copy(0.25f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(solution.emoji.ifEmpty { "🌸" }, fontSize = 24.sp)
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                solution.title,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = OnSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 2
+            )
+            if (solution.durationMinutes > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text("${solution.durationMinutes} min", fontSize = 10.sp, color = Lavender)
+            }
+        }
     }
 }
 
@@ -530,11 +789,53 @@ fun ConfettiOverlay(
     visible: Boolean,
     onComplete: () -> Unit
 ) {
-    if (visible) {
-        // Triggers standard app celebration, we automatically dismiss after 3 seconds
-        LaunchedEffect(Unit) {
-            kotlinx.coroutines.delay(3000)
-            onComplete()
+    if (!visible) return
+
+    val confettiColors = listOf(
+        Color(0xFFE87DAC), Color(0xFF82B3D9), Color(0xFFA89DD4),
+        Color(0xFFFFD700), Color(0xFF5B9B7A), Color(0xFFE8A0B4)
+    )
+
+    // Create stable particle data remembered across recompositions
+    val particles = remember {
+        List(50) {
+            mapOf(
+                "x" to (Math.random() * 1000).toFloat(),
+                "y" to (-50f - (Math.random() * 200).toFloat()),
+                "color" to confettiColors[(Math.random() * confettiColors.size).toInt()],
+                "size" to (4f + (Math.random() * 8).toFloat()),
+                "speed" to (3f + (Math.random() * 5).toFloat())
+            )
+        }
+    }
+
+    val transition = rememberInfiniteTransition(label = "confetti")
+    val animOffset by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1500f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "offset"
+    )
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(2500)
+        onComplete()
+    }
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {} // Absorb touches during animation
+    ) {
+        particles.forEach { p ->
+            val x = (p["x"] as Float) % size.width
+            val y = ((p["y"] as Float) + animOffset) % (size.height + 300)
+            val color = p["color"] as Color
+            val sz = p["size"] as Float
+            drawCircle(color = color, radius = sz, center = Offset(x, y))
         }
     }
 }

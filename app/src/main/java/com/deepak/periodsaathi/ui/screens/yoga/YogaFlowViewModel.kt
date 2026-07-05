@@ -2,6 +2,8 @@ package com.deepak.periodsaathi.ui.screens.yoga
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.deepak.periodsaathi.data.gamification.GamificationManager
+import com.deepak.periodsaathi.data.gamification.PointEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,7 +18,9 @@ enum class BreathingPhase { INHALE, HOLD, EXHALE, IDLE }
 data class Pose(val name: String, val description: String, val benefits: String, val duration: Int)
 
 @HiltViewModel
-class YogaFlowViewModel @Inject constructor() : ViewModel() {
+class YogaFlowViewModel @Inject constructor(
+    private val gamificationManager: GamificationManager
+) : ViewModel() {
 
     private val _currentPoseIndex = MutableStateFlow(0)
     val currentPoseIndex: StateFlow<Int> = _currentPoseIndex.asStateFlow()
@@ -97,6 +101,7 @@ class YogaFlowViewModel @Inject constructor() : ViewModel() {
                     } else {
                         _isPlaying.value = false
                         pauseAll()
+                        viewModelScope.launch { gamificationManager.awardPoints(PointEvent.HABIT_COMPLETED) }
                         break
                     }
                 }

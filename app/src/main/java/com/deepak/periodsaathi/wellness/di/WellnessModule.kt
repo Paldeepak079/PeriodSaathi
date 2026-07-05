@@ -2,6 +2,7 @@ package com.deepak.periodsaathi.wellness.di
 
 import android.content.Context
 import androidx.room.Room
+import com.deepak.periodsaathi.wellness.data.local.SolutionRepository
 import com.deepak.periodsaathi.wellness.data.local.WellnessDao
 import com.deepak.periodsaathi.wellness.data.local.WellnessDatabase
 import com.deepak.periodsaathi.wellness.data.remote.WellnessFirestoreService
@@ -27,7 +28,7 @@ object WellnessModule {
             WellnessDatabase::class.java,
             "period_saathi_wellness_db"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 
@@ -37,6 +38,14 @@ object WellnessModule {
         database: WellnessDatabase
     ): WellnessDao {
         return database.wellnessDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSolutionRepository(
+        dao: WellnessDao
+    ): SolutionRepository {
+        return SolutionRepository(dao)
     }
 
     @Provides

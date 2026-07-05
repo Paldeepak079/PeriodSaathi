@@ -27,7 +27,7 @@ object WellnessModule {
             WellnessDatabase::class.java,
             "period_saathi_wellness_db"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(false)
             .build()
     }
 

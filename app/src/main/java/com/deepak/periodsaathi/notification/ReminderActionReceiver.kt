@@ -3,6 +3,8 @@ package com.deepak.periodsaathi.notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class ReminderActionReceiver : BroadcastReceiver() {
 
@@ -15,6 +17,14 @@ class ReminderActionReceiver : BroadcastReceiver() {
     }
 
     private fun handleLogWater(context: Context) {
+        runBlocking(Dispatchers.IO) {
+            com.deepak.periodsaathi.data.database.PeriodSaathiDatabase.getInstance(context).cycleDao().insertEntry(
+                com.deepak.periodsaathi.data.model.CycleEntry(
+                    date = System.currentTimeMillis(),
+                    waterGlasses = 1
+                )
+            )
+        }
     }
 
     private fun handleMedicineTaken(context: Context, intent: Intent) {
@@ -23,6 +33,14 @@ class ReminderActionReceiver : BroadcastReceiver() {
     }
 
     private fun handleLogPeriod(context: Context) {
+        runBlocking(Dispatchers.IO) {
+            com.deepak.periodsaathi.data.database.PeriodSaathiDatabase.getInstance(context).cycleDao().insertEntry(
+                com.deepak.periodsaathi.data.model.CycleEntry(
+                    date = System.currentTimeMillis(),
+                    flowIntensity = "Medium"
+                )
+            )
+        }
     }
 
     companion object {

@@ -2,19 +2,26 @@ package com.deepak.periodsaathi.ui.screens.payment
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.deepak.periodsaathi.BuildConfig
 import com.deepak.periodsaathi.data.dao.PurchaseDao
 import com.deepak.periodsaathi.data.model.PurchaseRecord
+import com.deepak.periodsaathi.data.repository.StripePaymentService
+import com.deepak.periodsaathi.data.repository.PaymentIntentResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import javax.inject.Inject
 
-data class Product(val id: String, val name: String, val price: String, val pricePaise: Int, val features: List<String>, val isBestValue: Boolean = false)
+data class Product(
+    val id: String,
+    val name: String,
+    val price: String,
+    val pricePaise: Int,
+    val features: List<String>,
+    val isBestValue: Boolean = false
+)
 
 sealed class PaymentState {
     data object Idle : PaymentState()
@@ -25,18 +32,11 @@ sealed class PaymentState {
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
-    private val purchaseDao: PurchaseDao
+    private val purchaseDao: PurchaseDao,
+    private val stripePaymentService: StripePaymentService
 ) : ViewModel() {
 
     var pendingProductId: String? = null
-
-    companion object {
-        var currentInstance: PaymentViewModel? = null
-    }
-
-    init {
-        currentInstance = this
-    }
 
     private val _paymentState = MutableStateFlow<PaymentState>(PaymentState.Idle)
     val paymentState: StateFlow<PaymentState> = _paymentState.asStateFlow()
@@ -57,49 +57,52 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
-    fun initiatePurchase(productId: String): JSONObject? {
-        val product = products.find { it.id == productId } ?: return null
+    /**
+     * Creates a Stripe PaymentIntent and returns the client secret via a callback
+     * so that the Jetpack Compose UI can launch the Stripe Payment Sheet.
+     */
+    fun initiateStripePurchase(
+        productId: String,
+        onClientSecretFetched: (clientSecret: String, customerId: String, ephemeralKey: String) -> Unit
+    ) {
+        val product = products.find { it.id == productId } ?: return
         _paymentState.value = PaymentState.Loading
         pendingProductId = productId
 
-        try {
-            val options = JSONObject()
-            options.put("key", BuildConfig.RAZORPAY_KEY_ID)
-            options.put("amount", product.pricePaise)
-            options.put("currency", "INR")
-            options.put("name", "Period Saathi")
-            options.put("description", product.name)
-            options.put("order_id", "order_mock_${System.currentTimeMillis()}")
-            options.put("prefill", JSONObject().apply {
-                put("contact", "")
-                put("email", "")
-            })
-            options.put("theme", JSONObject().apply {
-                put("color", "#874E58")
-            })
-            return options
-        } catch (e: Exception) {
-            _paymentState.value = PaymentState.Error(0, e.message ?: "Failed to initiate payment")
-            pendingProductId = null
-            return null
+        viewModelScope.launch {
+            when (val result = stripePaymentService.createPaymentIntent(
+                amount = product.pricePaise,
+                currency = "inr",
+                productId = productId
+            )) {
+                is PaymentIntentResult.Success -> {
+                    _paymentState.value = PaymentState.Idle // Ready for payment sheet
+                    onClientSecretFetched(result.clientSecret, result.customerId, result.ephemeralKey)
+                }
+                is PaymentIntentResult.Error -> {
+                    _paymentState.value = PaymentState.Error(0, result.message)
+                    pendingProductId = null
+                }
+            }
         }
     }
 
-    fun onPaymentSuccess(productId: String, razorpayPaymentId: String?) {
+    fun onPaymentSuccess(productId: String, stripeIntentId: String) {
         viewModelScope.launch {
             val record = PurchaseRecord(
                 productId = productId,
-                razorpayPaymentId = razorpayPaymentId,
+                stripePaymentIntentId = stripeIntentId,
                 isActive = true
             )
             purchaseDao.insertPurchase(record)
             _activePurchases.value = _activePurchases.value + productId
             _paymentState.value = PaymentState.Success(productId)
+            pendingProductId = null
         }
     }
 
-    fun onPaymentError(code: Int, response: String?) {
-        _paymentState.value = PaymentState.Error(code, response ?: "Payment failed")
+    fun onPaymentError(code: Int, message: String?) {
+        _paymentState.value = PaymentState.Error(code, message ?: "Payment failed")
         pendingProductId = null
     }
 

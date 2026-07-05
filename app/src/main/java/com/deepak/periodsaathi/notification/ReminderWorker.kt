@@ -60,6 +60,15 @@ class ReminderWorker @AssistedInject constructor(
                     val insight = inputData.getString(KEY_INSIGHT_TEXT) ?: "New pattern detected in your cycle data!"
                     NotificationHelper.showPatternInsightNotification(context, insight)
                 }
+
+                REMINDER_TYPE_YOGA -> {
+                    NotificationHelper.showYogaReminderNotification(context)
+                }
+
+                REMINDER_TYPE_CUSTOM -> {
+                    val label = inputData.getString(KEY_CUSTOM_LABEL) ?: "self-care"
+                    NotificationHelper.showCustomReminderNotification(context, label)
+                }
             }
 
             Result.success()
@@ -79,6 +88,10 @@ class ReminderWorker @AssistedInject constructor(
         const val REMINDER_TYPE_MEDICINE = "medicine"
         const val REMINDER_TYPE_REST_DAY = "rest_day"
         const val REMINDER_TYPE_INSIGHT = "insight"
+        const val REMINDER_TYPE_YOGA = "yoga"
+        const val REMINDER_TYPE_CUSTOM = "custom"
+
+        const val KEY_CUSTOM_LABEL = "custom_label"
     }
 }
 

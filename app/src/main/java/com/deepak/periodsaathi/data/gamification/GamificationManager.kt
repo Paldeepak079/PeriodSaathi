@@ -1,6 +1,9 @@
 package com.deepak.periodsaathi.data.gamification
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.deepak.periodsaathi.data.repository.CycleRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -9,7 +12,8 @@ import javax.inject.Singleton
 
 @Singleton
 class GamificationManager @Inject constructor(
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    @ApplicationContext private val context: Context
 ) {
     companion object {
         const val POINTS_WATER = 1
@@ -80,7 +84,15 @@ class GamificationManager @Inject constructor(
     }
 
     private fun isRewardUnlocked(rewardId: String): Boolean {
-        return false
+        return getPrefs().getBoolean("reward_$rewardId", false)
+    }
+
+    fun markRewardUnlocked(rewardId: String) {
+        getPrefs().edit().putBoolean("reward_$rewardId", true).apply()
+    }
+
+    private fun getPrefs(): SharedPreferences {
+        return context.getSharedPreferences("gamification_prefs", Context.MODE_PRIVATE)
     }
 }
 

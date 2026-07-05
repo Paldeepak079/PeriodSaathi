@@ -1,8 +1,9 @@
-﻿package com.deepak.periodsaathi.ui.screens.wardrobe
+package com.deepak.periodsaathi.ui.screens.wardrobe
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -45,8 +46,9 @@ fun WardrobeScreen(
     val showConfetti by viewModel.showConfetti.collectAsState()
     val themes by viewModel.themes.collectAsState()
     val seasonalAccessories by viewModel.seasonalAccessories.collectAsState()
-    val wardrobePoints by viewModel.wardrobePoints.collectAsState()
-    val unlockedCount by viewModel.unlockedCount.collectAsState()
+    val accessories by viewModel.accessories.collectAsState()
+    val unlockedCount = remember(accessories) { accessories.count { it.isUnlocked } }
+    val wardrobePoints = remember(unlockedCount) { unlockedCount * 100 }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -171,7 +173,10 @@ fun WardrobeScreen(
                     contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     items(themes) { theme ->
-                        ThemeCard(theme = theme)
+                        ThemeCard(
+                            theme = theme,
+                            onClick = { viewModel.toggleTheme(theme.name) }
+                        )
                     }
                 }
             }
@@ -179,7 +184,7 @@ fun WardrobeScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // 5. Seasonal Collections Grid
-            SeasonalCollectionsGrid(items = seasonalAccessories)
+            SeasonalCollectionsGrid(items = seasonalAccessories, viewModel = viewModel)
         }
 
         ConfettiOverlay(
@@ -191,7 +196,8 @@ fun WardrobeScreen(
 
 @Composable
 private fun ThemeCard(
-    theme: ThemeData
+    theme: ThemeData,
+    onClick: () -> Unit = {}
 ) {
     val gradients = mapOf(
         "Mint Dream" to listOf(Color(0xFFE0F2F1), Color(0xFFB2DFDB)),
@@ -208,7 +214,8 @@ private fun ThemeCard(
             .then(
                 if (theme.isActive) Modifier.border(2.dp, Color(0xFF4CAF50), RoundedCornerShape(16.dp))
                 else Modifier
-            ),
+            )
+            .clickable(enabled = !isLocked) { onClick() },
         shape = RoundedCornerShape(16.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -350,7 +357,8 @@ private fun SeasonalMascotPanel(
 
 @Composable
 private fun SeasonalCollectionsGrid(
-    items: List<SeasonalAccessory>
+    items: List<SeasonalAccessory>,
+    viewModel: WardrobeViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         val rows = items.chunked(2)
@@ -364,7 +372,10 @@ private fun SeasonalCollectionsGrid(
                         if (item.state == SeasonalItemState.PLACEHOLDER) {
                             SeasonalPlaceholder()
                         } else {
-                            SeasonalItemCard(item = item)
+                            SeasonalItemCard(
+                                item = item,
+                                onClick = { viewModel.toggleSeasonalAccessory(item.name) }
+                            )
                         }
                     }
                 }
@@ -378,7 +389,8 @@ private fun SeasonalCollectionsGrid(
 
 @Composable
 private fun SeasonalItemCard(
-    item: SeasonalAccessory
+    item: SeasonalAccessory,
+    onClick: () -> Unit = {}
 ) {
     val isActive = item.state == SeasonalItemState.ACTIVE
     val isGrayed = item.state == SeasonalItemState.LOCKED_GRAYED
@@ -388,6 +400,7 @@ private fun SeasonalItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .alpha(baseAlpha)
+            .clickable(enabled = !isGrayed) { onClick() }
             .then(
                 if (isActive) Modifier.border(2.dp, Primary, RoundedCornerShape(16.dp))
                 else if (item.hasGoldGlow) Modifier.border(1.5.dp, WarmGold.copy(alpha = 0.5f), RoundedCornerShape(16.dp))

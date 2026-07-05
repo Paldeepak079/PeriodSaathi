@@ -145,8 +145,8 @@
 -keepattributes *Annotation*, Signature, InnerClasses
 -dontwarn sun.misc.**
 
--keep class com.example.periodsaathi.data.model.** { *; }
--keepclassmembers class com.example.periodsaathi.data.model.** { *; }
+-keep class com.deepak.periodsaathi.data.model.** { *; }
+-keepclassmembers class com.deepak.periodsaathi.data.model.** { *; }
 
 -keep class com.google.gson.** { *; }
 -keepclassmembers,allowobfuscation class * {
@@ -206,7 +206,14 @@
 -dontwarn com.airbnb.lottie.**
 -keep class com.airbnb.lottie.** { *; }
 
+# --- iText / BouncyCastle (PDF generation) ---
+-dontwarn com.itextpdf.bouncycastle.BouncyCastleFactory
+-dontwarn com.itextpdf.bouncycastlefips.BouncyCastleFipsFactory
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-keep class com.itextpdf.** { *; }
+-dontwarn com.itextpdf.**
+
 # --- Keep application class ---
--keep class com.example.periodsaathi.PeriodSaathiApplication { *; }
--keep class com.example.periodsaathi.PeriodSaathiApplication_HiltComponents { *; }
--keep class * extends com.example.periodsaathi.PeriodSaathiApplication { *; }
+-keep class com.deepak.periodsaathi.PeriodSaathiApplication { *; }
+-keep class com.deepak.periodsaathi.PeriodSaathiApplication_HiltComponents { *; }
+-keep class * extends com.deepak.periodsaathi.PeriodSaathiApplication { *; }

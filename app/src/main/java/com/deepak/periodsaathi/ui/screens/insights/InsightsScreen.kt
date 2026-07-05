@@ -2,12 +2,15 @@ package com.deepak.periodsaathi.ui.screens.insights
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -99,7 +102,7 @@ fun InsightsScreen(
 
                         item { TriggerHeatmap() }
 
-                        item { RecommendedActions() }
+                        item { RecommendedActions(onNavigateToDayLog = onNavigateToDayLog) }
 
                         item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
@@ -364,7 +367,9 @@ private fun DetectiveEmptyState(
 }
 
 @Composable
-private fun RecommendedActions() {
+private fun RecommendedActions(
+    onNavigateToDayLog: () -> Unit = {}
+) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -376,15 +381,22 @@ private fun RecommendedActions() {
             fontWeight = FontWeight.SemiBold,
             color = OnSurface
         )
+        data class Action(val icon: ImageVector, val title: String, val desc: String)
         val actions = listOf(
-            Triple(Icons.Rounded.Bedtime, "Prioritize 7+ hours of sleep", "To mitigate predicted cramp intensity tomorrow."),
-            Triple(Icons.Rounded.WaterDrop, "Stay hydrated", "Drink at least 8 glasses of water daily."),
-            Triple(Icons.Rounded.DirectionsWalk, "Gentle exercise", "Light walking helps reduce PMS symptoms.")
+            Action(Icons.Rounded.Bedtime, "Prioritize 7+ hours of sleep", "To mitigate predicted cramp intensity tomorrow."),
+            Action(Icons.Rounded.WaterDrop, "Stay hydrated", "Drink at least 8 glasses of water daily."),
+            Action(Icons.AutoMirrored.Rounded.DirectionsWalk, "Gentle exercise", "Light walking helps reduce PMS symptoms.")
         )
-        actions.forEach { (icon, title, desc) ->
-            GlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
+        actions.forEach { action ->
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToDayLog() }
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
@@ -392,7 +404,7 @@ private fun RecommendedActions() {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = icon,
+                            imageVector = action.icon,
                             contentDescription = null,
                             tint = OnSecondaryContainer,
                             modifier = Modifier.size(24.dp)
@@ -400,12 +412,12 @@ private fun RecommendedActions() {
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
-                        Text(text = desc, fontSize = 12.sp, color = OnSurfaceVariant)
+                        Text(text = action.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
+                        Text(text = action.desc, fontSize = 12.sp, color = OnSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowRight,
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                         contentDescription = null,
                         tint = Primary,
                         modifier = Modifier.size(24.dp)

@@ -2,6 +2,8 @@ package com.deepak.periodsaathi.ui.screens.breathing
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.deepak.periodsaathi.data.gamification.GamificationManager
+import com.deepak.periodsaathi.data.gamification.PointEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -15,7 +17,9 @@ import javax.inject.Inject
 enum class BreathingPhase { INHALE, HOLD_IN, EXHALE, HOLD_OUT }
 
 @HiltViewModel
-class BreathingModeViewModel @Inject constructor() : ViewModel() {
+class BreathingModeViewModel @Inject constructor(
+    private val gamificationManager: GamificationManager
+) : ViewModel() {
 
     private val _phase = MutableStateFlow(BreathingPhase.INHALE)
     val phase: StateFlow<BreathingPhase> = _phase.asStateFlow()
@@ -67,6 +71,7 @@ class BreathingModeViewModel @Inject constructor() : ViewModel() {
                 _cycleCount.value = _cycleCount.value + 1
                 if (_cycleCount.value >= 10) {
                     _isRunning.value = false
+                    gamificationManager.awardPoints(PointEvent.HABIT_COMPLETED)
                     break
                 }
             }

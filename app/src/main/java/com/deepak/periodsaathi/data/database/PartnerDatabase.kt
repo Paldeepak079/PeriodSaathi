@@ -31,7 +31,7 @@ abstract class PartnerDatabase : RoomDatabase() {
                     PartnerDatabase::class.java,
                     "partner_saathi_db"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                     .also { INSTANCE = it }
             }

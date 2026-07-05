@@ -20,6 +20,7 @@ data class CycleSettings(
     val selectedTheme: String = "DEFAULT",
     val soundEnabled: Boolean = true,
     val hapticEnabled: Boolean = true,
+    val biometricLockEnabled: Boolean = false,
     val streakCount: Int = 0,
     val totalPoints: Int = 0
 )

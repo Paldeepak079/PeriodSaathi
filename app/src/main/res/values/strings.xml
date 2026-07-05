@@ -129,6 +129,8 @@
     <string name="settings_stealth_mode_desc">Lock the app with biometrics or PIN</string>
     <string name="settings_stealth_disable">Disable Stealth Mode</string>
     <string name="settings_stealth_enable">Enable Stealth Mode</string>
+    <string name="settings_enable">Enable Stealth Mode</string>
+    <string name="settings_disable">Disable Stealth Mode</string>
     <string name="settings_set_pin">Set PIN</string>
     <string name="settings_change_pin">Change PIN</string>
     <string name="settings_reminders">Reminders</string>

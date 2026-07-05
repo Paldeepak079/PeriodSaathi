@@ -10,5 +10,5 @@ data class PurchaseRecord(
     val productId: String,
     val purchaseDate: Long = System.currentTimeMillis(),
     val isActive: Boolean = true,
-    val razorpayPaymentId: String? = null
+    val stripePaymentIntentId: String? = null
 )

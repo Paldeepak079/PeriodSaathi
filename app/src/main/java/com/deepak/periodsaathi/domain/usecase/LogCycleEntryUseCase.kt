@@ -1,5 +1,7 @@
 package com.deepak.periodsaathi.domain.usecase
 
+import com.deepak.periodsaathi.data.gamification.GamificationManager
+import com.deepak.periodsaathi.data.gamification.PointEvent
 import com.deepak.periodsaathi.data.model.CycleEntry
 import com.deepak.periodsaathi.data.repository.CycleRepository
 import com.deepak.periodsaathi.domain.model.CyclePhase
@@ -11,7 +13,8 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class LogCycleEntryUseCase @Inject constructor(
-    private val repository: CycleRepository
+    private val repository: CycleRepository,
+    private val gamificationManager: GamificationManager
 ) {
 
     suspend operator fun invoke(entry: CycleEntry): Result<CycleEntry> {
@@ -79,10 +82,10 @@ class LogCycleEntryUseCase @Inject constructor(
         val settings = repository.getSettings().first()
         repository.updateSettings(
             settings.copy(
-                totalPoints = settings.totalPoints + 2,
                 streakCount = settings.streakCount + 1
             )
         )
+        gamificationManager.awardPoints(PointEvent.CYCLE_LOGGED)
     }
 
     private suspend fun determinePhase(dateEpoch: Long): CyclePhase {

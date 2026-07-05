@@ -3,6 +3,7 @@ package com.deepak.periodsaathi.ui.screens.phasecoach
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -36,6 +38,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import android.widget.Toast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,6 +57,7 @@ import com.deepak.periodsaathi.ui.theme.PrimaryContainer
 fun PhaseCoachScreen(
     viewModel: PhaseCoachViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val currentPhase by viewModel.currentPhase.collectAsState()
     val cycleDay by viewModel.cycleDay.collectAsState()
     val currentTipIndex by viewModel.currentTipIndex.collectAsState()
@@ -84,6 +88,7 @@ fun PhaseCoachScreen(
                 PhaseTabs(
                     phases = viewModel.allPhases,
                     selectedPhase = currentPhase,
+                    onPhaseSelected = { phase -> viewModel.selectPhase(phase) },
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp)
                 )
             }
@@ -118,6 +123,11 @@ fun PhaseCoachScreen(
             // Activity card
             item {
                 ActivityCard(
+                    onClick = {
+                        Toast
+                            .makeText(context, "🧘 Activity suggestion coming soon", Toast.LENGTH_SHORT)
+                            .show()
+                    },
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 16.dp)
@@ -159,6 +169,7 @@ private fun PhaseCoachMeshBackground() {
 private fun PhaseTabs(
     phases: List<CyclePhase>,
     selectedPhase: CyclePhase,
+    onPhaseSelected: (CyclePhase) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -177,7 +188,9 @@ private fun PhaseTabs(
             Surface(
                 shape = ChipShape,
                 color = bgColor,
-                modifier = Modifier.height(40.dp)
+                modifier = Modifier
+                    .height(40.dp)
+                    .clickable { onPhaseSelected(phase) }
             ) {
                 Text(
                     text = phase.displayName,
@@ -200,6 +213,7 @@ private fun PhaseCoachCard(
     superpowerDescription: String,
     modifier: Modifier = Modifier
 ) {
+    val chipCtx = LocalContext.current
     GlassCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(24.dp)) {
             // Decorative element
@@ -239,7 +253,12 @@ private fun PhaseCoachCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 actions.forEach { (label, emoji, _) ->
-                    ActionChip(label = "$emoji $label")
+                    ActionChip(
+                        label = "$emoji $label",
+                        onClick = {
+                            Toast.makeText(chipCtx, "$emoji $label — noted!", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
 
@@ -257,13 +276,14 @@ private fun PhaseCoachCard(
 @Composable
 private fun ActionChip(
     label: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
         shape = RoundedCornerShape(50),
         color = Color.White.copy(alpha = 0.5f),
         border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryContainer.copy(alpha = 0.3f)),
-        modifier = modifier
+        modifier = modifier.clickable { onClick() }
     ) {
         Text(
             text = label,
@@ -471,6 +491,7 @@ private fun DailyTipSection(
 
 @Composable
 private fun ActivityCard(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -479,6 +500,7 @@ private fun ActivityCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(4f / 3f)
+            .clickable { onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Box(

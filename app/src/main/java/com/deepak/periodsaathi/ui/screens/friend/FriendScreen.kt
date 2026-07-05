@@ -3,6 +3,7 @@ package com.deepak.periodsaathi.ui.screens.friend
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.*
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,7 +28,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +55,7 @@ fun FriendScreen(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val clipboard = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
 
     val inviteCode = "SAATHI" // Stable shimmery code
 
@@ -178,7 +179,7 @@ fun FriendScreen(
                                 Button(
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        clipboard.setText(AnnotatedString(inviteCode))
+                                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(inviteCode))
                                         Toast.makeText(context, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Primary),

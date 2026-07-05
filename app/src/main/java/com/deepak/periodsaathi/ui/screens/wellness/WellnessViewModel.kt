@@ -11,10 +11,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.dao.CycleDao
 import com.deepak.periodsaathi.data.dao.HabitDao
-import com.deepak.periodsaathi.data.model.CycleSettings
 import com.deepak.periodsaathi.data.repository.CycleRepository
+import com.deepak.periodsaathi.notification.WaterReminderWorker
+import com.deepak.periodsaathi.wellness.data.local.SolutionRepository
 import com.deepak.periodsaathi.wellness.data.local.WellnessDao
 import com.deepak.periodsaathi.wellness.data.local.entities.CoinTransactionEntity
+import com.deepak.periodsaathi.wellness.data.local.entities.SolutionEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.TipEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.UserWellnessStatsEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.WellnessLogEntity
@@ -85,7 +87,20 @@ data class WellnessState(
     val showCarePopup: Boolean = false,
     val showCoinAnimation: Boolean = false,
     val coinEarnedAmount: Int = 0,
-    val showConfetti: Boolean = false
+    val showConfetti: Boolean = false,
+    
+    // ===== NEW: Solutions =====
+    val allSolutions: List<SolutionEntity> = emptyList(),
+    val suggestedSolutions: List<SolutionEntity> = emptyList(),
+    val selectedSymptom: String = "",
+    val showSolutionsSheet: Boolean = false,
+    val showSeveritySheet: Boolean = false,
+    val showRecipe: SolutionEntity? = null,
+    val selectedCategory: String = "",
+    val showCategoryView: Boolean = false,
+    
+    // Water reminder
+    val waterReminderEnabled: Boolean = false
 )
 
 @HiltViewModel
@@ -94,7 +109,8 @@ class WellnessViewModel @Inject constructor(
     private val wellnessDao: WellnessDao,
     private val cycleDao: CycleDao,
     private val habitDao: HabitDao,
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    private val solutionRepository: SolutionRepository
 ) : ViewModel() {
 
     private val TAG = "WellnessViewModel"
@@ -107,6 +123,9 @@ class WellnessViewModel @Inject constructor(
     init {
         loadDataFromRaw()
         observeData()
+        seedSolutions()
+        observeSolutions()
+        checkWaterReminderStatus()
     }
 
     private fun loadDataFromRaw() {
@@ -296,7 +315,7 @@ class WellnessViewModel @Inject constructor(
             
             // Check if goal reached (8 glasses)
             if (newWater >= 8 && existing.waterIntake < 8) {
-                // Award points
+                awardCoins(1, "Hydration goal achieved!")
                 Toast.makeText(context, "Hydration Goal Achieved! 💧", Toast.LENGTH_SHORT).show()
             }
         }
@@ -308,6 +327,9 @@ class WellnessViewModel @Inject constructor(
             val existing = wellnessDao.getLogForDateSync(today) ?: WellnessLogEntity(date = today)
             wellnessDao.insertLog(existing.copy(sleepHours = hours))
             _state.update { it.copy(sleepRating = rating) }
+            if (hours >= 7f) {
+                awardCoins(2, "Logged sleep: ${hours}h")
+            }
         }
     }
 
@@ -330,6 +352,7 @@ class WellnessViewModel @Inject constructor(
             val today = getTodayEpoch()
             val existing = wellnessDao.getLogForDateSync(today) ?: WellnessLogEntity(date = today)
             wellnessDao.insertLog(existing.copy(mood = moodName))
+            awardCoins(2, "Logged mood: $moodName")
         }
     }
 
@@ -341,6 +364,18 @@ class WellnessViewModel @Inject constructor(
         }
         calculateWellnessScore()
         awardCoins(3, "Completed Breathing Therapy Session")
+        _state.update { it.copy(showConfetti = true) }
+    }
+
+    fun onWorkoutCompleted(workoutName: String, durationMinutes: Int) {
+        viewModelScope.launch {
+            // Log the exercise minutes
+            completeYogaSession(durationMinutes)
+            // Award extra coins for completion
+            awardCoins(5, "Completed: $workoutName")
+            // Always show confetti on workout completion (not just at 100%)
+            _state.update { it.copy(showConfetti = true) }
+        }
     }
 
     fun completeYogaSession(minutes: Int) {
@@ -406,6 +441,86 @@ class WellnessViewModel @Inject constructor(
 
     fun dismissConfetti() {
         _state.update { it.copy(showConfetti = false) }
+    }
+
+    private fun seedSolutions() {
+        viewModelScope.launch {
+            solutionRepository.seedSolutions()
+        }
+    }
+
+    private fun observeSolutions() {
+        viewModelScope.launch {
+            solutionRepository.allSolutions.collect { solutions ->
+                val state = _state.value
+                val suggested = if (state.painType != "None") {
+                    filterSuggestions(solutions, state.painType.lowercase(), state.painLevel.lowercase(), state.energyLevel.lowercase())
+                } else emptyList()
+                _state.update { it.copy(allSolutions = solutions, suggestedSolutions = suggested) }
+            }
+        }
+    }
+
+    private fun checkWaterReminderStatus() {
+        _state.update { it.copy(waterReminderEnabled = WaterReminderWorker.isScheduled(context)) }
+    }
+
+    private fun filterSuggestions(
+        solutions: List<SolutionEntity>,
+        symptom: String,
+        severity: String,
+        energy: String
+    ): List<SolutionEntity> {
+        val symptomMatch = solutions.filter { it.symptomType == symptom || it.symptomType == "general" }
+        val severityMatch = symptomMatch.filter { it.severity == severity || it.severity == "all" }
+        return severityMatch.sortedByDescending { if (it.symptomType == symptom) 1 else 0 }
+    }
+
+    fun showSolutionsForSymptom(symptom: String) {
+        _state.update { it.copy(selectedSymptom = symptom, showSolutionsSheet = true) }
+    }
+
+    fun dismissSolutionsSheet() {
+        _state.update { it.copy(showSolutionsSheet = false) }
+    }
+
+    fun showSeverityRecommendations() {
+        _state.update { it.copy(showSeveritySheet = true) }
+    }
+
+    fun dismissSeveritySheet() {
+        _state.update { it.copy(showSeveritySheet = false) }
+    }
+
+    fun showRecipeCard(solution: SolutionEntity) {
+        _state.update { it.copy(showRecipe = solution) }
+    }
+
+    fun dismissRecipeCard() {
+        _state.update { it.copy(showRecipe = null) }
+    }
+
+    fun showCategoryView(category: String) {
+        _state.update { it.copy(selectedCategory = category, showCategoryView = true) }
+    }
+
+    fun dismissCategoryView() {
+        _state.update { it.copy(showCategoryView = false) }
+    }
+
+    fun toggleFavorite(id: String, fav: Boolean) {
+        viewModelScope.launch { solutionRepository.toggleFavorite(id, fav) }
+    }
+
+    fun toggleWaterReminder() {
+        val newState = !_state.value.waterReminderEnabled
+        WaterReminderWorker.setEnabled(context, newState)
+        _state.update { it.copy(waterReminderEnabled = newState) }
+        if (newState) {
+            Toast.makeText(context, "Water reminder set! 💧 Every 2 hours, 9AM-9PM", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(context, "Water reminder disabled", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun getTodayEpoch(): Long {

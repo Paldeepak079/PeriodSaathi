@@ -69,7 +69,7 @@
         </receiver>
 
         <receiver
-            android:name=".widget.CycleDayWidget"
+            android:name=".widget.CycleDayWidgetReceiver"
             android:exported="true"
             android:label="@string/widget_cycle_day_name">
             <intent-filter>
@@ -81,7 +81,7 @@
         </receiver>
 
         <receiver
-            android:name=".widget.PeriodCountdownWidget"
+            android:name=".widget.PeriodCountdownWidgetReceiver"
             android:exported="true"
             android:label="@string/widget_countdown_name">
             <intent-filter>
@@ -100,6 +100,17 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
+        </provider>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
         <meta-data

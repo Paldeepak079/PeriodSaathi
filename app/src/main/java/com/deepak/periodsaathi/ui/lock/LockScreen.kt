@@ -8,9 +8,11 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,10 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -53,370 +57,196 @@ import com.deepak.periodsaathi.security.AppBiometricManager
 import com.deepak.periodsaathi.security.BiometricStatus
 import com.deepak.periodsaathi.ui.components.MascotEmotion
 import com.deepak.periodsaathi.ui.components.SaathiMascot
+import com.deepak.periodsaathi.ui.components.springClickable
 import kotlinx.coroutines.delay
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-private data class Star(
-    val x: Float,
-    val initialY: Float,
-    val size: Float,
-    val alpha: Float,
-    val speedMultiplier: Float
-)
+private val sakuraPink = Color(0xFFFFB6C1)
+private val lavenderMist = Color(0xFFE6E6FA)
+private val roseGold = Color(0xFFE8B4B8)
+private val pearlWhite = Color(0xFFFFF0F5)
+private val deepRose = Color(0xFF874E58)
+private val softGold = Color(0xFFFFD700)
 
-private data class SleepParticle(
-    val startX: Float,
-    val startY: Float,
-    val size: Float,
-    val speed: Float,
-    val phase: Float
+private data class LockPetal(
+    var x: Float, var y: Float, val size: Float, val rotation: Float,
+    val rotSpeed: Float, val speedY: Float, val speedX: Float,
+    val color: Color, val alpha: Float
 )
+private data class LockSparkle(val x: Float, val y: Float, val size: Float, val phase: Float, val speed: Float)
+private data class LockGlow(val x: Float, val y: Float, val size: Float, val phase: Float, val speed: Float, val driftX: Float)
 
-/**
- * Returns true for hardware-level / permanent errors that cannot be retried
- * with biometrics and require a PIN fallback.
- */
+private fun generateLockPetals() = List(14) {
+    LockPetal(Random.nextFloat(), Random.nextFloat() * 1.2f - 0.1f, Random.nextFloat() * 10f + 6f, Random.nextFloat() * 360f,
+        (Random.nextFloat() - 0.5f) * 30f, Random.nextFloat() * 15f + 8f, (Random.nextFloat() - 0.5f) * 10f,
+        if (Random.nextFloat() > 0.5f) sakuraPink else lavenderMist, Random.nextFloat() * 0.3f + 0.15f)
+}
+private fun generateLockSparkles() = List(20) { LockSparkle(Random.nextFloat(), Random.nextFloat(), Random.nextFloat() * 2f + 1f, Random.nextFloat() * 2f * PI.toFloat(), Random.nextFloat() * 0.5f + 0.3f) }
+private fun generateLockGlows() = List(12) { LockGlow(Random.nextFloat(), Random.nextFloat(), Random.nextFloat() * 4f + 2f, Random.nextFloat() * 2f * PI.toFloat(), Random.nextFloat() * 0.3f + 0.2f, (Random.nextFloat() - 0.5f) * 20f) }
+
+@Composable
+private fun LockScreenBackground() {
+    val petals = remember { mutableStateOf(generateLockPetals()) }
+    val sparkles = remember { mutableStateOf(generateLockSparkles()) }
+    val glows = remember { mutableStateOf(generateLockGlows()) }
+    val inf = rememberInfiniteTransition(label = "bg")
+    val gradTime by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(12000, easing = LinearEasing), RepeatMode.Reverse), label = "g")
+    val partTime by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(8000, easing = LinearEasing), RepeatMode.Restart), label = "p")
+    val sparkTime by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart), label = "s")
+    val glowTime by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(5000, easing = LinearEasing), RepeatMode.Restart), label = "gl")
+
+    Canvas(Modifier.fillMaxSize()) {
+        val cx = size.width * (0.5f + 0.08f * sin(gradTime * 6.28f))
+        val cy = size.height * (0.5f + 0.08f * cos(gradTime * 6.28f * 0.7f))
+        drawRect(Brush.radialGradient(listOf(sakuraPink.copy(alpha = 0.75f), lavenderMist.copy(alpha = 0.7f), roseGold.copy(alpha = 0.65f), pearlWhite), Offset(cx, cy), size.width * 0.85f), size = size)
+        drawRect(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.12f), Color.Transparent), Offset(cx - size.width * 0.1f, cy - size.height * 0.1f), size.width * 0.6f), size = size)
+
+        glows.value.forEach { g ->
+            val p = (glowTime + g.phase / (2f * PI.toFloat())) % 1f
+            val pulse = sin(p * 6.28f * g.speed) * 0.5f + 0.5f
+            drawCircle(Color.White.copy(alpha = 0.03f + pulse * 0.05f), g.size * density * (0.5f + pulse * 0.5f), Offset(g.x * size.width + sin(p * 2f) * g.driftX, g.y * size.height))
+        }
+
+        val step = partTime * size.height
+        petals.value.forEach { p ->
+            val py = (p.y * size.height + step * p.speedY / 100f) % (size.height + 40f) - 20f
+            drawLockPetal(p.color.copy(alpha = p.alpha * 0.6f), Offset(p.x * size.width + sin(p.rotation * PI.toFloat() / 180f) * 15f, py), p.rotation + partTime * p.rotSpeed, p.size, p.size * 0.6f)
+        }
+
+        sparkles.value.forEach { s ->
+            val tw = sin(sparkTime * 6.28f * s.speed + s.phase) * 0.5f + 0.5f
+            drawCircle(Color.White.copy(alpha = (0.15f + tw * 0.5f).coerceIn(0f, 1f)), s.size * density, Offset(s.x * size.width, s.y * size.height))
+        }
+    }
+}
+
+private fun DrawScope.drawLockPetal(color: Color, center: Offset, rotationDeg: Float, length: Float, width: Float) {
+    drawContext.canvas.save()
+    drawContext.canvas.translate(center.x, center.y)
+    drawContext.canvas.rotate(rotationDeg)
+    drawOval(color.copy(alpha = color.alpha.coerceIn(0f, 1f)), Offset(-width / 2f, 0f), Size(width, length))
+    drawContext.canvas.restore()
+}
+
 private fun isFatalBiometricError(errorCode: Int): Boolean = errorCode in listOf(
-    BiometricPrompt.ERROR_HW_NOT_PRESENT,
-    BiometricPrompt.ERROR_HW_UNAVAILABLE,
-    BiometricPrompt.ERROR_NO_BIOMETRICS,
-    BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
+    BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE,
+    BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
     BiometricPrompt.ERROR_LOCKOUT_PERMANENT
 )
 
 private fun android.content.Context.findActivity(): FragmentActivity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is FragmentActivity) return context
-        context = context.baseContext
-    }
+    var ctx = this
+    while (ctx is ContextWrapper) { if (ctx is FragmentActivity) return ctx; ctx = ctx.baseContext }
     return null
 }
 
 @Composable
-fun LockScreen(
-    onUnlocked: () -> Unit,
-    onPinFallback: () -> Unit
-) {
-    val context = LocalContext.current
-    val activity = context.findActivity()
-
-    val density = LocalDensity.current
-    val screenHeightDp = 800f
-    val screenHeightPx = with(density) { screenHeightDp.dp.toPx() }
-
-    val stars = remember {
-        List(50) {
-            Star(
-                x = Random.nextFloat(),
-                initialY = Random.nextFloat(),
-                size = Random.nextFloat() * 3f + 2f,
-                alpha = Random.nextFloat() * 0.5f + 0.3f,
-                speedMultiplier = Random.nextFloat() * 0.7f + 0.3f
-            )
-        }
-    }
-
-    val sleepParticles = remember {
-        List(12) {
-            SleepParticle(
-                startX = Random.nextFloat() * 0.6f + 0.2f,
-                startY = Random.nextFloat() * 0.3f + 0.6f,
-                size = Random.nextFloat() * 4f + 2f,
-                speed = Random.nextFloat() * 0.3f + 0.15f,
-                phase = Random.nextFloat() * 6.28f
-            )
-        }
-    }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "stars")
-    val timeOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = screenHeightPx,
-        animationSpec = infiniteRepeatable(
-            animation = tween(15000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "starTime"
-    )
-
-    val gradientTime by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "gradientTime"
-    )
-
-    val particleTime by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "particleTime"
-    )
-
-    val mascotScale = remember { Animatable(1f) }
-    val textAlpha = remember { Animatable(0f) }
+fun LockScreen(onUnlocked: () -> Unit, onPinFallback: () -> Unit) {
+    val ctx = LocalContext.current
+    val activity = ctx.findActivity()
     var unlockState by remember { mutableStateOf(UnlockState.Idle) }
-    var biometricErrorMessage by remember { mutableStateOf<String?>(null) }
-
+    var bioErrorMsg by remember { mutableStateOf<String?>(null) }
+    var mascotEmotion by remember { mutableStateOf(MascotEmotion.SLEEPING) }
+    val textAlpha = remember { Animatable(0f) }
     val shakeOffset = remember { Animatable(0f) }
     val brightenAlpha = remember { Animatable(0f) }
-    val failGlowAlpha = remember { Animatable(0f) }
+    val bioManager = remember { AppBiometricManager(ctx) }
 
-    val biometricManager = remember { AppBiometricManager(context) }
-
-    // Reusable function to trigger the native biometric dialog
     fun triggerBiometric() {
         activity?.let { act ->
-            biometricManager.authenticate(
+            bioManager.authenticate(
                 activity = act,
-                onSuccess = {
-                    biometricErrorMessage = null
-                    unlockState = UnlockState.Success
-                },
-                onFailed = {
-                    // A single biometric scan failed — animate the button but keep screen open
-                    unlockState = UnlockState.Failed
-                },
-                onError = { errMsg, errorCode ->
-                    if (isFatalBiometricError(errorCode)) {
-                        // Hardware unavailable / permanently locked — go to PIN
-                        onPinFallback()
-                    } else {
-                        // User cancelled (ERROR_NEGATIVE_BUTTON / ERROR_USER_CANCELED)
-                        // or temporary lockout — show message and let them retry
-                        biometricErrorMessage = errMsg
-                        unlockState = UnlockState.Idle
-                    }
+                onSuccess = { bioErrorMsg = null; unlockState = UnlockState.Success; mascotEmotion = MascotEmotion.HAPPY },
+                onFailed = { unlockState = UnlockState.Failed },
+                onError = { msg, code ->
+                    if (isFatalBiometricError(code)) onPinFallback()
+                    else { bioErrorMsg = msg; unlockState = UnlockState.Idle }
                 }
             )
-        } ?: onPinFallback() // Context is not a FragmentActivity — go straight to PIN
+        } ?: onPinFallback()
     }
 
-    // Mascot breathing animation
-    LaunchedEffect(Unit) {
-        mascotScale.animateTo(
-            1.03f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1500, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-    }
+    LaunchedEffect(Unit) { delay(300); textAlpha.animateTo(1f, tween(600)) }
 
-    // Fade in text
     LaunchedEffect(Unit) {
-        delay(500)
-        textAlpha.animateTo(1f, tween(500))
-    }
-
-    // Auto-trigger biometric prompt once the screen has settled
-    LaunchedEffect(Unit) {
-        delay(600) // Let the entrance animation finish first
-        when (biometricManager.isBiometricAvailable()) {
+        delay(600)
+        when (bioManager.isBiometricAvailable()) {
             BiometricStatus.Available -> triggerBiometric()
-            BiometricStatus.NotEnrolled -> {
-                // No biometrics enrolled — go straight to PIN (which will run setup if needed)
-                onPinFallback()
-            }
-            BiometricStatus.NotAvailable -> Unit // nothing — show button only
+            BiometricStatus.NotEnrolled -> onPinFallback()
+            BiometricStatus.NotAvailable -> {}
         }
     }
 
-    val nightColors = listOf(
-        Color(0xFF0D0A1A), Color(0xFF1A0E2E), Color(0xFF2D1B4E), Color(0xFF1A0E2E)
-    )
-    val gradientProgress = gradientTime * (nightColors.size - 1)
-    val colorIndex = gradientProgress.toInt().coerceAtMost(nightColors.size - 2)
-    val colorFraction = gradientProgress - colorIndex
-    val bgColor = nightColors[colorIndex].let { c1 ->
-        nightColors[colorIndex + 1].let { c2 ->
-            Color(
-                red = c1.red * (1f - colorFraction) + c2.red * colorFraction,
-                green = c1.green * (1f - colorFraction) + c2.green * colorFraction,
-                blue = c1.blue * (1f - colorFraction) + c2.blue * colorFraction,
-                alpha = 1f
-            )
-        }
-    }
+    Box(Modifier.fillMaxSize()) {
+        LockScreenBackground()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgColor)
-    ) {
-        // Animated star / particle canvas
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val gradientCenterX = size.width * 0.5f
-            val gradientCenterY = size.height * 0.5f
+        Box(modifier = Modifier.fillMaxSize().alpha(textAlpha.value), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Spacer(Modifier.weight(0.3f))
 
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF3A1F6A).copy(alpha = 0.3f),
-                        Color(0xFF1A0E2E).copy(alpha = 0.5f),
-                        bgColor.copy(alpha = 0.8f)
-                    ),
-                    center = Offset(
-                        gradientCenterX + sin(gradientTime * 6.28f) * size.width * 0.05f,
-                        gradientCenterY + cos(gradientTime * 6.28f) * size.height * 0.05f
-                    ),
-                    radius = size.width * 0.7f
-                ),
-                radius = size.width
-            )
-
-            stars.forEach { star ->
-                val xPos = star.x * size.width
-                val rawY = star.initialY * size.height + timeOffset * star.speedMultiplier
-                val yPos = if (rawY > size.height) rawY - size.height else rawY
-                val alphaAdjusted = star.alpha * (1f - (yPos / size.height) * 0.5f)
-                drawCircle(
-                    color = Color.White.copy(alpha = alphaAdjusted.coerceIn(0f, 1f)),
-                    radius = star.size * density.density,
-                    center = Offset(xPos, yPos)
-                )
-            }
-
-            sleepParticles.forEach { p ->
-                val progress = (particleTime + p.phase) % 1f
-                val yOff = -progress * size.height * p.speed * 1.5f
-                val xOff = sin(progress * 6.28f * 0.5f) * 20f
-                val alpha = (1f - progress).coerceIn(0f, 1f) * 0.6f
-                val radius = p.size * density.density * (1f - progress * 0.4f)
-                drawCircle(
-                    color = Color(0xFFB8A9D4).copy(alpha = alpha),
-                    radius = radius,
-                    center = Offset(
-                        p.startX * size.width + xOff,
-                        p.startY * size.height + yOff
-                    )
-                )
-            }
-        }
-
-        // Main content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .alpha(textAlpha.value),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.weight(0.3f))
-
-            // Shake offset applied via padding trick on the mascot column
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(start = shakeOffset.value.dp)
-            ) {
-                MascotSleepingSection(mascotScale.value)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Saathi is resting 😴",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFFB8A9D4),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Verify to wake her up",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.5f),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.weight(0.3f))
-
-            SleepParticlesCanvas()
-
-            Spacer(modifier = Modifier.weight(0.1f))
-
-            UnlockButton(
-                biometricStatus = biometricManager.isBiometricAvailable(),
-                glowAlpha = failGlowAlpha.value,
-                errorMessage = biometricErrorMessage,
-                onClick = {
-                    biometricErrorMessage = null
-                    when (biometricManager.isBiometricAvailable()) {
-                        BiometricStatus.Available -> triggerBiometric()
-                        BiometricStatus.NotEnrolled,
-                        BiometricStatus.NotAvailable -> onPinFallback()
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.graphicsLayer { translationX = shakeOffset.value }) {
+                    SaathiMascot(emotion = mascotEmotion, size = 130.dp)
                 }
-            )
 
-            Spacer(modifier = Modifier.height(48.dp))
+                Spacer(Modifier.height(20.dp))
+
+                Text("Saathi is resting", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = deepRose, textAlign = TextAlign.Center, letterSpacing = 0.5.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("Your caring companion is keeping watch", fontSize = 13.sp, color = deepRose.copy(alpha = 0.55f), textAlign = TextAlign.Center)
+
+                Spacer(Modifier.weight(0.3f))
+
+                UnlockButton(
+                    status = bioManager.isBiometricAvailable(),
+                    errorMessage = bioErrorMsg,
+                    onClick = {
+                        bioErrorMsg = null
+                        when (bioManager.isBiometricAvailable()) {
+                            BiometricStatus.Available -> triggerBiometric()
+                            BiometricStatus.NotEnrolled, BiometricStatus.NotAvailable -> onPinFallback()
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text("Or use PIN", fontSize = 12.sp, color = deepRose.copy(alpha = 0.45f), textAlign = TextAlign.Center, modifier = Modifier.clickable { onPinFallback() })
+
+                Spacer(Modifier.weight(0.1f))
+            }
         }
 
-        // Success / Failure overlay states
         when (unlockState) {
             UnlockState.Success -> {
-                var wakePhase by remember { mutableStateOf(WakePhase.Brightening) }
-
                 LaunchedEffect(Unit) {
-                    brightenAlpha.animateTo(1f, tween(600))
-                    wakePhase = WakePhase.Waking
-                    delay(400)
-                    wakePhase = WakePhase.Speech
-                    delay(1200)
+                    brightenAlpha.animateTo(1f, tween(800))
+                    delay(600)
                     onUnlocked()
                 }
-
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White.copy(alpha = brightenAlpha.value * 0.85f)),
+                    Modifier.fillMaxSize().background(Brush.radialGradient(listOf(Color.White.copy(alpha = (0.8f * brightenAlpha.value).coerceIn(0f, 0.8f)), Color(0xFFFFF0F5).copy(alpha = (0.5f * brightenAlpha.value).coerceIn(0f, 0.5f)), Color.Transparent))),
                     contentAlignment = Alignment.Center
                 ) {
-                    when (wakePhase) {
-                        WakePhase.Brightening -> {}
-                        WakePhase.Waking -> {
-                            SaathiMascot(
-                                emotion = MascotEmotion.EXCITED,
-                                size = 120.dp
-                            )
-                        }
-                        WakePhase.Speech -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Good Morning! 🌸",
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.alpha(brightenAlpha.value)) {
+                        SaathiMascot(emotion = MascotEmotion.EXCITED, size = 140.dp)
+                        Spacer(Modifier.height(20.dp))
+                        Text("Good Morning! 🌸", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = deepRose, textAlign = TextAlign.Center)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Saathi is happy to see you", fontSize = 14.sp, color = deepRose.copy(alpha = 0.6f), textAlign = TextAlign.Center)
                     }
                 }
             }
 
             UnlockState.Failed -> {
                 LaunchedEffect(Unit) {
-                    failGlowAlpha.animateTo(1f, tween(200))
-                    repeat(3) {
-                        shakeOffset.animateTo(8f, tween(60))
-                        shakeOffset.animateTo(-8f, tween(60))
-                    }
+                    mascotEmotion = MascotEmotion.SAD
+                    repeat(3) { shakeOffset.animateTo(10f, tween(60)); shakeOffset.animateTo(-10f, tween(60)) }
                     shakeOffset.animateTo(0f, tween(60))
-                    failGlowAlpha.animateTo(0f, tween(400))
+                    delay(400)
+                    mascotEmotion = MascotEmotion.SLEEPING
                     unlockState = UnlockState.Idle
                 }
             }
@@ -426,194 +256,51 @@ fun LockScreen(
     }
 }
 
-enum class UnlockState { Idle, Success, Failed }
-enum class WakePhase { Brightening, Waking, Speech }
-
 @Composable
-private fun MascotSleepingSection(currentScale: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.scale(currentScale)
-    ) {
+private fun UnlockButton(status: BiometricStatus, errorMessage: String? = null, onClick: () -> Unit) {
+    val inf = rememberInfiniteTransition(label = "pulse")
+    val pulse by inf.animateFloat(0.7f, 1f, infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "p")
+    val scanP by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart), label = "scan")
+    val avail = status == BiometricStatus.Available
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(
-            modifier = Modifier
-                .size(160.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF2D1B4E).copy(alpha = 0.6f),
-                            Color(0xFF1A0E2E)
-                        )
-                    )
-                ),
+            modifier = Modifier.fillMaxWidth(0.7f).height(56.dp)
+                .background(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.15f * pulse), Color.White.copy(alpha = 0.06f))), RoundedCornerShape(28.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.25f * pulse), RoundedCornerShape(28.dp))
+                .alpha(pulse)
+                .springClickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE8D5F5)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("-", fontSize = 10.sp, color = Color(0xFF1A0E2E))
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE8D5F5)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("-", fontSize = 10.sp, color = Color(0xFF1A0E2E))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                Canvas(Modifier.size(24.dp)) {
+                    val cx = size.width / 2f; val cy = size.height / 2f; val r = size.width * 0.35f; val sweep = scanP * 360f
+                    for (i in 0 until 4) {
+                        val a = i * 90f; val alpha = if (sweep > a && sweep < a + 60f) ((sweep - a) / 60f).coerceIn(0.3f, 0.9f) else 0.2f
+                        drawArc(deepRose.copy(alpha = alpha), a.toFloat(), 60f, false, Offset(cx - r, cy - r), Size(r * 2, r * 2), style = Stroke(1.8f))
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Box(
-                    modifier = Modifier
-                        .size(40.dp, 20.dp)
-                        .clip(RoundedCornerShape(topStartPercent = 100, topEndPercent = 100))
-                        .background(Color(0xFFD4B8E8))
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    when { avail -> "Unlock with Biometrics"; status == BiometricStatus.NotEnrolled -> "Set up biometrics"; else -> "Use PIN to unlock" },
+                    fontSize = 15.sp, fontWeight = FontWeight.Medium, color = deepRose.copy(alpha = 0.85f), letterSpacing = 0.3.sp
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun SleepParticlesCanvas() {
-    val particles = remember {
-        List(8) { index ->
-            SleepParticle(
-                startX = Random.nextFloat() * 0.5f + 0.25f,
-                startY = 0f,
-                size = Random.nextFloat() * 3f + 2f,
-                speed = Random.nextFloat() * 0.3f + 0.2f,
-                phase = index.toFloat() * 0.8f
-            )
-        }
-    }
-
-    val localDensity = LocalDensity.current
-
-    val infiniteTransition = rememberInfiniteTransition(label = "sleepParticles")
-    val particleTime by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "particleProg"
-    )
-
-    Canvas(modifier = Modifier.size(100.dp, 60.dp)) {
-        particles.forEach { p ->
-            val progress = (particleTime + p.phase) % 1f
-            val y = size.height * (1f - progress)
-            val xOff = sin(progress * 6.28f * 2f) * 15f
-            val alpha = (1f - progress).coerceIn(0f, 1f) * 0.5f
-            val radius = p.size * localDensity.density * (1f - progress * 0.3f)
-            drawCircle(
-                color = Color(0xFFB8A9D4).copy(alpha = alpha),
-                radius = radius,
-                center = Offset(p.startX * size.width + xOff, y)
-            )
-        }
-    }
-}
-
-@Composable
-private fun UnlockButton(
-    biometricStatus: BiometricStatus,
-    glowAlpha: Float = 0f,
-    errorMessage: String? = null,
-    onClick: () -> Unit
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "unlockPulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(750, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
-
-    val buttonBg = if (glowAlpha > 0.01f) {
-        Color(0xFFE53935).copy(alpha = 0.2f + glowAlpha * 0.3f)
-    } else {
-        Color.White.copy(alpha = 0.08f)
-    }
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(64.dp)
-                .clip(RoundedCornerShape(32.dp))
-                .background(buttonBg)
-                .alpha(pulseAlpha + glowAlpha * 0.3f)
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            if (glowAlpha > 0.01f) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFFE53935).copy(alpha = glowAlpha * 0.4f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        if (avail) {
+            Box(
+                modifier = Modifier.size(80.dp, 24.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.06f)),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (biometricStatus == BiometricStatus.Available) "🔓" else "🔑",
-                    fontSize = 20.sp
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = when (biometricStatus) {
-                        BiometricStatus.Available -> "Unlock with Biometrics"
-                        BiometricStatus.NotEnrolled -> "Set up biometrics"
-                        BiometricStatus.NotAvailable -> "Use PIN to unlock"
-                    },
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Text("Face ID / Fingerprint", fontSize = 11.sp, color = deepRose.copy(alpha = 0.4f), letterSpacing = 0.5.sp)
             }
         }
 
-        // Show transient error message (e.g. "Try again" after user cancelled)
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage,
-                color = Color(0xFFFFB74D),
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(horizontal = 8.dp)
-            )
+        errorMessage?.let {
+            Text(it, color = Color(0xFFFFB74D), fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(0.8f).padding(horizontal = 8.dp))
         }
     }
 }
+
+private enum class UnlockState { Idle, Success, Failed }

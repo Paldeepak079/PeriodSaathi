@@ -33,6 +33,7 @@ fun RemediesScreen(
     viewModel: RemediesViewModel = hiltViewModel()
 ) {
     val flippedCards by viewModel.flippedCards.collectAsState()
+    val remedies by viewModel.remedies.collectAsState()
     val hotBagPosition by viewModel.hotBagPosition.collectAsState()
 
     val tempC = (30 + hotBagPosition * 15).toInt()
@@ -101,11 +102,12 @@ fun RemediesScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(viewModel.remedies) { remedy ->
+            items(remedies) { remedy ->
                 FlipCard(
                     remedy = remedy,
                     isFlipped = remedy.id in flippedCards,
-                    onFlip = { viewModel.flipCard(remedy.id) }
+                    onFlip = { viewModel.flipCard(remedy.id) },
+                    onFavorite = { viewModel.toggleFavorite(remedy.id) }
                 )
             }
         }
@@ -310,7 +312,7 @@ private fun BreathingCircle() {
 }
 
 @Composable
-private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
+private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit, onFavorite: () -> Unit = {}) {
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
         animationSpec = tween(400),
@@ -353,6 +355,16 @@ private fun FlipCard(remedy: Remedy, isFlipped: Boolean, onFlip: () -> Unit) {
                     Text(text = "Steps: ${remedy.steps.take(50)}...", color = OnSurfaceVariant, fontSize = 10.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Helps: ${remedy.helpsWith}", color = BabyBlue, fontSize = 10.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { onFavorite() },
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = if (remedy.isFavorited) "\u2B50" else "\u2606",
+                            fontSize = 18.sp
+                        )
+                    }
                 }
             }
         }

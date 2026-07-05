@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,8 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.Manifest
+import android.os.Build
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.data.model.OnboardingResponse
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.deepak.periodsaathi.ui.components.*
 import com.deepak.periodsaathi.ui.theme.*
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -99,7 +104,7 @@ fun OnboardingScreen(
             ) {
                 AnimatedVisibility(visible = state.currentStep > 0 && !state.isSummaryStep) {
                     IconButton(onClick = { viewModel.goToPreviousStep() }) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back", tint = Primary)
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = Primary)
                     }
                 }
                 if (state.currentStep == 0) Spacer(Modifier.width(48.dp))
@@ -131,13 +136,6 @@ fun OnboardingScreen(
                     }
                 }
                 if (state.isSummaryStep) Spacer(Modifier.width(48.dp))
-            }
-
-            if (!state.isSummaryStep) {
-                CycleInteractionCanvas(
-                    biologicalState = state.biologicalState,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
             }
 
             HorizontalPager(
@@ -347,10 +345,20 @@ private fun DatePickerContent(
 }
 
 @Composable
+@OptIn(ExperimentalPermissionsApi::class)
 private fun SummaryPage(
     state: OnboardingUiState,
     onComplete: () -> Unit
 ) {
+    val notificationPermissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+    var permissionRequested by remember { mutableStateOf(false) }
+
+    LaunchedEffect(permissionRequested) {
+        if (permissionRequested && (notificationPermissionState.status.isGranted || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)) {
+            onComplete()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -415,7 +423,14 @@ private fun SummaryPage(
 
         PrimaryButton(
             text = "Start Your Journey",
-            onClick = onComplete,
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionState.status.isGranted) {
+                    notificationPermissionState.launchPermissionRequest()
+                    permissionRequested = true
+                } else {
+                    onComplete()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)

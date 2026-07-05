@@ -37,6 +37,8 @@ class UserPreferences(private val context: Context) {
 
         // ── Appearance ────────────────────────────────────────────────────
         val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
+        val SELECTED_FONT = stringPreferencesKey("selected_font")
+        val SELECTED_THEME = stringPreferencesKey("selected_theme")
 
         // ── Partner sync ──────────────────────────────────────────────────
         val PARTNER_CODE = stringPreferencesKey("partner_code")
@@ -120,9 +122,19 @@ class UserPreferences(private val context: Context) {
 
     // ── Appearance ────────────────────────────────────────────────────────────
     val isDarkMode: Flow<Boolean> = context.dataStore.data.map { it[IS_DARK_MODE] ?: false }
+    val selectedFont: Flow<String> = context.dataStore.data.map { it[SELECTED_FONT] ?: "NUNITO" }
+    val selectedTheme: Flow<String> = context.dataStore.data.map { it[SELECTED_THEME] ?: "CALM_WELLNESS" }
 
     suspend fun setDarkMode(enabled: Boolean) {
         context.dataStore.edit { it[IS_DARK_MODE] = enabled }
+    }
+
+    suspend fun setFont(fontName: String) {
+        context.dataStore.edit { it[SELECTED_FONT] = fontName }
+    }
+
+    suspend fun setTheme(themeName: String) {
+        context.dataStore.edit { it[SELECTED_THEME] = themeName }
     }
 
     // ── Partner sync ──────────────────────────────────────────────────────────

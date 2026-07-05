@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +8,18 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.kover)
+}
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+fun getLocalProperty(key: String): String {
+    return localProperties.getProperty(key) ?: project.findProperty(key)?.toString() ?: ""
 }
 
 android {
@@ -21,28 +35,42 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("supabase.url") ?: ""}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("supabase.anon.key") ?: ""}\"")
-        buildConfigField("String", "RAZORPAY_KEY_ID", "\"${project.findProperty("razorpay.key.id") ?: ""}\"")
-        buildConfigField("String", "ADMOB_APP_ID", "\"${project.findProperty("admob.app.id") ?: ""}\"")
-        buildConfigField("String", "ADMOB_BANNER_ID", "\"${project.findProperty("admob.banner.id") ?: ""}\"")
-        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${project.findProperty("admob.interstitial.id") ?: ""}\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${project.findProperty("google.web.client.id") ?: ""}\"")
-        buildConfigField("String", "GOOGLE_ANDROID_CLIENT_ID", "\"${project.findProperty("google.android.client.id") ?: ""}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${getLocalProperty("supabase.url")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${getLocalProperty("supabase.anon.key")}\"")
+        buildConfigField("String", "STRIPE_PUBLISHABLE_KEY", "\"${getLocalProperty("stripe.publishable.key")}\"")
+        buildConfigField("String", "ADMOB_APP_ID", "\"${getLocalProperty("admob.app.id")}\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"${getLocalProperty("admob.banner.id")}\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${getLocalProperty("admob.interstitial.id")}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${getLocalProperty("google.web.client.id")}\"")
+        buildConfigField("String", "GOOGLE_ANDROID_CLIENT_ID", "\"${getLocalProperty("google.android.client.id")}\"")
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
 
-        manifestPlaceholders["admobAppId"] = project.findProperty("admob.app.id") ?: "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["admobAppId"] = getLocalProperty("admob.app.id").ifBlank { "ca-app-pub-3940256099942544~3347511713" }
     }
 
     signingConfigs {
         create("release") {
-            storeFile = project.findProperty("keystore.path")?.toString()?.let { file(it) }
-            storePassword = project.findProperty("keystore.password")?.toString()
-            keyAlias = project.findProperty("key.alias")?.toString()
-            keyPassword = project.findProperty("key.password")?.toString()
+            val path = getLocalProperty("keystore.path")
+            if (path.isNotBlank()) {
+                val ksFile = file(path)
+                if (ksFile.exists()) {
+                    storeFile = ksFile
+                    storePassword = getLocalProperty("keystore.password")
+                    keyAlias = getLocalProperty("key.alias")
+                    keyPassword = getLocalProperty("key.password")
+                } else {
+                    val rootKsFile = rootProject.file(path)
+                    if (rootKsFile.exists()) {
+                        storeFile = rootKsFile
+                        storePassword = getLocalProperty("keystore.password")
+                        keyAlias = getLocalProperty("key.alias")
+                        keyPassword = getLocalProperty("key.password")
+                    }
+                }
+            }
         }
     }
 
@@ -54,13 +82,22 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            val path = getLocalProperty("keystore.path")
+            val ksFile = if (path.isNotBlank()) file(path) else null
+            if (ksFile?.exists() == true || (path.isNotBlank() && rootProject.file(path).exists())) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false
-            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
-            signingConfig = signingConfigs.getByName("release")
+            val path = getLocalProperty("keystore.path")
+            val ksFile = if (path.isNotBlank()) file(path) else null
+            if (ksFile?.exists() == true || (path.isNotBlank() && rootProject.file(path).exists())) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 
@@ -88,8 +125,12 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/java")
+            java.setSrcDirs(listOf("src/main/java"))
         }
+    }
+
+    firebaseCrashlytics {
+        mappingFileUploadEnabled = false
     }
 
     testOptions {
@@ -157,11 +198,8 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-    // Razorpay
-    implementation(libs.razorpay.checkout) {
-        exclude(group = "com.razorpay")
-    }
-    implementation(libs.razorpay.standard.core)
+    // Stripe SDK
+    implementation(libs.stripe.android)
 
     // AdMob
     implementation(libs.play.services.ads)

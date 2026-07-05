@@ -322,7 +322,7 @@ fun PartnerSettingsScreen(
                             Button(
                                 onClick = { showDisconnectDialog = false },
                                 colors = ButtonDefaults.buttonColors(containerColor = GlassWhite),
-                                border = ButtonDefaults.outlinedButtonBorder,
+                                border = ButtonDefaults.outlinedButtonBorder(enabled = true),
                                 shape = RoundedCornerShape(50.dp),
                                 modifier = Modifier
                                     .weight(1f)

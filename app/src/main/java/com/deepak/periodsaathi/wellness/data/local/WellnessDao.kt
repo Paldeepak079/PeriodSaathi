@@ -2,6 +2,7 @@ package com.deepak.periodsaathi.wellness.data.local
 
 import androidx.room.*
 import com.deepak.periodsaathi.wellness.data.local.entities.CoinTransactionEntity
+import com.deepak.periodsaathi.wellness.data.local.entities.SolutionEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.TipEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.UserWellnessStatsEntity
 import com.deepak.periodsaathi.wellness.data.local.entities.WellnessLogEntity
@@ -51,4 +52,28 @@ interface WellnessDao {
 
     @Query("SELECT * FROM wellness_logs WHERE synced = 0")
     suspend fun getUnsyncedLogs(): List<WellnessLogEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSolutions(solutions: List<SolutionEntity>)
+
+    @Query("SELECT * FROM solutions")
+    fun getAllSolutions(): Flow<List<SolutionEntity>>
+
+    @Query("SELECT * FROM solutions WHERE category = :category")
+    fun getSolutionsByCategory(category: String): Flow<List<SolutionEntity>>
+
+    @Query("SELECT * FROM solutions WHERE symptomType = :symptom OR symptomType = 'general'")
+    fun getSolutionsBySymptom(symptom: String): Flow<List<SolutionEntity>>
+
+    @Query("SELECT * FROM solutions WHERE severity = :severity OR severity = 'all'")
+    fun getSolutionsBySeverity(severity: String): Flow<List<SolutionEntity>>
+
+    @Query("SELECT * FROM solutions WHERE category = :category AND (symptomType = :symptom OR symptomType = 'general') AND (severity = :severity OR severity = 'all')")
+    fun getFilteredSolutions(category: String, symptom: String, severity: String): Flow<List<SolutionEntity>>
+
+    @Query("UPDATE solutions SET isFavorite = :fav WHERE id = :id")
+    suspend fun toggleFavorite(id: String, fav: Boolean)
+
+    @Query("SELECT * FROM solutions ORDER BY isFavorite DESC, id ASC")
+    fun getAllSolutionsSorted(): Flow<List<SolutionEntity>>
 }

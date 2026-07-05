@@ -42,9 +42,18 @@ class PeriodSaathiApplication : Application(), Configuration.Provider {
                 enableVibration(false)
             }
 
+            val waterChannel = NotificationChannel(
+                "health_reminders",
+                "Health Reminders",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Reminders for water, medicine, and self-care"
+            }
+
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(periodChannel)
             notificationManager.createNotificationChannel(wellnessChannel)
+            notificationManager.createNotificationChannel(waterChannel)
         }
 
         // Create notification channels using NotificationHelper

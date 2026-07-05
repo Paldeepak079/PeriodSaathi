@@ -122,6 +122,8 @@ object ReminderScheduler {
             "medicine", "medication" -> ReminderWorker.REMINDER_TYPE_MEDICINE
             "rest", "rest_day" -> ReminderWorker.REMINDER_TYPE_REST_DAY
             "insight", "pattern" -> ReminderWorker.REMINDER_TYPE_INSIGHT
+            "yoga", "yoga_flow" -> ReminderWorker.REMINDER_TYPE_YOGA
+            "custom" -> ReminderWorker.REMINDER_TYPE_CUSTOM
             else -> type
         }
     }

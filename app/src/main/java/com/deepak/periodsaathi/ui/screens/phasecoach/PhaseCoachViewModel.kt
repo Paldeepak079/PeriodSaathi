@@ -144,6 +144,11 @@ class PhaseCoachViewModel @Inject constructor(
         CyclePhase.LUTEAL
     )
 
+    fun selectPhase(phase: CyclePhase) {
+        _currentPhase.value = phase
+        _currentTipIndex.value = 0
+    }
+
     fun nextTip() {
         val tips = getTipsForPhase(_currentPhase.value)
         _currentTipIndex.value = (_currentTipIndex.value + 1) % tips.size

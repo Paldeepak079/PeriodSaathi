@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.deepak.periodsaathi.ui.components.GlassCard
+import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.theme.*
 
 @Composable
@@ -29,6 +30,7 @@ fun ChallengesScreen(
 ) {
     val activeChallenges by viewModel.activeChallenges.collectAsState()
     val completedChallenges by viewModel.completedChallenges.collectAsState()
+    val availableChallenges by viewModel.availableChallenges.collectAsState()
 
     Column(
         modifier = Modifier
@@ -38,35 +40,69 @@ fun ChallengesScreen(
     ) {
         Text(text = "Challenges", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = OnSurface)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Active challenges horizontal scroll
-        Text(text = "Active Challenges", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(activeChallenges) { challenge ->
-                ActiveChallengeCard(
-                    challenge = challenge,
-                    onTap = { viewModel.checkDailyProgress(challenge.id) }
-                )
+        if (availableChallenges.isNotEmpty()) {
+            Text(text = "Available", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(availableChallenges) { challenge ->
+                    AvailableChallengeCard(
+                        challenge = challenge,
+                        onAccept = { viewModel.acceptChallenge(challenge.id) }
+                    )
+                }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Completed challenges
-        Text(text = "Completed", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(completedChallenges) { challenge ->
-                CompletedChallengeCard(challenge = challenge)
+        if (activeChallenges.isNotEmpty()) {
+            Text(text = "Active", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(activeChallenges) { challenge ->
+                    ActiveChallengeCard(
+                        challenge = challenge,
+                        onTap = { viewModel.refresh() }
+                    )
+                }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+        if (completedChallenges.isNotEmpty()) {
+            Text(text = "Completed", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface)
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(completedChallenges) { challenge ->
+                    CompletedChallengeCard(challenge = challenge)
+                }
+                item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvailableChallengeCard(challenge: Challenge, onAccept: () -> Unit) {
+    GlassCard(
+        modifier = Modifier
+            .width(200.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = challenge.emoji, fontSize = 36.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = challenge.title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+            Text(text = challenge.description, fontSize = 11.sp, color = OnSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "${challenge.duration} · +${challenge.pointsReward} pts", fontSize = 10.sp, color = WarmGold)
+            Spacer(modifier = Modifier.height(12.dp))
+            PrimaryButton(
+                text = "Accept",
+                onClick = onAccept,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -110,7 +146,7 @@ private fun ActiveChallengeCard(challenge: Challenge, onTap: () -> Unit) {
 
             // Progress bar
             LinearProgressIndicator(
-                progress = animatedProgress,
+                progress = { animatedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)

@@ -7,24 +7,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +34,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,16 +49,11 @@ import com.deepak.periodsaathi.ui.theme.*
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 import com.deepak.periodsaathi.ui.components.MascotEmotion as ComponentMascotEmotion
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-//  Home Screen (Stitch reference: home_dashboard)
-//  Background: Warm cream (#FFF8F2)
-//  Style: Glassmorphism cards, week strip, mascot speech bubble
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-/** Map HomeViewModel.MascotEmotion â†’ SaathiMascot component enum */
 private fun MascotEmotion.toComponentEmotion(): ComponentMascotEmotion = when (this) {
     MascotEmotion.HAPPY -> ComponentMascotEmotion.HAPPY
     MascotEmotion.EXCITED -> ComponentMascotEmotion.EXCITED
@@ -79,6 +73,7 @@ fun HomeScreen(
     onNavigateToPayment: () -> Unit = {},
     onNavigateToChat: () -> Unit = {},
     onNavigateToFriend: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     onLogout: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -86,13 +81,32 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showSignOutDialog by remember { mutableStateOf(false) }
+    var showPhaseCoachSheet by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var ttsEngine by remember { mutableStateOf<android.speech.tts.TextToSpeech?>(null) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        var tts: android.speech.tts.TextToSpeech? = null
+        tts = android.speech.tts.TextToSpeech(context) { status ->
+            if (status == android.speech.tts.TextToSpeech.SUCCESS) {
+                tts?.language = java.util.Locale.getDefault()
+            }
+        }
+        ttsEngine = tts
+        onDispose {
+            tts?.stop()
+            tts?.shutdown()
+            ttsEngine = null
+        }
+    }
 
     if (showSignOutDialog) {
         AlertDialog(
             onDismissRequest = { showSignOutDialog = false },
             title = {
                 Text(
-                    text = "Sign Out 🌸",
+                    text = "Sign Out \uD83C\uDF38",
                     fontWeight = FontWeight.Bold,
                     color = Primary,
                     style = MaterialTheme.typography.titleLarge
@@ -172,10 +186,10 @@ fun HomeScreen(
                     )
                     Text("Free Plan", color = OnSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
                 }
-                Divider(color = OutlineVariant)
+                HorizontalDivider(color = OutlineVariant)
                 Spacer(Modifier.height(16.dp))
                 NavigationDrawerItem(
-                    icon = { Text("👭", fontSize = 18.sp) },
+                    icon = { Text("\uD83D\uDC6D", fontSize = 18.sp) },
                     label = { Text("Friend", fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -185,7 +199,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    icon = { Text("👥", fontSize = 18.sp) },
+                    icon = { Text("\uD83D\uDC65", fontSize = 18.sp) },
                     label = { Text("Partner Mode", fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -195,7 +209,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    icon = { Text("⚙️", fontSize = 18.sp) },
+                    icon = { Text("\u2699\uFE0F", fontSize = 18.sp) },
                     label = { Text("Settings", fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -205,7 +219,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    icon = { Text("⭐", fontSize = 18.sp) },
+                    icon = { Text("\u2B50", fontSize = 18.sp) },
                     label = { Text("Premium", fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -216,7 +230,7 @@ fun HomeScreen(
                     badge = { Icon(Icons.Default.Favorite, "Premium", tint = BlushPink, modifier = Modifier.size(16.dp)) }
                 )
                 NavigationDrawerItem(
-                    icon = { Text("💬", fontSize = 18.sp) },
+                    icon = { Text("\uD83D\uDCAC", fontSize = 18.sp) },
                     label = { Text("Ask Saathi", fontWeight = FontWeight.SemiBold) },
                     selected = false,
                     onClick = {
@@ -229,7 +243,7 @@ fun HomeScreen(
                 HorizontalDivider(color = OutlineVariant.copy(0.5f), modifier = Modifier.padding(horizontal = 24.dp))
                 Spacer(Modifier.height(8.dp))
                 NavigationDrawerItem(
-                    icon = { Text("🚪", fontSize = 18.sp) },
+                    icon = { Text("\uD83D\uDEAA", fontSize = 18.sp) },
                     label = { Text("Sign Out", fontWeight = FontWeight.SemiBold, color = Color(0xFFE53935)) },
                     selected = false,
                     onClick = {
@@ -246,173 +260,173 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(Background)
         ) {
-        // Background blobs
-        HomeMeshBackground()
+            HomeMeshBackground()
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding(),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
-            // â”€â”€ Top App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                HomeTopBar(
-                    userName = uiState.userName,
-                    onProfileClick = { scope.launch { drawerState.open() } },
-                    onNotificationsClick = { }
-                )
-            }
-
-            // â”€â”€ Phase Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                PhaseTabRow(
-                    selectedPhase = uiState.selectedTabPhase,
-                    onPhaseSelected = { phase -> viewModel.onPhaseTabSelected(phase) },
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-
-
-
-            // â”€â”€ Medical disclaimer (first launch) â”€â”€â”€â”€
-            if (uiState.isFirstLaunch) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding(),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
                 item {
-                    MedicalDisclaimerBanner(
-                        onDismiss = { viewModel.dismissMedicalDisclaimer() },
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                    HomeTopBar(
+                        userName = uiState.userName,
+                        onProfileClick = { scope.launch { drawerState.open() } },
+                        onNotificationsClick = { onNavigateToNotifications() }
+                    )
+                }
+
+                item {
+                    PhaseTabRow(
+                        selectedPhase = uiState.selectedTabPhase,
+                        onPhaseSelected = { phase -> viewModel.onPhaseTabSelected(phase) },
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                if (uiState.isFirstLaunch) {
+                    item {
+                        MedicalDisclaimerBanner(
+                            onDismiss = { viewModel.dismissMedicalDisclaimer() },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+
+                item {
+                    GreetingRow(
+                        name = uiState.userName,
+                        cycleDay = uiState.cycleDay,
+                        phaseName = uiState.selectedTabPhase.displayName,
+                        phaseDay = uiState.phaseDayInPhase,
+                        todayFlow = uiState.todayFlow,
+                        todayMood = uiState.todayMood,
+                        wellnessPercent = ((uiState.waterGlasses / 8f) * 100).toInt().coerceAtMost(100),
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 8.dp, bottom = 16.dp)
+                    )
+                }
+
+                item {
+                    HeroCard(
+                        cycleDay = uiState.cycleDay,
+                        isRestDay = uiState.showRestDay,
+                        mascotTip = uiState.mascotTipText,
+                        mascotEmotion = uiState.mascotEmotion.toComponentEmotion(),
+                        onMascotTap = { viewModel.onMascotTapped() },
+                        onDismissTip = { viewModel.onMascotTapped() },
+                        onShareTip = {
+                            val sendIntent = android.content.Intent().apply {
+                                action = android.content.Intent.ACTION_SEND
+                                putExtra(android.content.Intent.EXTRA_TEXT, uiState.mascotTipText)
+                                type = "text/plain"
+                            }
+                            context.startActivity(android.content.Intent.createChooser(sendIntent, "Share tip"))
+                        },
+                        onSaveTip = {
+                            android.widget.Toast.makeText(context, "Tip bookmarked! \uD83D\uDC97", android.widget.Toast.LENGTH_SHORT).show()
+                        },
+                        onDayClicked = { dayEpoch -> onNavigateToDayLog(dayEpoch) },
+                        onRotateTip = { viewModel.rotateTip() },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
+                    )
+                }
+
+                item {
+                    // Audio tip button
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Surface(
+                            onClick = {
+                                val engine = ttsEngine
+                                if (engine != null) {
+                                    if (isPlaying) {
+                                        engine.stop()
+                                        isPlaying = false
+                                    } else {
+                                        isPlaying = true
+                                        engine.speak(
+                                            uiState.mascotTipText,
+                                            android.speech.tts.TextToSpeech.QUEUE_FLUSH,
+                                            null,
+                                            "tip"
+                                        )
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = if (isPlaying) "⏸ Pause" else "🔊 Hear Tip",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    PhaseCoachBanner(
+                        phaseName = uiState.selectedTabPhase.displayName,
+                        phaseDay = uiState.phaseDayInPhase,
+                        onViewCoachGuide = { showPhaseCoachSheet = true },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                item {
+                    CycleInsightsHub(
+                        selectedPhase = uiState.selectedTabPhase,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                }
+
+                item {
+                    HealthQuerySection(
+                        onQuerySelect = { queryType -> viewModel.assessHealth(queryType) },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
             }
 
-            // â”€â”€ Greeting + Wellness Score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                GreetingRow(
-                    name = uiState.userName,
-                    cycleDay = uiState.cycleDay,
-                    wellnessPercent = ((uiState.waterGlasses / 8f) * 100).toInt().coerceAtMost(100),
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(top = 8.dp, bottom = 16.dp)
+            uiState.healthQueryResult?.let { result ->
+                HealthQueryResultModal(
+                    result = result,
+                    onDismiss = { viewModel.dismissHealthQuery() }
                 )
             }
 
-            // â”€â”€ AI Premium Forecast Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                AiForecastCard(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp)
-                )
-            }
-
-            // â”€â”€ Pattern Detective Notification Card â”€â”€
-            item {
-                PatternDetectiveCard(
-                    onViewInsights = onNavigateToInsights,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp)
-                )
-            }
-
-            // â”€â”€ Hero glass card (week + mascot) â”€â”€â”€â”€â”€â”€
-            item {
-                HeroCard(
-                    cycleDay = uiState.cycleDay,
-                    isRestDay = uiState.showRestDay,
-                    mascotTip = uiState.mascotTipText,
-                    mascotEmotion = uiState.mascotEmotion.toComponentEmotion(),
-                    onMascotTap = { viewModel.onMascotTapped() },
-                    onDismissTip = { viewModel.onMascotTapped() },
-                    onShareTip = { },
-                    onSaveTip = { },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp)
-                )
-            }
-
-            // â”€â”€ Current Status Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                StatusDashboard(
-                    phaseName = uiState.selectedTabPhase.displayName,
+            if (showPhaseCoachSheet) {
+                PhaseCoachBottomSheet(
+                    phase = uiState.selectedTabPhase,
                     phaseDay = uiState.phaseDayInPhase,
-                    phaseTotalDays = 5,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp)
-                )
-            }
-
-            // â”€â”€ Quick Log Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                QuickLogSection(
-                    onLogFlow = onNavigateToCalendar,
-                    onLogWater = { viewModel.logWater(1) },
-                    onLogMeals = { },
-                    onLogMedicine = { },
-                    onPhaseCoach = onNavigateToPhaseCoach
-                )
-            }
-
-            // â”€â”€ Daily Insights Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                DailyInsightsSection(
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            // â”€â”€ Insights Bento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                InsightsBento(
-                    streakCount = uiState.streakCount,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp)
-                )
-            }
-
-            // â”€â”€ Phase Coach Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                PhaseCoachBanner(
-                    phaseName = uiState.selectedTabPhase.displayName,
-                    phaseDay = uiState.phaseDayInPhase,
-                    onViewCoachGuide = onNavigateToPhaseCoach,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 12.dp)
-                )
-            }
-
-            // â”€â”€ Cycle-Synced Insights Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                CycleInsightsHub(
-                    selectedPhase = uiState.selectedTabPhase,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-            // â”€â”€ Health Query Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item {
-                HealthQuerySection(
-                    onQuerySelect = { queryType -> viewModel.assessHealth(queryType) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    tip = uiState.mascotTipText,
+                    onDismiss = { showPhaseCoachSheet = false }
                 )
             }
         }
-
-        uiState.healthQueryResult?.let { result ->
-            HealthQueryResultModal(
-                result = result,
-                onDismiss = { viewModel.dismissHealthQuery() }
-            )
-        }
-
-    }
     }
 }
 
-// â”€â”€ Sub-composables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sub-composables ─────────────────────────────────────────────────────
 
 @Composable
 private fun HomeMeshBackground() {
@@ -423,7 +437,7 @@ private fun HomeMeshBackground() {
                 .offset(x = (-60).dp, y = (-20).dp)
                 .size(300.dp)
                 .background(
-                    Brush.radialGradient(listOf(PrimaryContainer.copy(0.4f), Color.Transparent)),
+                    Brush.radialGradient(listOf(MaterialTheme.colorScheme.primaryContainer.copy(0.4f), Color.Transparent)),
                     CircleShape
                 )
                 .blur(50.dp)
@@ -434,7 +448,7 @@ private fun HomeMeshBackground() {
                 .offset(x = 40.dp, y = 80.dp)
                 .size(250.dp)
                 .background(
-                    Brush.radialGradient(listOf(SecondaryContainer.copy(0.3f), Color.Transparent)),
+                    Brush.radialGradient(listOf(MaterialTheme.colorScheme.secondaryContainer.copy(0.3f), Color.Transparent)),
                     CircleShape
                 )
                 .blur(50.dp)
@@ -448,48 +462,40 @@ private fun HomeTopBar(
     onProfileClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
-    Surface(
-        color = Color.White.copy(alpha = 0.6f),
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .blur(20.dp)
-            .border(width = 0.dp, color = Color.Transparent)
+            .padding(horizontal = 16.dp)
+            .height(64.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(64.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(PrimaryContainer)
+                    .clickable { onProfileClick() },
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(PrimaryContainer)
-                        .springClickable { onProfileClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = userName.firstOrNull()?.toString() ?: "P",
-                        color = OnPrimaryContainer,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
                 Text(
-                    text = "Period Saathi",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Primary
+                    text = userName.firstOrNull()?.toString() ?: "P",
+                    color = OnPrimaryContainer,
+                    fontWeight = FontWeight.Bold
                 )
             }
-            IconButton(onClick = onNotificationsClick) {
-                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Primary)
-            }
+            Text(
+                text = "Period Saathi",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Primary
+            )
+        }
+        IconButton(onClick = onNotificationsClick) {
+            Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Primary)
         }
     }
 }
@@ -498,32 +504,78 @@ private fun HomeTopBar(
 private fun GreetingRow(
     name: String,
     cycleDay: Int,
+    phaseName: String,
+    phaseDay: Int,
+    todayFlow: String?,
+    todayMood: String?,
     wellnessPercent: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Column {
-            Text(
-                text = "Hey ${name.ifBlank { "there" }} ðŸŒ¸",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 26.sp
-                ),
-                color = OnSurface
-            )
-            Text(
-                text = if (cycleDay > 0) "Day $cycleDay of your cycle" else "Start tracking today",
-                style = MaterialTheme.typography.bodyMedium,
-                color = OnSurfaceVariant
-            )
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Column {
+                Text(
+                    text = "Hey ${name.ifBlank { "there" }} \uD83C\uDF38",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 26.sp
+                    ),
+                    color = OnSurface
+                )
+                if (cycleDay > 0) {
+                    Text(
+                        text = "Day $cycleDay \u2022 $phaseName (Day $phaseDay)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                } else {
+                    Text(
+                        text = "Start tracking today",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                }
+            }
+            WellnessRing(percent = wellnessPercent)
         }
 
-        // Wellness ring
-        WellnessRing(percent = wellnessPercent)
+        if (todayFlow != null || todayMood != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (todayFlow != null) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = BlushPink.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "\uD83D\uDCA7 $todayFlow",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = BlushPink,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                if (todayMood != null) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = SoftLavender.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "\uD83C\uDF70 $todayMood",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SoftLavender,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -536,7 +588,6 @@ private fun WellnessRing(percent: Int) {
         val stroke = Stroke(width = 6.dp.value, cap = StrokeCap.Round)
         val sweepAngle = 360f * (percent / 100f)
         androidx.compose.foundation.Canvas(modifier = Modifier.size(64.dp)) {
-            // Background ring
             drawArc(
                 color = Color.White.copy(0.5f),
                 startAngle = -90f,
@@ -544,7 +595,6 @@ private fun WellnessRing(percent: Int) {
                 useCenter = false,
                 style = stroke
             )
-            // Progress ring
             drawArc(
                 color = Primary,
                 startAngle = -90f,
@@ -572,6 +622,8 @@ private fun HeroCard(
     onDismissTip: () -> Unit = {},
     onShareTip: () -> Unit = {},
     onSaveTip: () -> Unit = {},
+    onDayClicked: (Long) -> Unit = {},
+    onRotateTip: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var swipeOffset by remember { mutableStateOf(0f) }
@@ -593,6 +645,15 @@ private fun HeroCard(
             animSwipeOffset.animateTo(0f, spring())
         }
     }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(12000)
+            onRotateTip()
+        }
+    }
+
+    val todayEpoch = LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     GlassCard(
         shape = RoundedCornerShape(24.dp),
@@ -627,7 +688,7 @@ private fun HeroCard(
             }
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            WeekStrip(cycleDay = cycleDay, isRestDay = isRestDay)
+            WeekStrip(cycleDay = cycleDay, isRestDay = isRestDay, onDayClicked = onDayClicked, todayEpoch = todayEpoch)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -718,7 +779,12 @@ private fun HeroCard(
 }
 
 @Composable
-private fun WeekStrip(cycleDay: Int, isRestDay: Boolean = false) {
+private fun WeekStrip(
+    cycleDay: Int,
+    isRestDay: Boolean = false,
+    onDayClicked: (Long) -> Unit = {},
+    todayEpoch: Long = 0L
+) {
     val today = LocalDate.now()
     val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
 
@@ -731,10 +797,12 @@ private fun WeekStrip(cycleDay: Int, isRestDay: Boolean = false) {
             val isToday = day == today
             val dayLabel = day.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault())
             val dayNum = day.dayOfMonth
+            val dayEpoch = day.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.clickable { onDayClicked(dayEpoch) }
             ) {
                 Text(
                     text = dayLabel,
@@ -786,123 +854,151 @@ private fun WeekStrip(cycleDay: Int, isRestDay: Boolean = false) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun QuickLogSection(
-    onLogFlow: () -> Unit,
-    onLogWater: () -> Unit,
-    onLogMeals: () -> Unit,
-    onLogMedicine: () -> Unit,
-    onPhaseCoach: () -> Unit = {}
+private fun PhaseCoachBottomSheet(
+    phase: CyclePhase,
+    phaseDay: Int,
+    tip: String,
+    onDismiss: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(top = 8.dp)) {
-        Text(
-            text = "Quick Log",
-            style = MaterialTheme.typography.labelMedium,
-            color = OnSurfaceVariant,
-            modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coachContent = when (phase) {
+        CyclePhase.MENSTRUAL -> listOf(
+            "\uD83D\uDECC Prioritize rest \u2014 your uterus is working hard",
+            "\uD83C\uDF75 Ginger or chamomile tea reduces cramp intensity",
+            "\uD83E\uDDD8 Cat-Cow yoga pose eases lower back pain",
+            "\uD83D\uDC8A Iron-rich foods: spinach, lentils, dark chocolate",
+            "\uD83D\uDCA7 Stay warm and hydrated; avoid cold drinks"
         )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                QuickLogChip(label = "ðŸ’§ Water", onClick = onLogWater)
-            }
-            item {
-                QuickLogChip(label = "ðŸ½ Meals", onClick = onLogMeals)
-            }
-            item {
-                QuickLogChip(label = "ðŸ’Š Medicine", onClick = onLogMedicine)
-            }
-            item {
-                QuickLogChip(label = "ðŸ©¸ Flow", onClick = onLogFlow)
-            }
-            item {
-                QuickLogChip(label = "ðŸ§˜ Coach", onClick = onPhaseCoach)
-            }
-        }
+        CyclePhase.FOLLICULAR -> listOf(
+            "\u26A1 Your energy is building \u2014 try a brisk walk or jog",
+            "\uD83E\uDD57 Fermented foods boost gut health this phase",
+            "\uD83D\uDCDA Great time to learn something new \u2014 brain fog lifts",
+            "\uD83C\uDF38 Your skin is clearing up \u2014 less breakouts likely",
+            "\uD83D\uDCAA Strength training works great in follicular phase"
+        )
+        CyclePhase.OVULATORY, CyclePhase.OVULATION -> listOf(
+            "\u2728 Peak communication phase \u2014 schedule important talks",
+            "\uD83C\uDFAF High energy, high motivation \u2014 tackle big goals",
+            "\uD83E\uDD69 Eat cruciferous veg to help metabolize estrogen",
+            "\uD83D\uDC83 Confidence is peaking \u2014 say yes to social plans",
+            "\uD83C\uDF21\uFE0F Slight temp rise and clear discharge = ovulation signs"
+        )
+        CyclePhase.LUTEAL -> listOf(
+            "\uD83D\uDCD3 Journal your emotions \u2014 luteal brings big feelings",
+            "\uD83C\uDF6B Magnesium-rich foods: dark chocolate, almonds, bananas",
+            "\uD83C\uDFC3 Moderate cardio > high intensity this phase",
+            "\uD83D\uDE34 Prioritize 7-9 hours sleep; progesterone peaks here",
+            "\uD83E\uDEB4 Deep breathing exercises calm the nervous system"
+        )
+        CyclePhase.PMS -> listOf(
+            "\uD83D\uDC99 Your emotions are valid \u2014 hormones are real",
+            "\uD83E\uDDE0 Evening Primrose Oil may reduce PMS symptoms",
+            "\uD83D\uDEC1 Warm baths with Epsom salt ease bloating",
+            "\uD83D\uDCF5 Reduce screen time 2 hours before bed",
+            "\uD83E\uDD17 Reach out to someone you trust if feeling low"
+        )
+        else -> listOf(
+            "\uD83D\uDCCA Start logging your cycle to unlock personalized tips",
+            "\uD83D\uDCC5 Even basic period start/end dates help predictions",
+            "\uD83D\uDCA1 Track symptoms daily for the best insights",
+            "\uD83C\uDF19 Your body has wisdom \u2014 we help you understand it",
+            "\uD83C\uDF38 Every cycle is unique, just like you"
+        )
     }
-}
 
-@Composable
-private fun QuickLogChip(label: String, onClick: () -> Unit) {
-    ScaleButton(onClick = onClick) {
-        Surface(
-            color = Color.White.copy(alpha = 0.6f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
-            shape = CircleShape
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = OnSurface,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun InsightsBento(
-    streakCount: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
-        BentoCard(
-            modifier = Modifier.weight(1f),
-            iconEmoji = "ðŸŒ™",
-            label = "Sleep",
-            value = "7h 20m",
-            containerColor = SecondaryContainer.copy(0.5f)
-        )
-        BentoCard(
-            modifier = Modifier.weight(1f),
-            iconEmoji = "â¤ï¸",
-            label = "Streak",
-            value = "$streakCount days",
-            containerColor = PrimaryContainer.copy(0.5f)
-        )
-    }
-}
-
-@Composable
-private fun BentoCard(
-    modifier: Modifier = Modifier,
-    iconEmoji: String,
-    label: String,
-    value: String,
-    containerColor: Color = Color.White.copy(0.45f)
-) {
-    GlassCard(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 40.dp)
+        ) {
+            // Handle
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(containerColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(iconEmoji, fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+                    .width(48.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.outlineVariant)
+                    .align(Alignment.CenterHorizontally)
+            )
+            Spacer(Modifier.height(20.dp))
             Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = OnSurfaceVariant
+                text = "${phase.emoji} Phase Coach Guide",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                ),
-                color = OnSurface
+                text = "Day $phaseDay of ${phase.displayName} phase",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
+            )
+            Text(
+                text = "\uD83D\uDCA1 Today's Tip",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(8.dp))
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = tip,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(16.dp),
+                    lineHeight = 22.sp
+                )
+            }
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "\uD83C\uDF3F Phase Recommendations",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(12.dp))
+            coachContent.forEachIndexed { index, content ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = "${index + 1}.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.width(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = content,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "\u26A0\uFE0F Information is general and not medical advice.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -913,7 +1009,7 @@ private fun MedicalDisclaimerBanner(onDismiss: () -> Unit, modifier: Modifier = 
     GlassCard(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "âš•ï¸ Medical Disclaimer",
+                text = "\u26A0\uFE0F Medical Disclaimer",
                 fontWeight = FontWeight.Bold,
                 color = Primary,
                 style = MaterialTheme.typography.titleSmall
@@ -930,324 +1026,6 @@ private fun MedicalDisclaimerBanner(onDismiss: () -> Unit, modifier: Modifier = 
         }
     }
 }
-
-@Composable
-private fun RestDayBanner(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = ErrorContainer.copy(alpha = 0.5f),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "ðŸ›Œ", fontSize = 28.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "ðŸ› REST DAY",
-                    fontWeight = FontWeight.Bold,
-                    color = OnErrorContainer,
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = "Take it easy today!",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = OnSurfaceVariant
-                )
-            }
-            TextButton(onClick = onDismiss) {
-                Text("OK", color = Primary)
-            }
-        }
-    }
-}
-
-// â”€â”€ AI Premium Forecast Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-@Composable
-private fun AiForecastCard(modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "aiPulse")
-    val cloudAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.5f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "cloudAlpha"
-    )
-
-    GlassCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        tint = TertiaryContainer
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Surface(
-                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp),
-                color = Tertiary,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "AI",
-                    color = OnTertiary,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "â˜ï¸",
-                    fontSize = 48.sp,
-                    modifier = Modifier.graphicsLayer { alpha = cloudAlpha }
-                )
-                Column {
-                    Text(
-                        text = "Low Energy Day",
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        color = OnTertiaryContainer
-                    )
-                    Text(
-                        text = "AI Cycle Whisperer Premium Forecast",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = OnTertiaryContainer.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-// â”€â”€ Pattern Detective Notification Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-@Composable
-private fun PatternDetectiveCard(
-    onViewInsights: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val amber = Color(0xFFFFB74D)
-
-    GlassCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            Surface(
-                modifier = Modifier
-                    .width(4.dp)
-                    .fillMaxHeight(),
-                color = amber,
-                shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-            ) {}
-            Row(
-                modifier = Modifier.weight(1f).padding(start = 12.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(text = "ðŸ”", fontSize = 24.sp)
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "We noticed something interesting",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = OnSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Your sleep patterns seem to affect your cramps. Check Insights for details.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = OnSurfaceVariant
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = onViewInsights) {
-                            Text("View Insights", color = Primary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// â”€â”€ Current Status Dashboard (3-column bento) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-@Composable
-private fun StatusDashboard(
-    phaseName: String,
-    phaseDay: Int,
-    phaseTotalDays: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        GlassCard(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "$phaseName Phase",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = "$phaseDay",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                        color = Primary
-                    )
-                    Text(
-                        text = "/ $phaseTotalDays Days",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = OnSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(SurfaceContainerHigh)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(fraction = phaseDay.toFloat() / phaseTotalDays.coerceAtLeast(1))
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Primary)
-                    )
-                }
-            }
-        }
-        GlassCard(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "ðŸ’§", fontSize = 28.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Flow",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = OnSurfaceVariant
-                )
-                Text(
-                    text = "Medium",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = OnSurface
-                )
-            }
-        }
-        GlassCard(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "ðŸ¥°", fontSize = 28.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Mood",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = OnSurfaceVariant
-                )
-                Text(
-                    text = "Cuddly",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = OnSurface
-                )
-            }
-        }
-    }
-}
-
-// â”€â”€ Daily Insights Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-@Composable
-private fun DailyInsightsSection(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(
-            text = "Daily Insights",
-            style = MaterialTheme.typography.labelMedium,
-            color = OnSurfaceVariant,
-            modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
-        )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                GlassCard(
-                    modifier = Modifier.width(200.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "ðŸ§˜", fontSize = 32.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "5-Min Restorative Yoga",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Gentle stretches for cramp relief",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = OnSurfaceVariant
-                        )
-                    }
-                }
-            }
-            item {
-                GlassCard(
-                    modifier = Modifier.width(200.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "ðŸµ", fontSize = 32.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Ginger & Chamomile Blend",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Soothing herbal tea for relaxation",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = OnSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// â”€â”€ Phase Coach Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun PhaseCoachBanner(
@@ -1426,7 +1204,7 @@ private fun CycleInsightsHub(
                 color = OnSurfaceVariant
             )
             Text(
-                text = "Audio \uD83C\uDFA7",
+                text = "Guides",
                 fontSize = 11.sp,
                 color = Primary,
                 fontWeight = FontWeight.Medium
@@ -1441,6 +1219,7 @@ private fun CycleInsightsHub(
         ) {
             items(mediaItems.size) { index ->
                 val (title, description) = mediaItems[index]
+                val guideContext = LocalContext.current
                 var isPlaying by remember { mutableStateOf(false) }
 
                 GlassCard(
@@ -1455,7 +1234,12 @@ private fun CycleInsightsHub(
                                 .background(
                                     if (isPlaying) Primary else Color.White.copy(alpha = 0.6f)
                                 )
-                                .clickable { isPlaying = !isPlaying },
+                                .clickable {
+                                    isPlaying = !isPlaying
+                                    if (isPlaying) {
+                                        android.widget.Toast.makeText(guideContext, "Audio guide coming soon \uD83C\uDFA7", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -1502,7 +1286,6 @@ fun HomeScreenPreview() {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthQueryResultModal(
@@ -1545,7 +1328,7 @@ fun HealthQueryResultModal(
             Spacer(modifier = Modifier.height(8.dp))
             result.actionItems.forEach { action ->
                 Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                    Text("•", modifier = Modifier.padding(end = 8.dp), color = Primary)
+                    Text("\u2022", modifier = Modifier.padding(end = 8.dp), color = Primary)
                     Text(text = action, style = MaterialTheme.typography.bodyMedium, color = OnSurface)
                 }
             }
@@ -1601,7 +1384,7 @@ private fun HealthQueryChip(
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = Color.White.copy(alpha = 0.5f),
-        modifier = modifier.springClickable(onClick = onClick)
+        modifier = modifier.clickable(onClick = onClick)
     ) {
         Text(
             text = text,
@@ -1612,4 +1395,3 @@ private fun HealthQueryChip(
         )
     }
 }
-

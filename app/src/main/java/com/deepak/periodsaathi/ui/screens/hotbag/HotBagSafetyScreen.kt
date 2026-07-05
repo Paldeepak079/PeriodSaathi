@@ -8,7 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -65,7 +65,7 @@ fun HotBagSafetyScreen(onBack: () -> Unit = {}) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Rounded.ArrowBack, null, tint = Primary)
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Primary)
                 }
                 Text("Hot Bag Safety",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),

@@ -26,10 +26,13 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return try {
             val settings = cycleRepository.getSettings().first()
-            val lastCycle = cycleRepository.getLastNCycles(1).first()
 
             if (settings != null) {
-                cycleRepository.updateSettings(settings)
+                val prediction = cycleRepository.predictNextPeriod().first()
+                android.util.Log.d("SyncWorker",
+                    "Sync complete: cycle day ${prediction.daysUntil} days until next period, " +
+                    "confidence ${"%.0f".format(prediction.confidence * 100)}%"
+                )
             }
 
             Result.success()
