@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.domain.PredictionResult
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.ShimmerHomeScreen
@@ -43,10 +44,10 @@ fun InsightsScreen(
     viewModel: InsightsViewModel = hiltViewModel(),
     onNavigateToDayLog: () -> Unit = {}
 ) {
-    val cyclesLogged by viewModel.cyclesLogged.collectAsState()
-    val insights by viewModel.insights.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val prediction by viewModel.prediction.collectAsState()
+    val cyclesLogged by viewModel.cyclesLogged.collectAsStateWithLifecycle()
+    val insights by viewModel.insights.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val prediction by viewModel.prediction.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier

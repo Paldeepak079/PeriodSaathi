@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.MascotEmotion
 import com.deepak.periodsaathi.ui.components.SaathiMascot
 import com.deepak.periodsaathi.ui.theme.*
@@ -36,7 +37,7 @@ fun SplashScreen(
     onNavigateToLock: () -> Unit = {},
     viewModel: SplashViewModel = hiltViewModel()
 ) {
-    val splashState by viewModel.splashState.collectAsState()
+    val splashState by viewModel.splashState.collectAsStateWithLifecycle()
     var animationComplete by remember { mutableStateOf(false) }
 
     // Navigate only AFTER the animation is done AND the DB check has resolved

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.theme.BabyBlue
 import com.deepak.periodsaathi.ui.theme.BlushPink
 import com.deepak.periodsaathi.ui.theme.DeepRose
@@ -34,8 +35,8 @@ fun NameSetupScreen(
     onComplete: () -> Unit = {},
     viewModel: NameSetupViewModel = hiltViewModel()
 ) {
-    val name by viewModel.name.collectAsState()
-    val isSaving by viewModel.isSaving.collectAsState()
+    val name by viewModel.name.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.saveComplete.collect { onComplete() }

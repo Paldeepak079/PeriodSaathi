@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +31,7 @@ fun PartnerJoinScreen(
     onBack: () -> Unit,
     onNavigateToDashboard: () -> Unit
 ) {
-    val joinState by viewModel.joinState.collectAsState()
+    val joinState by viewModel.joinState.collectAsStateWithLifecycle()
     var inviteCode by remember { mutableStateOf("") }
     var partnerNameInput by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 
@@ -39,7 +40,7 @@ enum class PartnerSubScreen {
 fun PartnerModeScreen(
     viewModel: PartnerViewModel = hiltViewModel()
 ) {
-    val connectionState by viewModel.connectionState.collectAsState()
+    val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
     
     // Internal navigation state to orchestrate all partner sub-screens cleanly
     var currentSubScreen by remember { mutableStateOf(PartnerSubScreen.ROLE_SELECTION) }

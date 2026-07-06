@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +35,7 @@ fun PartnerInsightsScreen(
     viewModel: PartnerViewModel,
     onBack: () -> Unit
 ) {
-    val cycleInsights by viewModel.cycleInsights.collectAsState()
+    val cycleInsights by viewModel.cycleInsights.collectAsStateWithLifecycle()
     val currentDay = cycleInsights?.cycleDay ?: 22
     val currentPhase = cycleInsights?.phase ?: CyclePhase.LUTEAL
     

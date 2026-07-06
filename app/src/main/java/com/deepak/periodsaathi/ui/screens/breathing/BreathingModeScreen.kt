@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.theme.BabyBlue
 import com.deepak.periodsaathi.ui.theme.BlushPink
 import com.deepak.periodsaathi.ui.theme.DeepRose
@@ -33,10 +34,10 @@ fun BreathingModeScreen(
     onExit: () -> Unit = {},
     viewModel: BreathingModeViewModel = hiltViewModel()
 ) {
-    val phase by viewModel.phase.collectAsState()
-    val progress by viewModel.progress.collectAsState()
-    val isRunning by viewModel.isRunning.collectAsState()
-    val cycleCount by viewModel.cycleCount.collectAsState()
+    val phase by viewModel.phase.collectAsStateWithLifecycle()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
+    val isRunning by viewModel.isRunning.collectAsStateWithLifecycle()
+    val cycleCount by viewModel.cycleCount.collectAsStateWithLifecycle()
 
     val circleScale by animateFloatAsState(
         targetValue = when (phase) {

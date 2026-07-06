@@ -8,8 +8,6 @@ import com.deepak.periodsaathi.data.dao.ReminderDao
 import com.deepak.periodsaathi.data.dao.SettingsDao
 import com.deepak.periodsaathi.data.datastore.UserPreferences
 import com.deepak.periodsaathi.data.model.CycleSettings
-import com.deepak.periodsaathi.ui.theme.FontOption
-import com.deepak.periodsaathi.ui.theme.ThemeCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,16 +25,11 @@ class SettingsViewModel @Inject constructor(
     private val cycleDao: CycleDao,
     private val journalDao: JournalDao,
     private val reminderDao: ReminderDao,
-    private val userPreferences: UserPreferences,
-    private val themeManager: com.deepak.periodsaathi.ui.theme.ThemeManager,
-    private val fontManager: com.deepak.periodsaathi.ui.theme.FontManager
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     val isDarkMode: StateFlow<Boolean> = userPreferences.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    val selectedFont: StateFlow<FontOption> = fontManager.currentFont
-    val selectedTheme: StateFlow<ThemeCategory> = themeManager.currentTheme
 
     init {
         viewModelScope.launch {
@@ -50,14 +43,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.setDarkMode(!isDarkMode.value)
         }
-    }
-
-    fun updateFont(font: FontOption) {
-        fontManager.setFont(font)
-    }
-
-    fun updateTheme(theme: ThemeCategory) {
-        themeManager.setTheme(theme)
     }
 
     private val _userName = MutableStateFlow("Friend")
@@ -140,12 +125,12 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun updateCycleLength(length: Int) {
-        _cycleLength.value = length.coerceIn(21, 45)
+        _cycleLength.value = length.coerceIn(1, 120)
         saveSettings()
     }
 
     fun updatePeriodLength(length: Int) {
-        _periodLength.value = length.coerceIn(2, 10)
+        _periodLength.value = length.coerceIn(1, 30)
         saveSettings()
     }
 

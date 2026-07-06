@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 
@@ -31,7 +32,7 @@ fun DayLogScreen(
     onBack: () -> Unit = {},
     viewModel: DayLogViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(dateEpoch) {
         viewModel.setDateEpoch(dateEpoch)

@@ -58,7 +58,7 @@ class ChatViewModel @Inject constructor(
 
     val suggestedPrompts = listOf(
         SuggestedPrompt("Am I pregnant?", "\uD83E\uDD31", QueryType.PREGNANCY_RISK),
-        SuggestedPrompt("Why is my period late?", "\uD83D\uDCC5", QueryType.LATE_PERIOD),
+        SuggestedPrompt("Why is my cycle taking longer?", "\uD83D\uDCC5", QueryType.CYCLE_DELAY),
         SuggestedPrompt("Are my cramps normal?", "\uD83D\uDE14", QueryType.CRAMPS_NORMAL),
         SuggestedPrompt("Why am I breaking out?", "\uD83D\uDCA7", QueryType.ACNE_REASONS)
     )
@@ -209,7 +209,7 @@ class ChatViewModel @Inject constructor(
 
             else ->
                 "Great question! \uD83C\uDF38 I'm designed to help with cycle-related health questions like cramps, mood changes, " +
-                        "late periods, acne, ovulation, and more. Try asking something specific about your cycle, " +
+                        "cycle timing shifts, acne, ovulation, and more. Try asking something specific about your cycle, " +
                         "or tap one of the suggested questions below. \n\n" +
                         "For complex medical concerns, please consult a healthcare provider."
         }
@@ -237,7 +237,8 @@ class ChatViewModel @Inject constructor(
         val lower = text.lowercase()
         return when {
             lower.contains("pregnant") || lower.contains("pregnancy") -> QueryType.PREGNANCY_RISK
-            lower.contains("late") && (lower.contains("period") || lower.contains("cycle")) -> QueryType.LATE_PERIOD
+            (lower.contains("delayed") || lower.contains("delay") || lower.contains("longer") || lower.contains("taking time")) &&
+                (lower.contains("period") || lower.contains("cycle")) -> QueryType.CYCLE_DELAY
             lower.contains("cramp") && lower.contains("normal") -> QueryType.CRAMPS_NORMAL
             lower.contains("acne") || lower.contains("break") || lower.contains("pimple") -> QueryType.ACNE_REASONS
             else -> null

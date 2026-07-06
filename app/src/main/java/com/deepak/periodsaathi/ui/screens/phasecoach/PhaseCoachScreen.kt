@@ -42,6 +42,7 @@ import android.widget.Toast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.domain.model.CyclePhase
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.Background
@@ -58,10 +59,10 @@ fun PhaseCoachScreen(
     viewModel: PhaseCoachViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val currentPhase by viewModel.currentPhase.collectAsState()
-    val cycleDay by viewModel.cycleDay.collectAsState()
-    val currentTipIndex by viewModel.currentTipIndex.collectAsState()
-    val favoritedTips by viewModel.favoritedTips.collectAsState()
+    val currentPhase by viewModel.currentPhase.collectAsStateWithLifecycle()
+    val cycleDay by viewModel.cycleDay.collectAsStateWithLifecycle()
+    val currentTipIndex by viewModel.currentTipIndex.collectAsStateWithLifecycle()
+    val favoritedTips by viewModel.favoritedTips.collectAsStateWithLifecycle()
 
     val phaseHeadline = viewModel.getPhaseHeadline(currentPhase)
     val phaseEmoji = viewModel.getPhaseEmoji(currentPhase)

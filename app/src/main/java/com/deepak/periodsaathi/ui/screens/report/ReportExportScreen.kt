@@ -1,4 +1,4 @@
-﻿package com.deepak.periodsaathi.ui.screens.report
+package com.deepak.periodsaathi.ui.screens.report
 
 import android.content.Intent
 import androidx.compose.foundation.background
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 
@@ -22,9 +23,9 @@ import com.deepak.periodsaathi.ui.theme.*
 fun ReportExportScreen(
     viewModel: ReportViewModel = hiltViewModel()
 ) {
-    val selectedCycles by viewModel.selectedCycles.collectAsState()
-    val exportState by viewModel.exportState.collectAsState()
-    val cycleDataAvailable by viewModel.cycleDataAvailable.collectAsState()
+    val selectedCycles by viewModel.selectedCycles.collectAsStateWithLifecycle()
+    val exportState by viewModel.exportState.collectAsStateWithLifecycle()
+    val cycleDataAvailable by viewModel.cycleDataAvailable.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(exportState) {

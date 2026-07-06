@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +43,9 @@ fun PartnerDashboardScreen(
     onNavigateToQuizzes: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
-    val cycleInsights by viewModel.cycleInsights.collectAsState()
-    val dailyTip by viewModel.dailyTip.collectAsState()
-    val connectionState by viewModel.connectionState.collectAsState()
+    val cycleInsights by viewModel.cycleInsights.collectAsStateWithLifecycle()
+    val dailyTip by viewModel.dailyTip.collectAsStateWithLifecycle()
+    val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
 
     val partnerName = when (val state = connectionState) {
         is ConnectionUIState.Connected -> state.partnerName

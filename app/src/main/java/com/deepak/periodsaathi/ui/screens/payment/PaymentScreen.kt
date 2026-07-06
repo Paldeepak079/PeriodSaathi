@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.ConfettiOverlay
 import com.deepak.periodsaathi.ui.theme.*
@@ -44,8 +45,8 @@ fun PaymentScreen(
     onBack: () -> Unit = {},
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
-    val paymentState by viewModel.paymentState.collectAsState()
-    val activePurchases by viewModel.activePurchases.collectAsState()
+    val paymentState by viewModel.paymentState.collectAsStateWithLifecycle()
+    val activePurchases by viewModel.activePurchases.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 

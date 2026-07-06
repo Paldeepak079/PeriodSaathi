@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 import java.text.SimpleDateFormat
@@ -28,9 +29,9 @@ import java.util.*
 fun JournalScreen(
     viewModel: JournalViewModel = hiltViewModel()
 ) {
-    val entries by viewModel.entries.collectAsState()
-    val draft by viewModel.draft.collectAsState()
-    val selectedMoods by viewModel.selectedMoods.collectAsState()
+    val entries by viewModel.entries.collectAsStateWithLifecycle()
+    val draft by viewModel.draft.collectAsStateWithLifecycle()
+    val selectedMoods by viewModel.selectedMoods.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier

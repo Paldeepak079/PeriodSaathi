@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.theme.*
@@ -33,11 +34,11 @@ fun RewardsScreen(
     onNavigateToWardrobe: () -> Unit,
     viewModel: RewardsViewModel = hiltViewModel()
 ) {
-    val totalPoints by viewModel.totalPoints.collectAsState()
-    val themes by viewModel.themes.collectAsState()
-    val accessories by viewModel.accessories.collectAsState()
-    val badges by viewModel.badges.collectAsState()
-    val claimingId by viewModel.claimingId.collectAsState()
+    val totalPoints by viewModel.totalPoints.collectAsStateWithLifecycle()
+    val themes by viewModel.themes.collectAsStateWithLifecycle()
+    val accessories by viewModel.accessories.collectAsStateWithLifecycle()
+    val badges by viewModel.badges.collectAsStateWithLifecycle()
+    val claimingId by viewModel.claimingId.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier

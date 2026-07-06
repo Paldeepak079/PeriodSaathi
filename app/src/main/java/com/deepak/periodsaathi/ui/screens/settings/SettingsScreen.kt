@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -18,14 +17,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 
@@ -36,16 +34,14 @@ fun SettingsScreen(
     onSignOut: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val userName by viewModel.userName.collectAsState()
-    val cycleLength by viewModel.cycleLength.collectAsState()
-    val periodLength by viewModel.periodLength.collectAsState()
-    val stealthMode by viewModel.stealthMode.collectAsState()
-    val biometricLock by viewModel.biometricLock.collectAsState()
-    val soundEnabled by viewModel.soundEnabled.collectAsState()
-    val hapticEnabled by viewModel.hapticEnabled.collectAsState()
-    val premiumTier by viewModel.premiumTier.collectAsState()
-    val selectedFont by viewModel.selectedFont.collectAsState()
-    val selectedTheme by viewModel.selectedTheme.collectAsState()
+    val userName by viewModel.userName.collectAsStateWithLifecycle()
+    val cycleLength by viewModel.cycleLength.collectAsStateWithLifecycle()
+    val periodLength by viewModel.periodLength.collectAsStateWithLifecycle()
+    val stealthMode by viewModel.stealthMode.collectAsStateWithLifecycle()
+    val biometricLock by viewModel.biometricLock.collectAsStateWithLifecycle()
+    val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
+    val hapticEnabled by viewModel.hapticEnabled.collectAsStateWithLifecycle()
+    val premiumTier by viewModel.premiumTier.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -137,107 +133,6 @@ fun SettingsScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // ── Font & Theme Personalization ────────────────────────────────
-        SettingsSection("Appearance") {
-            Text("Font Style", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FontOption.entries.forEach { font ->
-                    val isSelected = font == selectedFont
-                    Surface(
-                        onClick = { viewModel.updateFont(font) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) Color(0xFF7C53B3) else MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.width(60.dp).height(72.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text("Aa", fontSize = 20.sp, fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                fontFamily = rememberFontFamily(font))
-                            Spacer(Modifier.height(2.dp))
-                            Text(font.displayName, fontSize = 9.sp,
-                                color = if (isSelected) Color.White.copy(0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1)
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            Text("Theme", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ThemeCategory.entries.forEach { theme ->
-                    val isSelected = theme == selectedTheme
-                    Surface(
-                        onClick = { viewModel.updateTheme(theme) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) theme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.width(80.dp).height(72.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(theme.emoji, fontSize = 22.sp)
-                            Text(theme.displayName, fontSize = 9.sp,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1)
-                            Text(theme.suggestedFont.displayName.split(" ")[0], fontSize = 7.sp,
-                                color = if (isSelected) Color.White.copy(0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f),
-                                maxLines = 1)
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
-            val previewFace = rememberFontFamily(selectedFont)
-            val previewColors = listOf(selectedTheme.primary, selectedTheme.secondary, selectedTheme.tertiary)
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = selectedTheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box( modifier = Modifier.size(28.dp).clip(CircleShape).background(selectedTheme.primary) )
-                        Spacer(Modifier.width(10.dp))
-                        Text("Period Saathi", fontFamily = previewFace, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = selectedTheme.onSurface)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Text("Your personal wellness companion. Track, understand, and embrace your cycle.",
-                        fontFamily = previewFace, fontSize = 12.sp, color = selectedTheme.onSurfaceVariant, lineHeight = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        previewColors.take(3).forEach { color ->
-                            Surface(shape = RoundedCornerShape(9999.dp), color = color.copy(0.25f)) {
-                                Text("Wellness", fontSize = 10.sp, color = color, modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         // Profile
@@ -284,14 +179,14 @@ fun SettingsScreen(
                         OutlinedTextField(
                             value = cycleValue,
                             onValueChange = { cycleValue = it.filter { c -> c.isDigit() } },
-                            label = { Text("21-45 days") },
+                            label = { Text("1-120 days") },
                             singleLine = true
                         )
                     },
                     confirmButton = {
                         TextButton(onClick = {
                             val days = cycleValue.toIntOrNull() ?: cycleLength
-                            viewModel.updateCycleLength(days.coerceIn(21, 45))
+                            viewModel.updateCycleLength(days)
                             showCycleDialog = false
                         }) { Text("Save") }
                     },
@@ -310,14 +205,14 @@ fun SettingsScreen(
                         OutlinedTextField(
                             value = periodValue,
                             onValueChange = { periodValue = it.filter { c -> c.isDigit() } },
-                            label = { Text("2-10 days") },
+                            label = { Text("1-30 days") },
                             singleLine = true
                         )
                     },
                     confirmButton = {
                         TextButton(onClick = {
                             val days = periodValue.toIntOrNull() ?: periodLength
-                            viewModel.updatePeriodLength(days.coerceIn(2, 10))
+                            viewModel.updatePeriodLength(days)
                             showPeriodDialog = false
                         }) { Text("Save") }
                     },

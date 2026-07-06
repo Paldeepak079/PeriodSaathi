@@ -1,4 +1,4 @@
-﻿package com.deepak.periodsaathi.ui.screens.challenges
+package com.deepak.periodsaathi.ui.screens.challenges
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.theme.*
@@ -28,9 +29,9 @@ import com.deepak.periodsaathi.ui.theme.*
 fun ChallengesScreen(
     viewModel: ChallengesViewModel = hiltViewModel()
 ) {
-    val activeChallenges by viewModel.activeChallenges.collectAsState()
-    val completedChallenges by viewModel.completedChallenges.collectAsState()
-    val availableChallenges by viewModel.availableChallenges.collectAsState()
+    val activeChallenges by viewModel.activeChallenges.collectAsStateWithLifecycle()
+    val completedChallenges by viewModel.completedChallenges.collectAsStateWithLifecycle()
+    val availableChallenges by viewModel.availableChallenges.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier

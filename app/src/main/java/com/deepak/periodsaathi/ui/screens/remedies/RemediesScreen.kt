@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.springClickable
 import com.deepak.periodsaathi.ui.theme.*
@@ -32,9 +33,9 @@ fun RemediesScreen(
     onNavigateToYoga: () -> Unit = {},
     viewModel: RemediesViewModel = hiltViewModel()
 ) {
-    val flippedCards by viewModel.flippedCards.collectAsState()
-    val remedies by viewModel.remedies.collectAsState()
-    val hotBagPosition by viewModel.hotBagPosition.collectAsState()
+    val flippedCards by viewModel.flippedCards.collectAsStateWithLifecycle()
+    val remedies by viewModel.remedies.collectAsStateWithLifecycle()
+    val hotBagPosition by viewModel.hotBagPosition.collectAsStateWithLifecycle()
 
     val tempC = (30 + hotBagPosition * 15).toInt()
 

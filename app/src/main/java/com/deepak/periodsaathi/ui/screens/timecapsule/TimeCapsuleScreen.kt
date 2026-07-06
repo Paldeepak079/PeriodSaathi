@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.PrimaryButton
 import com.deepak.periodsaathi.ui.theme.*
 import kotlin.math.PI
@@ -74,8 +75,8 @@ fun TimeCapsuleScreen(
     onNavigateBack: () -> Unit = {},
     viewModel: TimeCapsuleViewModel = hiltViewModel()
 ) {
-    val text by viewModel.text.collectAsState()
-    val isSaving by viewModel.isSaving.collectAsState()
+    val text by viewModel.text.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.saveComplete.collect { onNavigateBack() }

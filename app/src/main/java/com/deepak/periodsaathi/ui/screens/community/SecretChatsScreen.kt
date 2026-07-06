@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.data.model.ForumComment
 import com.deepak.periodsaathi.data.model.ForumPost
 import com.deepak.periodsaathi.ui.components.GlassCard
@@ -52,8 +53,8 @@ fun SecretChatsScreen(
     onBack: () -> Unit = {},
     viewModel: SecretChatsViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val posts by viewModel.allPosts.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val posts by viewModel.allPosts.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
@@ -321,7 +322,7 @@ private fun PostCard(
     onSubmitComment: () -> Unit,
     getComments: () -> StateFlow<List<ForumComment>>
 ) {
-    val comments by getComments().collectAsState()
+    val comments by getComments().collectAsStateWithLifecycle()
 
     GlassCard(
         modifier = Modifier.fillMaxWidth().animateContentSize(

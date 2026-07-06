@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.theme.*
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ fun ChatScreen(
     onBack: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -198,7 +199,7 @@ fun ChatScreen(
                     TextField(
                         value = state.inputText,
                         onValueChange = { viewModel.onInputChanged(it) },
-                        placeholder = { Text("Ask about cramps, late periods, diet...", fontSize = 14.sp) },
+                        placeholder = { Text("Ask about cramps, cycle timing, diet...", fontSize = 14.sp) },
                         modifier = Modifier
                             .weight(1f)
                             .background(Color.Transparent),

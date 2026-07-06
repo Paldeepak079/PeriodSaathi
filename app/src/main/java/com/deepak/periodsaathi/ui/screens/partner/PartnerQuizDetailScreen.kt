@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +38,8 @@ fun PartnerQuizDetailScreen(
     onBack: () -> Unit
 ) {
     val quiz = viewModel.quizzesList.firstOrNull { it.id == quizId }
-    val quizAnswers by viewModel.quizAnswers.collectAsState()
-    val connectionState by viewModel.connectionState.collectAsState()
+    val quizAnswers by viewModel.quizAnswers.collectAsStateWithLifecycle()
+    val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
 
     val isPrimary = when (val state = connectionState) {
         is ConnectionUIState.Connected -> state.isPrimary

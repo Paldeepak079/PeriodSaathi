@@ -44,7 +44,7 @@ class CyclePredictionEngine @Inject constructor() {
         val pmsStart: LocalDate,
         /** The predicted cycle length used (weighted average) */
         val predictedCycleLength: Int,
-        /** Number of days late/early (positive = late, negative = early) */
+        /** Number of days beyond or before the expected pattern */
         val daysFromExpected: Int,
         /** Confidence level 0-100 based on data quality */
         val confidencePercent: Int,

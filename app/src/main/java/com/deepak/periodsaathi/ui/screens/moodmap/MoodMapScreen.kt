@@ -1,4 +1,4 @@
-﻿package com.deepak.periodsaathi.ui.screens.moodmap
+package com.deepak.periodsaathi.ui.screens.moodmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.ShimmerBox
 import com.deepak.periodsaathi.ui.theme.*
@@ -31,10 +32,10 @@ import java.time.LocalDate
 fun MoodMapScreen(
     viewModel: MoodMapViewModel = hiltViewModel()
 ) {
-    val moodData by viewModel.moodData.collectAsState()
-    val showCycleOverlay by viewModel.showCycleOverlay.collectAsState()
-    val selectedDay by viewModel.selectedDay.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val moodData by viewModel.moodData.collectAsStateWithLifecycle()
+    val showCycleOverlay by viewModel.showCycleOverlay.collectAsStateWithLifecycle()
+    val selectedDay by viewModel.selectedDay.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     if (isLoading) {
         // Show shimmer skeleton during loading

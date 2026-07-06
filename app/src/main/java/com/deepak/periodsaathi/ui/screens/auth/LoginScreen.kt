@@ -31,6 +31,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.MascotEmotion
@@ -50,7 +51,7 @@ fun LoginScreen(
     onContinueAsGuest: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val loginState by viewModel.loginState.collectAsState()
+    val loginState by viewModel.loginState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     // Legacy fallback launcher (used if Credential Manager unavailable)

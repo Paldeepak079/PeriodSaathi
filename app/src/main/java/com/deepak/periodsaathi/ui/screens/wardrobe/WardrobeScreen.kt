@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.ConfettiOverlay
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.MascotEmotion
@@ -42,11 +43,11 @@ import com.deepak.periodsaathi.ui.theme.*
 fun WardrobeScreen(
     viewModel: WardrobeViewModel = hiltViewModel()
 ) {
-    val totalPoints by viewModel.totalPoints.collectAsState()
-    val showConfetti by viewModel.showConfetti.collectAsState()
-    val themes by viewModel.themes.collectAsState()
-    val seasonalAccessories by viewModel.seasonalAccessories.collectAsState()
-    val accessories by viewModel.accessories.collectAsState()
+    val totalPoints by viewModel.totalPoints.collectAsStateWithLifecycle()
+    val showConfetti by viewModel.showConfetti.collectAsStateWithLifecycle()
+    val themes by viewModel.themes.collectAsStateWithLifecycle()
+    val seasonalAccessories by viewModel.seasonalAccessories.collectAsStateWithLifecycle()
+    val accessories by viewModel.accessories.collectAsStateWithLifecycle()
     val unlockedCount = remember(accessories) { accessories.count { it.isUnlocked } }
     val wardrobePoints = remember(unlockedCount) { unlockedCount * 100 }
 

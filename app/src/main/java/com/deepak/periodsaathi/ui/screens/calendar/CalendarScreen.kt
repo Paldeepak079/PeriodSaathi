@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.ShimmerCalendarGrid
 import com.deepak.periodsaathi.ui.theme.*
@@ -45,21 +46,26 @@ import java.util.Locale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.foundation.combinedClickable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @Composable
 fun CalendarScreen(
     onNavigateToDayLog: (Long) -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
-    val currentYearMonth by viewModel.currentYearMonth.collectAsState()
-    val calendarDays by viewModel.calendarDays.collectAsState()
-    val selectedDate by viewModel.selectedDate.collectAsState()
-    val showLogSheet by viewModel.showLogSheet.collectAsState()
-    val fertilityGoal by viewModel.fertilityGoal.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val hasEntries by viewModel.hasEntries.collectAsState()
-    val showPredictorSheet by viewModel.showPredictorSheet.collectAsState()
+    val currentYearMonth by viewModel.currentYearMonth.collectAsStateWithLifecycle()
+    val calendarDays by viewModel.calendarDays.collectAsStateWithLifecycle()
+    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
+    val showLogSheet by viewModel.showLogSheet.collectAsStateWithLifecycle()
+    val fertilityGoal by viewModel.fertilityGoal.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val hasEntries by viewModel.hasEntries.collectAsStateWithLifecycle()
+    val showPredictorSheet by viewModel.showPredictorSheet.collectAsStateWithLifecycle()
+    val nextPeriodDate by viewModel.nextPeriodDate.collectAsStateWithLifecycle()
+    val fertileWindowDate by viewModel.fertileWindowDate.collectAsStateWithLifecycle()
+    val symptomPredictions by viewModel.symptomPredictions.collectAsStateWithLifecycle()
 
     val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
@@ -100,7 +106,7 @@ fun CalendarScreen(
                             color = BlushPink
                         )
                     }
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onNavigateToNotifications) {
                         Icon(
                             Icons.Default.Notifications,
                             contentDescription = "Notifications",
@@ -209,8 +215,16 @@ fun CalendarScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 CycleHealthCard(
-                    nextPeriodDate = "28 Mar",
-                    fertileIn = "13 Days"
+                    nextPeriodDate = nextPeriodDate?.format(DateTimeFormatter.ofPattern("d MMM")) ?: "Keep logging",
+                    fertileIn = fertileWindowDate?.let { fertileDate ->
+                        val days = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), fertileDate).toInt()
+                        when {
+                            days < 0 -> "Tracking"
+                            days == 0 -> "Today"
+                            days == 1 -> "1 day"
+                            else -> "$days days"
+                        }
+                    } ?: "Tracking"
                 )
             }
         }
@@ -280,6 +294,19 @@ fun CalendarScreen(
     if (showPredictorSheet) {
         SymptomPredictorSheet(
             selectedDate = selectedDate,
+            predictions = symptomPredictions,
+            onAddReminder = {
+                onNavigateToNotifications()
+                viewModel.togglePredictorSheet()
+            },
+            onMarkRestDay = {
+                viewModel.logEntry(null, emptyList(), null, 0, "Rest day")
+                viewModel.togglePredictorSheet()
+            },
+            onAccuracyFeedback = { label ->
+                viewModel.recordAccuracyFeedback(label)
+                viewModel.togglePredictorSheet()
+            },
             onDismiss = { viewModel.togglePredictorSheet() }
         )
     }

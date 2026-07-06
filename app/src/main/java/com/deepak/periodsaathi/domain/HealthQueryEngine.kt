@@ -28,7 +28,7 @@ data class HealthQueryInput(
     val medicationType: String? = null
 )
 
-enum class QueryType { PREGNANCY_RISK, LATE_PERIOD, CRAMPS_NORMAL, ACNE_REASONS }
+enum class QueryType { PREGNANCY_RISK, CYCLE_DELAY, CRAMPS_NORMAL, ACNE_REASONS }
 enum class StressLevel { LOW, MODERATE, HIGH, EXTREME }
 enum class WeightChange { STABLE, SLIGHT_CHANGE, SIGNIFICANT_CHANGE }
 
@@ -37,7 +37,7 @@ class HealthQueryEngine @Inject constructor() {
 
     fun assess(input: HealthQueryInput): HealthQueryResult = when (input.queryType) {
         QueryType.PREGNANCY_RISK -> assessPregnancyRisk(input)
-        QueryType.LATE_PERIOD -> assessLatePeriod(input)
+        QueryType.CYCLE_DELAY -> assessCycleDelay(input)
         QueryType.CRAMPS_NORMAL -> assessCrampsNormal(input)
         QueryType.ACNE_REASONS -> assessAcne(input)
     }
@@ -81,7 +81,7 @@ class HealthQueryEngine @Inject constructor() {
             explanation = "Based on your last period ($daysFromLastPeriod days ago) and a ${input.cycleLength}-day cycle, your estimated fertile window is days $adjOvStart to $adjOvEnd.$shiftNote ${if (protectionUsed) "You reported using protection, which significantly reduces risk." else ""}",
             actionItems = buildList {
                 if (riskLevel == RiskLevel.MEDIUM) {
-                    add("Take a pregnancy test if your period is more than 5 days late")
+                    add("Take a pregnancy test if your period is more than 5 days beyond your usual timing")
                     add("Speak with a gynecologist if you have concerns")
                 }
                 add("Track ovulation with BBT or LH strips for more accuracy")
@@ -91,11 +91,11 @@ class HealthQueryEngine @Inject constructor() {
         )
     }
 
-    private fun assessLatePeriod(input: HealthQueryInput): HealthQueryResult {
+    private fun assessCycleDelay(input: HealthQueryInput): HealthQueryResult {
         val daysFromLastPeriod = input.lastPeriodDate?.let {
             ChronoUnit.DAYS.between(it, LocalDate.now()).toInt()
         } ?: 30
-        val daysLate = daysFromLastPeriod - input.cycleLength
+        val daysBeyondUsual = daysFromLastPeriod - input.cycleLength
         val stressDelay = when (input.stressLevel) {
             StressLevel.EXTREME -> 14; StressLevel.HIGH -> 7; StressLevel.MODERATE -> 3; else -> 0
         }
@@ -104,28 +104,28 @@ class HealthQueryEngine @Inject constructor() {
         }
         val likelyDelay = stressDelay + weightDelay
         val riskLevel = when {
-            daysLate <= 5 -> RiskLevel.LOW
-            daysLate <= 10 && likelyDelay >= 5 -> RiskLevel.LOW
-            daysLate <= 10 -> RiskLevel.MEDIUM
-            daysLate > 10 && likelyDelay > 0 -> RiskLevel.MEDIUM
+            daysBeyondUsual <= 5 -> RiskLevel.LOW
+            daysBeyondUsual <= 10 && likelyDelay >= 5 -> RiskLevel.LOW
+            daysBeyondUsual <= 10 -> RiskLevel.MEDIUM
+            daysBeyondUsual > 10 && likelyDelay > 0 -> RiskLevel.MEDIUM
             else -> RiskLevel.HIGH
         }
         return HealthQueryResult(
-            question = "Late Period Assessment",
+            question = "Cycle Timing Assessment",
             riskLevel = riskLevel,
             headline = when {
-                daysLate <= 0 -> "Your period has not started yet - not officially late"
-                daysLate <= 5 -> "Slightly late - this is very common"
-                daysLate <= 10 -> "Moderately late - likely explainable by lifestyle"
-                else -> "Significantly late - consider a test or doctor visit"
+                daysBeyondUsual <= 0 -> "Your period may still be within your usual range"
+                daysBeyondUsual <= 5 -> "A small timing shift is very common"
+                daysBeyondUsual <= 10 -> "Your cycle may be taking extra time"
+                else -> "A longer timing shift is worth checking"
             },
-            explanation = "Your period is approximately $daysLate day${if (daysLate == 1) "" else "s"} late based on your ${input.cycleLength}-day cycle. ${if (likelyDelay > 0) "Reported stress/weight changes can delay menstruation by up to $likelyDelay days by disrupting the hypothalamic-pituitary-ovarian axis." else ""}",
+            explanation = "Your cycle is approximately $daysBeyondUsual day${if (daysBeyondUsual == 1) "" else "s"} beyond your usual ${input.cycleLength}-day pattern. ${if (likelyDelay > 0) "Reported stress/weight changes can delay menstruation by up to $likelyDelay days by disrupting the hypothalamic-pituitary-ovarian axis." else ""}",
             actionItems = buildList {
-                if (daysLate > 5) add("Take a pregnancy test if sexually active")
+                if (daysBeyondUsual > 5) add("Take a pregnancy test if sexually active")
                 if (input.stressLevel != null && input.stressLevel != StressLevel.LOW) add("Practice stress-reduction techniques: meditation, yoga, adequate sleep")
                 if (input.weightChange == WeightChange.SIGNIFICANT_CHANGE) add("Speak with your doctor about weight-related hormonal changes")
-                add("Occasional late periods (up to 1 week) are normal for most people")
-                if (daysLate > 10) add("Consult a gynecologist - conditions like PCOS, thyroid issues, or POI can cause irregular cycles")
+                add("Occasional timing shifts of up to 1 week are normal for many people")
+                if (daysBeyondUsual > 10) add("Consult a gynecologist - conditions like PCOS, thyroid issues, or POI can cause irregular cycles")
             }
         )
     }

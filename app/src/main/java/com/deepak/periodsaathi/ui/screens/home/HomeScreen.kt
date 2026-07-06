@@ -41,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.domain.model.CyclePhase
 import com.deepak.periodsaathi.domain.HealthQueryResult
 import com.deepak.periodsaathi.domain.QueryType
@@ -77,7 +78,7 @@ fun HomeScreen(
     onLogout: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showSignOutDialog by remember { mutableStateOf(false) }
@@ -1362,7 +1363,7 @@ fun HealthQuerySection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             HealthQueryChip(text = "Am I pregnant?", onClick = { onQuerySelect(QueryType.PREGNANCY_RISK) }, modifier = Modifier.weight(1f))
-            HealthQueryChip(text = "Why is it late?", onClick = { onQuerySelect(QueryType.LATE_PERIOD) }, modifier = Modifier.weight(1f))
+            HealthQueryChip(text = "Cycle taking longer?", onClick = { onQuerySelect(QueryType.CYCLE_DELAY) }, modifier = Modifier.weight(1f))
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -37,10 +38,10 @@ fun YogaFlowScreen(
     onExit: () -> Unit = {},
     viewModel: YogaFlowViewModel = hiltViewModel()
 ) {
-    val isPlaying by viewModel.isPlaying.collectAsState()
-    val currentPoseIndex by viewModel.currentPoseIndex.collectAsState()
-    val poseElapsed by viewModel.poseElapsed.collectAsState()
-    val breathingPhase by viewModel.breathingPhase.collectAsState()
+    val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
+    val currentPoseIndex by viewModel.currentPoseIndex.collectAsStateWithLifecycle()
+    val poseElapsed by viewModel.poseElapsed.collectAsStateWithLifecycle()
+    val breathingPhase by viewModel.breathingPhase.collectAsStateWithLifecycle()
     val currentPose = viewModel.poses[currentPoseIndex]
     val poseRemaining = (currentPose.duration - poseElapsed).coerceAtLeast(0)
     val nextPoses = viewModel.poses.drop(currentPoseIndex + 1).take(2)
