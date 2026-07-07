@@ -28,7 +28,10 @@ class SolutionRepository @Inject constructor(
         dao.toggleFavorite(id, fav)
 
     suspend fun seedSolutions() {
-        dao.insertSolutions(allSeedSolutions)
+        val count = dao.getSolutionCount()
+        if (count == 0) {
+            dao.insertSolutions(allSeedSolutions)
+        }
     }
 
     suspend fun getCount(): Int {

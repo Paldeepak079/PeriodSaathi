@@ -56,6 +56,9 @@ interface WellnessDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSolutions(solutions: List<SolutionEntity>)
 
+    @Query("SELECT COUNT(*) FROM solutions")
+    suspend fun getSolutionCount(): Int
+
     @Query("SELECT * FROM solutions")
     fun getAllSolutions(): Flow<List<SolutionEntity>>
 

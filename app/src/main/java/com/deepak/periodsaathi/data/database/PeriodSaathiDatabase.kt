@@ -20,7 +20,9 @@ import com.deepak.periodsaathi.data.model.AccessoryEntity
 import com.deepak.periodsaathi.data.model.ChallengeProgressEntity
 import com.deepak.periodsaathi.data.model.CycleEntry
 import com.deepak.periodsaathi.data.model.CycleSettings
+import com.deepak.periodsaathi.data.model.ForumBookmark
 import com.deepak.periodsaathi.data.model.ForumComment
+import com.deepak.periodsaathi.data.model.ForumNotification
 import com.deepak.periodsaathi.data.model.ForumPost
 import com.deepak.periodsaathi.data.model.HabitCompletion
 import com.deepak.periodsaathi.data.model.JournalEntry
@@ -40,9 +42,11 @@ import com.deepak.periodsaathi.data.model.Reminder
         HabitCompletion::class,
         ForumPost::class,
         ForumComment::class,
+        ForumBookmark::class,
+        ForumNotification::class,
         RemedyEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -159,6 +163,28 @@ abstract class PeriodSaathiDatabase : RoomDatabase() {
             }
         }
 
+        // v7 → v8: add forums bookmarks & notifications tables
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `forum_bookmarks` (
+                        `postId` TEXT NOT NULL PRIMARY KEY,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                """)
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `forum_notifications` (
+                        `id` TEXT NOT NULL PRIMARY KEY,
+                        `postId` TEXT NOT NULL,
+                        `type` TEXT NOT NULL,
+                        `message` TEXT NOT NULL,
+                        `read` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                """)
+            }
+        }
+
         // v5 → v6: add remedies table
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -183,7 +209,7 @@ abstract class PeriodSaathiDatabase : RoomDatabase() {
                     PeriodSaathiDatabase::class.java,
                     "period_saathi_db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .fallbackToDestructiveMigration(false)
                     .build()
                     .also { INSTANCE = it }

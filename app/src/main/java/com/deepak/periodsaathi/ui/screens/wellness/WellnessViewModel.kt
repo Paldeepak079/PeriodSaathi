@@ -159,7 +159,14 @@ class WellnessViewModel @Inject constructor(
     private fun observeData() {
         val todayEpoch = getTodayEpoch()
 
-        // 1. Observe stats
+        // 1. Seed initial stats if missing
+        viewModelScope.launch {
+            if (wellnessDao.getStatsSync() == null) {
+                wellnessDao.insertStats(UserWellnessStatsEntity(totalCoins = 250))
+            }
+        }
+
+        // 2. Observe stats
         viewModelScope.launch {
             wellnessDao.getStats().collect { stats ->
                 val currentStats = stats ?: UserWellnessStatsEntity(totalCoins = 250)
@@ -415,7 +422,6 @@ class WellnessViewModel @Inject constructor(
             )
             wellnessDao.insertCoinTransaction(tx)
 
-            // Dynamic Coin rewards float popup
             _state.update {
                 it.copy(
                     totalCoins = updatedStats.totalCoins,
@@ -424,11 +430,10 @@ class WellnessViewModel @Inject constructor(
                 )
             }
 
-            // Sync with global points in CycleSettings to support WardrobeScreen
+            // Sync total coins to global settings (set, not add)
             try {
                 val globalSettings = cycleRepository.getSettings().first()
-                val updatedGlobalSettings = globalSettings.copy(totalPoints = globalSettings.totalPoints + amount)
-                cycleRepository.updateSettings(updatedGlobalSettings)
+                cycleRepository.updateSettings(globalSettings.copy(totalPoints = updatedStats.totalCoins))
             } catch (e: Exception) {
                 Log.e(TAG, "Failed syncing points to global CycleSettings", e)
             }

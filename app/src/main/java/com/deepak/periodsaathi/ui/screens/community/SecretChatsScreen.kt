@@ -9,12 +9,16 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -27,7 +31,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -35,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.data.model.ForumComment
@@ -48,6 +56,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 private val CATEGORIES = listOf("all", "general", "cramps", "mood", "fertility", "vent", "saved")
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SecretChatsScreen(
     onBack: () -> Unit = {},
@@ -55,6 +64,9 @@ fun SecretChatsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val posts by viewModel.allPosts.collectAsStateWithLifecycle()
+    val notifications by viewModel.notifications.collectAsStateWithLifecycle()
+    val unreadCount by viewModel.unreadCount.collectAsStateWithLifecycle()
+    val bookmarkedIds by viewModel.getBookmarkedIds().collectAsStateWithLifecycle(initialValue = emptyList())
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
@@ -63,29 +75,28 @@ fun SecretChatsScreen(
     val imageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        if (uri != null) {
-            viewModel.updateDraftImageUrl(uri.toString())
-        }
+        if (uri != null) viewModel.updateDraftImageUrl(uri.toString())
     }
 
-    val filteredPosts = remember(posts, uiState.selectedCategory, searchQuery) {
+    val bookmarkedIdSet = remember(bookmarkedIds) { bookmarkedIds.toSet() }
+
+    val filteredPosts = remember(posts, uiState.selectedCategory, searchQuery, bookmarkedIdSet) {
         val baseList = when (uiState.selectedCategory) {
             "all" -> posts
-            "saved" -> posts.filter { it.isUpvotedByMe }
+            "saved" -> posts.filter { it.id in bookmarkedIdSet }
             else -> posts.filter { it.category == uiState.selectedCategory }
         }
         if (searchQuery.isBlank()) baseList
-        else {
-            baseList.filter {
-                it.title.contains(searchQuery, ignoreCase = true) ||
-                it.content.contains(searchQuery, ignoreCase = true) ||
-                it.anonymousAlias.contains(searchQuery, ignoreCase = true)
-            }
+        else baseList.filter {
+            it.title.contains(searchQuery, ignoreCase = true) ||
+            it.content.contains(searchQuery, ignoreCase = true) ||
+            it.anonymousAlias.contains(searchQuery, ignoreCase = true)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Background)) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // ── Top bar ──────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,22 +105,14 @@ fun SecretChatsScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Back button
                 IconButton(onClick = onBack, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = Primary)
                 }
 
-                // Profile button (Cute mascot image inside a circle with a notification red dot)
-                Box(
-                    modifier = Modifier.size(36.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(PrimaryContainer)
-                            .graphicsLayer { clip = true },
+                        modifier = Modifier.size(32.dp).clip(CircleShape)
+                            .background(PrimaryContainer).graphicsLayer { clip = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -118,16 +121,8 @@ fun SecretChatsScreen(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-                    // Red Notification Badge Dot
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .align(Alignment.TopEnd)
-                            .background(Color.Red, CircleShape)
-                    )
                 }
 
-                // Capsule Search Bar
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -155,52 +150,47 @@ fun SecretChatsScreen(
                     textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp)
                 )
 
-                // Bookmark button
-                var isBookmarked by remember { mutableStateOf(false) }
                 IconButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        isBookmarked = !isBookmarked
+                        viewModel.toggleBookmark("")
                     },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        if (isBookmarked) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
-                        null,
-                        tint = Primary,
-                        modifier = Modifier.size(20.dp)
+                        if (uiState.selectedCategory == "saved") Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
+                        null, tint = Primary, modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // Notification Bell with Badge (resets on tap)
-                var unreadCount by remember { mutableStateOf(1) }
-                Box(
-                    modifier = Modifier.size(36.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            unreadCount = 0
+                            viewModel.toggleNotifications()
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Rounded.NotificationsNone, null, tint = Primary, modifier = Modifier.size(20.dp))
+                        Icon(
+                            if (uiState.showNotifications) Icons.Rounded.NotificationsActive
+                            else Icons.Rounded.NotificationsNone,
+                            null, tint = Primary, modifier = Modifier.size(20.dp)
+                        )
                     }
-                    if (unreadCount > 0) {
+                    if (unreadCount > 0 && !uiState.showNotifications) {
                         Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .align(Alignment.TopEnd)
+                            modifier = Modifier.size(14.dp).align(Alignment.TopEnd)
                                 .background(Color.Red, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("$unreadCount", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text("$unreadCount", color = Color.White,
+                                fontSize = 8.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
 
+            // ── Category chips ─────────────────────────
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -212,25 +202,26 @@ fun SecretChatsScreen(
                         if (isSelected) 1.05f else 1f,
                         spring(Spring.DampingRatioMediumBouncy), label = "catScale"
                     )
-                    val label = if (cat == "saved") "🔖 Saved" else cat.replaceFirstChar { it.uppercase() }
+                    val label = when (cat) {
+                        "saved" -> "🔖 Saved"
+                        else -> cat.replaceFirstChar { it.uppercase() }
+                    }
                     FilterChip(
                         selected = isSelected,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             viewModel.setCategory(cat)
                         },
-                        label = {
-                            Text(label, style = MaterialTheme.typography.labelMedium)
-                        },
+                        label = { Text(label, style = MaterialTheme.typography.labelMedium) },
                         modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = PrimaryContainer,
-                            selectedLabelColor = Primary
+                            selectedContainerColor = PrimaryContainer, selectedLabelColor = Primary
                         )
                     )
                 }
             }
 
+            // ── Post list ─────────────────────────────
             LazyColumn(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -243,10 +234,9 @@ fun SecretChatsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("No posts yet", fontSize = 32.sp)
-                            Text("No posts yet matching selection",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = OnSurfaceVariant)
+                            Text("🌸", fontSize = 42.sp)
+                            Text("No posts yet", fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold, color = OnSurface)
                             Text("Be the first to share!",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = OnSurfaceVariant.copy(0.7f))
@@ -256,6 +246,7 @@ fun SecretChatsScreen(
                     items(filteredPosts, key = { it.id }) { post ->
                         PostCard(
                             post = post,
+                            isBookmarked = post.id in bookmarkedIdSet,
                             isExpanded = uiState.expandedPostId == post.id,
                             commentDraft = if (uiState.expandedPostId == post.id) uiState.commentDraft else "",
                             onExpand = {
@@ -263,6 +254,8 @@ fun SecretChatsScreen(
                                 viewModel.expandPost(post.id)
                             },
                             onUpvote = { viewModel.toggleUpvote(post) },
+                            onBookmark = { viewModel.toggleBookmark(post.id) },
+                            onImageTap = { viewModel.viewImage(it) },
                             onCommentDraftChange = viewModel::updateCommentDraft,
                             onSubmitComment = { viewModel.submitComment(post.id) },
                             getComments = { viewModel.getCommentsForPost(post.id) }
@@ -272,34 +265,32 @@ fun SecretChatsScreen(
             }
         }
 
+        // ── FAB ──────────────────────────────────────
         AnimatedVisibility(
-            visible = !uiState.isComposingPost,
+            visible = !uiState.isComposingPost && !uiState.showNotifications,
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut()
+            enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()
         ) {
             FloatingActionButton(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.startComposing()
                 },
-                containerColor = Primary,
-                contentColor = Color.White
+                containerColor = Primary, contentColor = Color.White
             ) {
                 Icon(Icons.Rounded.Edit, "New Post")
             }
         }
 
+        // ── Compose dialog ──────────────────────────
         AnimatedVisibility(
             visible = uiState.isComposingPost,
             enter = slideInVertically { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut()
         ) {
             ComposePostDialog(
-                title = uiState.draftTitle,
-                content = uiState.draftContent,
-                imageUrl = uiState.draftImageUrl,
-                isPosting = uiState.isPosting,
+                title = uiState.draftTitle, content = uiState.draftContent,
+                imageUrl = uiState.draftImageUrl, isPosting = uiState.isPosting,
                 onTitleChange = viewModel::updateDraftTitle,
                 onContentChange = viewModel::updateDraftContent,
                 onImageSelected = { imageLauncher.launch("image/*") },
@@ -308,16 +299,39 @@ fun SecretChatsScreen(
                 onDismiss = { viewModel.cancelComposing() }
             )
         }
+
+        // ── Notifications sheet ──────────────────────
+        if (uiState.showNotifications) {
+            NotificationsSheet(
+                notifications = notifications,
+                onDismiss = { viewModel.dismissNotifications() },
+                onMarkAllRead = { viewModel.markAllNotificationsRead() }
+            )
+        }
+
+        // ── Full-screen image preview ───────────────
+        uiState.viewImageUrl?.let { url ->
+            FullScreenImagePreview(
+                imageUrl = url,
+                onDismiss = { viewModel.dismissImagePreview() }
+            )
+        }
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Post Card
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun PostCard(
     post: ForumPost,
+    isBookmarked: Boolean,
     isExpanded: Boolean,
     commentDraft: String,
     onExpand: () -> Unit,
     onUpvote: () -> Unit,
+    onBookmark: () -> Unit,
+    onImageTap: (String) -> Unit,
     onCommentDraftChange: (String) -> Unit,
     onSubmitComment: () -> Unit,
     getComments: () -> StateFlow<List<ForumComment>>
@@ -331,6 +345,7 @@ private fun PostCard(
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // ── Author row ───────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -350,19 +365,26 @@ private fun PostCard(
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = Primary)
                         Text(formatTime(post.createdAt),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = OnSurfaceVariant)
+                            style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     }
                 }
-                Box(
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(modifier = Modifier.clip(RoundedCornerShape(8.dp))
                         .background(BlushPink.copy(alpha = 0.3f))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(post.category, style = MaterialTheme.typography.labelSmall, color = Primary)
+                    ) {
+                        Text(post.category, style = MaterialTheme.typography.labelSmall, color = Primary)
+                    }
+                    IconButton(onClick = onBookmark, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            if (isBookmarked) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
+                            "Bookmark", tint = Primary, modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
+            // ── Title & content ──────────────────────
             Text(post.title,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 color = OnSurface)
@@ -371,17 +393,19 @@ private fun PostCard(
                 color = OnSurfaceVariant,
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3)
 
+            // ── Image ────────────────────────────────
             post.imageUrl?.let { imgUri ->
                 Spacer(modifier = Modifier.height(4.dp))
                 UriImage(
                     uriString = imgUri,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
+                        .fillMaxWidth().height(180.dp)
                         .clip(RoundedCornerShape(16.dp))
+                        .clickable { onImageTap(imgUri) }
                 )
             }
 
+            // ── Actions ──────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -414,6 +438,7 @@ private fun PostCard(
                 }
             }
 
+            // ── Expanded comments ────────────────────
             if (isExpanded) {
                 HorizontalDivider(color = OutlineVariant.copy(0.5f))
                 comments.forEach { comment -> CommentRow(comment = comment) }
@@ -440,6 +465,9 @@ private fun PostCard(
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Comment Row
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun CommentRow(comment: ForumComment) {
     Row(
@@ -466,18 +494,15 @@ private fun CommentRow(comment: ForumComment) {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Compose Post Dialog
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun ComposePostDialog(
-    title: String,
-    content: String,
-    imageUrl: String?,
-    isPosting: Boolean,
-    onTitleChange: (String) -> Unit,
-    onContentChange: (String) -> Unit,
-    onImageSelected: () -> Unit,
-    onClearImage: () -> Unit,
-    onSubmit: () -> Unit,
-    onDismiss: () -> Unit
+    title: String, content: String, imageUrl: String?, isPosting: Boolean,
+    onTitleChange: (String) -> Unit, onContentChange: (String) -> Unit,
+    onImageSelected: () -> Unit, onClearImage: () -> Unit,
+    onSubmit: () -> Unit, onDismiss: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
@@ -502,7 +527,8 @@ private fun ComposePostDialog(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = Primary)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(BlushPink.copy(0.3f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        Box(modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                            .background(BlushPink.copy(0.3f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
                             Text("Anonymous", style = MaterialTheme.typography.labelSmall, color = Primary)
                         }
                         IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
@@ -510,78 +536,39 @@ private fun ComposePostDialog(
                         }
                     }
                 }
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = onTitleChange,
-                    label = { Text("Title") },
-                    placeholder = { Text("What is on your mind?") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
-                OutlinedTextField(
-                    value = content,
-                    onValueChange = onContentChange,
-                    label = { Text("Content") },
-                    placeholder = { Text("Share your experience, question, or vent safely...") },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
-                    maxLines = 6,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                OutlinedTextField(value = title, onValueChange = onTitleChange,
+                    label = { Text("Title") }, placeholder = { Text("What is on your mind?") },
+                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(value = content, onValueChange = onContentChange,
+                    label = { Text("Content") }, placeholder = { Text("Share your experience, question, or vent safely...") },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp), maxLines = 6,
+                    shape = RoundedCornerShape(12.dp))
 
-                // Image preview if attached
                 imageUrl?.let { imgUri ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    ) {
-                        UriImage(
-                            uriString = imgUri,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        IconButton(
-                            onClick = onClearImage,
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp)
-                                .size(28.dp)
+                    Box(modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(12.dp))) {
+                        UriImage(uriString = imgUri, modifier = Modifier.fillMaxSize())
+                        IconButton(onClick = onClearImage,
+                            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).size(28.dp)
                                 .background(Color.Black.copy(0.6f), CircleShape)
-                        ) {
-                            Icon(Icons.Rounded.Close, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        }
+                        ) { Icon(Icons.Rounded.Close, null, tint = Color.White, modifier = Modifier.size(16.dp)) }
                     }
                 }
 
-                // Attach Image Button Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    IconButton(
-                        onClick = onImageSelected,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(PrimaryContainer)
-                    ) {
-                        Icon(Icons.Rounded.PhotoLibrary, "Gallery Image", tint = Primary)
-                    }
-                    Text(
-                        text = if (imageUrl != null) "Photo attached ✓" else "Add photo from gallery",
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IconButton(onClick = onImageSelected,
+                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(PrimaryContainer)
+                    ) { Icon(Icons.Rounded.PhotoLibrary, "Gallery Image", tint = Primary) }
+                    Text(if (imageUrl != null) "Photo attached ✓" else "Add photo from gallery",
                         style = MaterialTheme.typography.bodySmall,
                         color = if (imageUrl != null) Primary else OnSurfaceVariant,
-                        fontWeight = if (imageUrl != null) FontWeight.SemiBold else FontWeight.Normal
-                    )
+                        fontWeight = if (imageUrl != null) FontWeight.SemiBold else FontWeight.Normal)
                 }
 
-                Button(
-                    onClick = onSubmit,
+                Button(onClick = onSubmit,
                     enabled = title.isNotBlank() && content.isNotBlank() && !isPosting,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     if (isPosting) {
@@ -595,11 +582,11 @@ private fun ComposePostDialog(
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Uri Image Composable
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-private fun UriImage(
-    uriString: String,
-    modifier: Modifier = Modifier
-) {
+private fun UriImage(uriString: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val bitmap = remember(uriString) {
         try {
@@ -611,28 +598,147 @@ private fun UriImage(
                 @Suppress("DEPRECATION")
                 MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
             }
-        } catch (e: Exception) {
-            null
-        }
+        } catch (_: Exception) { null }
     }
-
     if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "Uploaded Image",
-            modifier = modifier,
-            contentScale = ContentScale.Crop
-        )
+        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Image",
+            modifier = modifier, contentScale = ContentScale.Crop)
     } else {
-        Box(
-            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
+        ) { Icon(Icons.Rounded.BrokenImage, "Failed to load", tint = OnSurfaceVariant) }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Notifications Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun NotificationsSheet(
+    notifications: List<com.deepak.periodsaathi.data.model.ForumNotification>,
+    onDismiss: () -> Unit,
+    onMarkAllRead: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.6f),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            color = Background
         ) {
-            Icon(Icons.Rounded.BrokenImage, "Failed to load", tint = OnSurfaceVariant)
+            Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Activity", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Primary)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onMarkAllRead) {
+                            Text("Mark all read", style = MaterialTheme.typography.labelSmall)
+                        }
+                        IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                            Icon(Icons.Rounded.Close, null, tint = OnSurfaceVariant)
+                        }
+                    }
+                }
+                if (notifications.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("🔔", fontSize = 40.sp)
+                            Spacer(Modifier.height(8.dp))
+                            Text("No activity yet", fontWeight = FontWeight.Bold, color = OnSurface)
+                            Text("Likes and replies will appear here",
+                                fontSize = 12.sp, color = OnSurfaceVariant)
+                        }
+                    }
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(notifications) { notif ->
+                            GlassCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        if (notif.type == "upvote") "❤️" else "💬",
+                                        fontSize = 20.sp
+                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(notif.message, fontSize = 13.sp,
+                                            fontWeight = if (!notif.read) FontWeight.Bold else FontWeight.Normal,
+                                            color = OnSurface)
+                                        Text(formatTime(notif.createdAt), fontSize = 10.sp, color = OnSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Full-Screen Image Preview with Pinch-to-Zoom
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun FullScreenImagePreview(
+    imageUrl: String,
+    onDismiss: () -> Unit
+) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .clickable(onClick = onDismiss)
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(0.5f, 5f)
+                        offsetX += pan.x
+                        offsetY += pan.y
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            UriImage(
+                uriString = imageUrl,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        scaleX = scale; scaleY = scale
+                        translationX = offsetX; translationY = offsetY
+                    }
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+                    .background(Color.Black.copy(0.5f), CircleShape)
+            ) {
+                Icon(Icons.Rounded.Close, "Close", tint = Color.White)
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Time format helper
+// ─────────────────────────────────────────────────────────────────────────────
 private fun formatTime(millis: Long): String {
     val diff = System.currentTimeMillis() - millis
     return when {

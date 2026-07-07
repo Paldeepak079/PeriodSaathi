@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.deepak.periodsaathi.ui.theme.*
+import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.wellness.data.local.entities.SolutionEntity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -93,7 +94,7 @@ fun ViewAllCategoryScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Surface(

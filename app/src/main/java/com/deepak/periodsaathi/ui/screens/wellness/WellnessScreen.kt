@@ -55,31 +55,15 @@ fun WellnessScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFFFFF5F7), // Blush Cream
-                        Color(0xFFF9F3FF), // Soft Lavender Cream
-                        Color(0xFFF5FCF9)  // Mint Cream
-                    )
-                )
-            )
+            .background(Background)
     ) {
-        // Blurred premium background blobs for depth
+        // Subtle background decoration
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .offset(x = (-80).dp, y = 50.dp)
                 .size(300.dp)
-                .background(Brush.radialGradient(listOf(Color(0x30FFB5C8), Color.Transparent)), CircleShape)
-                .blur(80.dp)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 60.dp, y = (-40).dp)
-                .size(280.dp)
-                .background(Brush.radialGradient(listOf(Color(0x24C9B8FF), Color.Transparent)), CircleShape)
+                .background(Brush.radialGradient(listOf(BlushPink.copy(alpha = 0.2f), Color.Transparent)), CircleShape)
                 .blur(80.dp)
         )
 
@@ -731,11 +715,13 @@ fun QuestItem(
     emoji: String,
     isCompleted: Boolean
 ) {
-    val checkScale by animateFloatAsState(
-        targetValue = if (isCompleted) 1.15f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "checkScale"
-    )
+    val scale = remember { Animatable(1f) }
+    LaunchedEffect(isCompleted) {
+        if (isCompleted) {
+            scale.animateTo(1.3f, spring(dampingRatio = 0.3f, stiffness = Spring.StiffnessHigh))
+            scale.animateTo(1f, spring(dampingRatio = 0.5f))
+        }
+    }
 
     val textColor by animateColorAsState(
         targetValue = if (isCompleted) OnSurfaceVariant.copy(0.6f) else OnSurface,
@@ -749,11 +735,10 @@ fun QuestItem(
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Sparkling interactive checkbox
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .scale(checkScale)
+                .scale(scale.value)
                 .clip(CircleShape)
                 .background(
                     if (isCompleted) Mint.copy(0.3f) else Color.White.copy(0.5f)
@@ -766,10 +751,7 @@ fun QuestItem(
             contentAlignment = Alignment.Center
         ) {
             if (isCompleted) {
-                Text(
-                    text = "🌸",
-                    fontSize = 14.sp
-                )
+                Text(text = "🌸", fontSize = 14.sp)
             }
         }
 
