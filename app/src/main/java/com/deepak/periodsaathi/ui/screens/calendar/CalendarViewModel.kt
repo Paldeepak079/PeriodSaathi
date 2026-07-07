@@ -225,6 +225,21 @@ class CalendarViewModel @Inject constructor(
         _showPredictorSheet.value = !_showPredictorSheet.value
     }
 
+    fun recordAccuracyFeedback(label: String) {
+        viewModelScope.launch {
+            cycleRepository.logCycleEntry(com.deepak.periodsaathi.data.model.CycleEntry(
+                date = (selectedDate.value ?: LocalDate.now())
+                    .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                flowIntensity = null,
+                symptoms = "accuracy_feedback:$label",
+                mood = null,
+                waterGlasses = 0,
+                notes = null,
+                isRestDay = false
+            ))
+        }
+    }
+
     fun nextMonth() {
         _currentYearMonth.value = _currentYearMonth.value.plusMonths(1)
         loadMonth()

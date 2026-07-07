@@ -637,6 +637,10 @@ private fun CycleHealthCard(nextPeriodDate: String, fertileIn: String) {
 @Composable
 private fun SymptomPredictorSheet(
     selectedDate: LocalDate?,
+    predictions: List<SymptomPrediction>,
+    onAddReminder: () -> Unit,
+    onMarkRestDay: () -> Unit,
+    onAccuracyFeedback: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val bloatingProgress by animateFloatAsState(
@@ -845,7 +849,7 @@ private fun SymptomPredictorSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onAddReminder,
                     shape = RoundedCornerShape(50),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.6f)),
                     colors = ButtonDefaults.outlinedButtonColors(
@@ -855,7 +859,7 @@ private fun SymptomPredictorSheet(
                     Text("Add ginger tea reminder 🍵")
                 }
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onMarkRestDay,
                     shape = RoundedCornerShape(50),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.6f)),
                     colors = ButtonDefaults.outlinedButtonColors(
@@ -896,7 +900,7 @@ private fun SymptomPredictorSheet(
                 GlassCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    onClick = { }
+                    onClick = { onAccuracyFeedback("spot_on") }
                 ) {
                     Text(
                         "Spot on ✓",
@@ -911,7 +915,7 @@ private fun SymptomPredictorSheet(
                 GlassCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    onClick = { }
+                    onClick = { onAccuracyFeedback("somewhat") }
                 ) {
                     Text(
                         "Somewhat ~",
@@ -926,7 +930,7 @@ private fun SymptomPredictorSheet(
                 GlassCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    onClick = { }
+                    onClick = { onAccuracyFeedback("way_off") }
                 ) {
                     Text(
                         "Way off ✗",
@@ -985,243 +989,243 @@ private fun CalendarEmptyState(onStartTracking: () -> Unit) {
 }
 
 @Composable
-    private fun LogEntryBottomSheet(
-        selectedDate: LocalDate?,
-        onDismiss: () -> Unit,
-        onSave: (Int?, List<String>, String?, Int, String?) -> Unit
-    ) {
-        var selectedFlow by remember { mutableStateOf<Int?>(null) }
-        var notes by remember { mutableStateOf("") }
-        var selectedSymptoms by remember { mutableStateOf<List<String>>(emptyList()) }
+private fun LogEntryBottomSheet(
+    selectedDate: LocalDate?,
+    onDismiss: () -> Unit,
+    onSave: (Int?, List<String>, String?, Int, String?) -> Unit
+) {
+    var selectedFlow by remember { mutableStateOf<Int?>(null) }
+    var notes by remember { mutableStateOf("") }
+    var selectedSymptoms by remember { mutableStateOf<List<String>>(emptyList()) }
 
-        val allSymptoms = listOf("Cramps", "Bloating", "Headache", "Mood Swings", "Back Pain", "Fatigue", "Acne")
-        val dateText = selectedDate?.format(DateTimeFormatter.ofPattern("MMMM d")) ?: "Today"
+    val allSymptoms = listOf("Cramps", "Bloating", "Headache", "Mood Swings", "Back Pain", "Fatigue", "Acne")
+    val dateText = selectedDate?.format(DateTimeFormatter.ofPattern("MMMM d")) ?: "Today"
 
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f))
+                .clickable(onClick = onDismiss)
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .background(
+                    SurfaceContainerLow,
+                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+        ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
-                    .clickable(onClick = onDismiss)
-            )
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.85f)
-                    .background(
-                        SurfaceContainerLow,
-                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                    )
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-8).dp, y = (-8).dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(SecondaryContainer.copy(alpha = 0.7f))
+                    .rotate(12f),
+                contentAlignment = Alignment.Center
             ) {
+                Text("🌸", fontSize = 18.sp)
+            }
+
+            Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = (-8).dp, y = (-8).dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(SecondaryContainer.copy(alpha = 0.7f))
-                        .rotate(12f),
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🌸", fontSize = 18.sp)
+                    Box(
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(OutlineVariant.copy(alpha = 0.5f))
+                    )
                 }
 
-                Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column {
+                        Text(
+                            text = "Log Symptoms",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Primary
+                        )
+                        Text(
+                            text = "Today, $dateText",
+                            fontSize = 14.sp,
+                            color = OnSecondaryFixedVariant
+                        )
+                    }
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.4f))
+                            .clickable(onClick = onDismiss),
                         contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .width(48.dp)
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(OutlineVariant.copy(alpha = 0.5f))
-                        )
+                        Text("✕", color = OnSurfaceVariant)
                     }
+                }
 
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 100.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "Flow Level",
+                        fontSize = 14.sp,
+                        color = OnSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column {
-                            Text(
-                                text = "Log Symptoms",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Primary
-                            )
-                            Text(
-                                text = "Today, $dateText",
-                                fontSize = 14.sp,
-                                color = OnSecondaryFixedVariant
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.4f))
-                                .clickable(onClick = onDismiss),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("✕", color = OnSurfaceVariant)
+                        listOf("Light", "Medium", "Heavy").forEachIndexed { index, label ->
+                            val isSelected = selectedFlow == index + 1
+                            val shape = RoundedCornerShape(12.dp)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .then(
+                                        if (isSelected) Modifier.background(
+                                            Brush.verticalGradient(listOf(Color(0xFFFFD9DE), Color(0xFFFCB3BE))),
+                                            shape
+                                        )
+                                        else Modifier.border(1.dp, OutlineVariant, shape)
+                                    )
+                                    .clickable { selectedFlow = if (isSelected) null else index + 1 }
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isSelected) Color.White else OnSurfaceVariant
+                                )
+                            }
                         }
                     }
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 24.dp)
-                            .padding(bottom = 100.dp)
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "How are you feeling?",
+                        fontSize = 14.sp,
+                        color = OnSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text(
-                            text = "Flow Level",
-                            fontSize = 14.sp,
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            listOf("Light", "Medium", "Heavy").forEachIndexed { index, label ->
-                                val isSelected = selectedFlow == index + 1
-                                val shape = RoundedCornerShape(12.dp)
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .then(
-                                            if (isSelected) Modifier.background(
-                                                Brush.verticalGradient(listOf(Color(0xFFFFD9DE), Color(0xFFFCB3BE))),
-                                                shape
-                                            )
-                                            else Modifier.border(1.dp, OutlineVariant, shape)
-                                        )
-                                        .clickable { selectedFlow = if (isSelected) null else index + 1 }
-                                        .padding(vertical = 12.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = label,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (isSelected) Color.White else OnSurfaceVariant
-                                    )
-                                }
+                        allSymptoms.forEach { symptom ->
+                            val isSelected = selectedSymptoms.contains(symptom)
+                            val bgColor = when {
+                                isSelected && symptom == "Cramps" -> SecondaryContainer
+                                isSelected && symptom == "Mood Swings" -> TertiaryContainer
+                                isSelected -> PrimaryContainer
+                                else -> Color.Transparent
                             }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text(
-                            text = "How are you feeling?",
-                            fontSize = 14.sp,
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            allSymptoms.forEach { symptom ->
-                                val isSelected = selectedSymptoms.contains(symptom)
-                                val bgColor = when {
-                                    isSelected && symptom == "Cramps" -> SecondaryContainer
-                                    isSelected && symptom == "Mood Swings" -> TertiaryContainer
-                                    isSelected -> PrimaryContainer
-                                    else -> Color.Transparent
-                                }
-                                val textColor = when {
-                                    isSelected && symptom == "Cramps" -> OnSecondaryContainer
-                                    isSelected && symptom == "Mood Swings" -> OnTertiaryContainer
-                                    isSelected -> OnPrimaryContainer
-                                    else -> OnSurfaceVariant
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .then(
-                                            if (isSelected) Modifier.background(bgColor, RoundedCornerShape(50))
-                                            else Modifier.border(1.dp, OutlineVariant, RoundedCornerShape(50))
-                                        )
-                                        .clickable {
-                                            selectedSymptoms = if (isSelected) {
-                                                selectedSymptoms.filter { it != symptom }
-                                            } else {
-                                                selectedSymptoms + symptom
-                                            }
+                            val textColor = when {
+                                isSelected && symptom == "Cramps" -> OnSecondaryContainer
+                                isSelected && symptom == "Mood Swings" -> OnTertiaryContainer
+                                isSelected -> OnPrimaryContainer
+                                else -> OnSurfaceVariant
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .then(
+                                        if (isSelected) Modifier.background(bgColor, RoundedCornerShape(50))
+                                        else Modifier.border(1.dp, OutlineVariant, RoundedCornerShape(50))
+                                    )
+                                    .clickable {
+                                        selectedSymptoms = if (isSelected) {
+                                            selectedSymptoms.filter { it != symptom }
+                                        } else {
+                                            selectedSymptoms + symptom
                                         }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = symptom,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = textColor
-                                    )
-                                }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = symptom,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = textColor
+                                )
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text(
-                            text = "Notes",
-                            fontSize = 14.sp,
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = notes,
-                            onValueChange = { notes = it },
-                            placeholder = { Text("How's your day going?", color = OnSurfaceVariant.copy(alpha = 0.5f)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = SecondaryContainer,
-                                unfocusedBorderColor = OutlineVariant.copy(alpha = 0.5f),
-                                focusedContainerColor = Color.White.copy(alpha = 0.2f),
-                                unfocusedContainerColor = Color.White.copy(alpha = 0.2f)
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            minLines = 4
-                        )
                     }
 
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "Notes",
+                        fontSize = 14.sp,
+                        color = OnSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = notes,
+                        onValueChange = { notes = it },
+                        placeholder = { Text("How's your day going?", color = OnSurfaceVariant.copy(alpha = 0.5f)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = SecondaryContainer,
+                            unfocusedBorderColor = OutlineVariant.copy(alpha = 0.5f),
+                            focusedContainerColor = Color.White.copy(alpha = 0.2f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.2f)
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        minLines = 4
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceContainerLow)
+                        .padding(24.dp)
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(SurfaceContainerLow)
-                            .padding(24.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Brush.horizontalGradient(listOf(Primary, PrimaryContainer)))
+                            .clickable { onSave(selectedFlow, selectedSymptoms, null, 0, notes.ifBlank { null }) },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Brush.horizontalGradient(listOf(Primary, PrimaryContainer)))
-                                .clickable { onSave(selectedFlow, selectedSymptoms, null, 0, notes.ifBlank { null }) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Save Log",
-                                color = OnPrimary,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Text(
+                            text = "Save Log",
+                            color = OnPrimary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
         }
     }
+}

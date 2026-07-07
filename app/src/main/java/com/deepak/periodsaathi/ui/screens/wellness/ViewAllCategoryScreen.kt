@@ -62,10 +62,11 @@ fun ViewAllCategoryScreen(
     val catInfo = wellnessCategories.find { it.key == category }
 
     val filtered = remember(allSolutions, category, symptom, severity) {
+        val noSymptom = symptom == "none" || symptom.isEmpty()
         allSolutions.filter { sol ->
             val catMatch = sol.category == category
-            val symptomMatch = sol.symptomType == symptom || sol.symptomType == "general" || symptom == "None"
-            val severityMatch = sol.severity == severity || sol.severity == "all"
+            val symptomMatch = noSymptom || sol.symptomType == symptom || sol.symptomType == "general"
+            val severityMatch = noSymptom || sol.severity == severity || sol.severity == "all"
             catMatch && symptomMatch && severityMatch
         }
     }
