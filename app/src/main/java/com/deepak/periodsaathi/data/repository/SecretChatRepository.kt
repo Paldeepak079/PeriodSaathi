@@ -8,9 +8,9 @@ import com.deepak.periodsaathi.data.sync.DeviceIdentityManager
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
-import io.github.jan.supabase.realtime.createChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -107,7 +107,7 @@ class SecretChatRepository @Inject constructor(
             try {
                 supabase.realtime.connect()
                 realtimeConnected = true
-                val channel = supabase.realtime.createChannel("forum-posts-channel")
+                val channel = supabase.channel("forum-posts-channel")
                 channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
                     table = "forum_posts"
                 }.collectLatest { action ->

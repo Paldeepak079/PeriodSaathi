@@ -14,27 +14,25 @@ class DeviceIdentityManager @Inject constructor(
     private val prefs: SharedPreferences =
         context.getSharedPreferences("device_identity", Context.MODE_PRIVATE)
 
-    private val deviceUid: String by lazy {
+    fun getDeviceUid(): String {
         var uid = prefs.getString(KEY_DEVICE_UID, null)
         if (uid == null) {
             uid = UUID.randomUUID().toString()
             prefs.edit().putString(KEY_DEVICE_UID, uid).apply()
         }
-        uid
+        return uid
     }
 
-    private val anonymousAlias: String by lazy {
+    fun getAnonymousAlias(): String {
         var alias = prefs.getString(KEY_ANONYMOUS_ALIAS, null)
         if (alias == null) {
-            alias = ALIASES[Math.abs(deviceUid.hashCode()) % ALIASES.size]
+            alias = ALIASES[Math.abs(getDeviceUid().hashCode()) % ALIASES.size]
             prefs.edit().putString(KEY_ANONYMOUS_ALIAS, alias).apply()
         }
-        alias
+        return alias
     }
 
-    fun getDeviceUid(): String = deviceUid
-    fun getAnonymousAlias(): String = anonymousAlias
-    fun isMyPost(postDeviceId: String): Boolean = postDeviceId == deviceUid
+    fun isMyPost(postDeviceId: String): Boolean = postDeviceId == getDeviceUid()
 
     companion object {
         private const val KEY_DEVICE_UID = "device_uid"
