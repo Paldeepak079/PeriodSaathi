@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kover)
+
+    id("io.sentry.android.gradle") version "6.20.0"
 }
 
 val localProperties = Properties().apply {
@@ -263,4 +265,14 @@ dependencies {
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+
+sentry {
+    org.set("madtech-c9")
+    projectName.set("periodsaathi")
+
+    // this will upload your source code to Sentry to show it as part of the stack traces
+    // disable if you don't want to expose your sources
+    includeSourceContext.set(true)
 }
