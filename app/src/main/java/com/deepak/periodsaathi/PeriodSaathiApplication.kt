@@ -8,6 +8,8 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.deepak.periodsaathi.notification.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.android.core.SentryAndroid
+import io.sentry.Sentry
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -18,7 +20,23 @@ class PeriodSaathiApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        initSentry()
         createNotificationChannels()
+    }
+
+    private fun initSentry() {
+        val dsn = BuildConfig.SENTRY_DSN
+        if (dsn.isNotBlank()) {
+            SentryAndroid.init(this) { options ->
+                options.dsn = dsn
+                options.tracesSampleRate = 1.0
+                options.isEnableAutoSessionTracking = true
+                options.isEnableAppLifecycleBreadcrumbs = true
+                options.isEnableActivityLifecycleBreadcrumbs = true
+                options.isEnableSystemEventBreadcrumbs = true
+                options.isDebug = false
+            }
+        }
     }
 
     private fun createNotificationChannels() {

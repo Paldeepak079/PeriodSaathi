@@ -30,8 +30,8 @@ android {
         applicationId = "com.deepak.periodsaathi"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -43,6 +43,7 @@ android {
         buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${getLocalProperty("admob.interstitial.id")}\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${getLocalProperty("google.web.client.id")}\"")
         buildConfigField("String", "GOOGLE_ANDROID_CLIENT_ID", "\"${getLocalProperty("google.android.client.id")}\"")
+        buildConfigField("String", "SENTRY_DSN", "\"${getLocalProperty("sentry.dsn")}\"")
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -208,6 +209,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics.ktx)
     implementation(libs.firebase.analytics.ktx)
+
+    // Sentry
+    implementation(libs.sentry.android)
 
     // Biometrics
     implementation(libs.androidx.biometric)

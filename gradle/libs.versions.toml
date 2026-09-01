@@ -37,6 +37,8 @@ hiltAndroidTesting = "2.51.1"
 sqlcipher = "4.5.4"
 sqliteKtx = "2.4.0"
 lottie = "6.6.0"
+sentry = "8.39.0"
+sentryPlugin = "4.0.1"
 
 
 [libraries]
@@ -95,6 +97,7 @@ itext7-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "ite
 sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqliteKtx" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
 
 
 # Testing
@@ -116,3 +119,4 @@ google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.23.6" }
 kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.1" }
+sentry = { id = "io.sentry.android.gradle", version.ref = "sentryPlugin" }

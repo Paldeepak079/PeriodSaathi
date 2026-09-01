@@ -27,4 +27,5 @@ local.properties
 /app/schemas/
 google-services.json
 .env
+sentry.properties
 

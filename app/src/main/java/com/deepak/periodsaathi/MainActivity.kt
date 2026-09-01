@@ -27,6 +27,7 @@ import com.deepak.periodsaathi.ui.navigation.Settings
 import com.deepak.periodsaathi.ui.navigation.Wellness
 import com.deepak.periodsaathi.ui.theme.PeriodSaathiTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.sentry.Sentry
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
+        Sentry.captureMessage("Sentry integration test — PeriodSaathi v1.1.0")
         setContent {
             PeriodSaathiTheme {
                 val navController = rememberNavController()
