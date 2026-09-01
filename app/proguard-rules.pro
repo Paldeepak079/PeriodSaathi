@@ -217,3 +217,11 @@
 -keep class com.deepak.periodsaathi.PeriodSaathiApplication { *; }
 -keep class com.deepak.periodsaathi.PeriodSaathiApplication_HiltComponents { *; }
 -keep class * extends com.deepak.periodsaathi.PeriodSaathiApplication { *; }
+
+# --- Sentry ---
+-keep class io.sentry.** { *; }
+-keepclassmembers class io.sentry.** { *; }
+-dontwarn io.sentry.**
+-keepattributes LineNumberTable,SourceFile
+-keepnames class io.sentry.** { *; }
+-keep class io.sentry.android.core.** { *; }

@@ -27,14 +27,18 @@ class PeriodSaathiApplication : Application(), Configuration.Provider {
     private fun initSentry() {
         val dsn = BuildConfig.SENTRY_DSN
         if (dsn.isNotBlank()) {
-            SentryAndroid.init(this) { options ->
-                options.dsn = dsn
-                options.tracesSampleRate = 1.0
-                options.isEnableAutoSessionTracking = true
-                options.isEnableAppLifecycleBreadcrumbs = true
-                options.isEnableActivityLifecycleBreadcrumbs = true
-                options.isEnableSystemEventBreadcrumbs = true
-                options.isDebug = false
+            try {
+                SentryAndroid.init(this) { options ->
+                    options.dsn = dsn
+                    options.tracesSampleRate = 1.0
+                    options.isEnableAutoSessionTracking = true
+                    options.isEnableAppLifecycleBreadcrumbs = true
+                    options.isEnableActivityLifecycleBreadcrumbs = true
+                    options.isEnableSystemEventBreadcrumbs = true
+                    options.isDebug = false
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
