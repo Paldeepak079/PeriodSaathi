@@ -24,13 +24,13 @@ fun getLocalProperty(key: String): String {
 
 android {
     namespace = "com.deepak.periodsaathi"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.deepak.periodsaathi"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 3
+        targetSdk = 36
+        versionCode = 4
         versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -111,6 +111,12 @@ android {
         }
         abi {
             enableSplit = true
+        }
+    }
+
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/*.so")
         }
     }
 
