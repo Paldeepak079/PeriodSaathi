@@ -8,11 +8,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -68,17 +68,21 @@ class MainActivity : ComponentActivity() {
                         ) {
                             BottomNavBar(navController = navController)
                         }
-                    },
-                    contentWindowInsets = WindowInsets.navigationBars
-                ) { paddingValues ->
-                    Box(modifier = Modifier.padding(paddingValues)) {
-                        PeriodSaathiNavGraph(navController = navController)
                     }
+                ) { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        PeriodSaathiNavGraph(navController = navController)
 
-                    if (!isOnChatScreen) {
-                        FloatingSaathiButton(
-                            onClick = { navController.navigate(Chat) }
-                        )
+                        if (!isOnChatScreen) {
+                            FloatingSaathiButton(
+                                onClick = { navController.navigate(Chat) },
+                                modifier = Modifier.align(Alignment.BottomEnd)
+                            )
+                        }
                     }
                 }
             }

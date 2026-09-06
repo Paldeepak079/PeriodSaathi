@@ -17,15 +17,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.deepak.periodsaathi.ui.theme.BlushPink
 import com.deepak.periodsaathi.ui.theme.DeepRose
 import com.deepak.periodsaathi.ui.theme.SoftLavender
@@ -38,7 +34,6 @@ fun FloatingSaathiButton(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    // Breathing animation
     val infiniteTransition = rememberInfiniteTransition(label = "breathing")
     val breatheScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -50,62 +45,46 @@ fun FloatingSaathiButton(
         label = "breathe"
     )
 
-    // Store position
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
     Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        Box(
-            modifier = Modifier
-                .offset {
-                    IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+        modifier = modifier
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .padding(end = 16.dp, bottom = 16.dp)
+            .shadow(8.dp, RoundedCornerShape(50.dp))
+            .clip(RoundedCornerShape(50.dp))
+            .background(
+                Brush.horizontalGradient(listOf(BlushPink, DeepRose, SoftLavender))
+            )
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    offsetX += dragAmount.x
+                    offsetY += dragAmount.y
                 }
-                .padding(end = 16.dp, bottom = 100.dp)
-                .shadow(8.dp, RoundedCornerShape(50.dp))
-                .clip(RoundedCornerShape(50.dp))
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(BlushPink, DeepRose, SoftLavender)
-                    )
-                )
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            offsetX += dragAmount.x
-                            offsetY += dragAmount.y
-                        }
-                    )
-                }
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onClick()
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = "\uD83C\uDF38",
-                    fontSize = (16.sp * breatheScale)
-                )
-                Text(
-                    text = "Ask Saathi",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
             }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(text = "\uD83C\uDF38", fontSize = (16.sp * breatheScale))
+            Text(
+                text = "Ask Saathi",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
         }
     }
 }

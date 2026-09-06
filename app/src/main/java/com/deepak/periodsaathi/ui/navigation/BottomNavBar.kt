@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,10 +22,9 @@ import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.GridView
-
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,7 +60,6 @@ val bottomNavTabs = listOf(
     NavTab("Secret Chats", Icons.Rounded.Lock, Community, "Secret Chats tab"),
 )
 
-
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -81,37 +76,33 @@ fun BottomNavBar(navController: NavHostController) {
         label = "indicatorOffset"
     )
 
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .navigationBarsPadding(),
-        color = WarmCream.copy(alpha = 0.92f),
-        tonalElevation = 4.dp
+    NavigationBar(
+        containerColor = WarmCream.copy(alpha = 0.92f),
+        tonalElevation = 4.dp,
+        windowInsets = NavigationBarDefaults.windowInsets
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
+            // Sliding indicator
             Box(
                 modifier = Modifier
                     .offset(x = indicatorOffset + 8.dp)
                     .width(tabWidth - 16.dp)
-                    .height(4.dp)
+                    .height(3.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(BlushPink)
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = 4.dp)
             )
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(72.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 bottomNavTabs.forEachIndexed { index, tab ->
                     val isActive = index == activeTabIndex
                     val iconScale by animateFloatAsState(
-                        targetValue = if (isActive) 1.2f else 1.0f,
+                        targetValue = if (isActive) 1.15f else 1.0f,
                         animationSpec = spring(dampingRatio = 0.6f),
                         label = "iconScale"
                     )
@@ -136,20 +127,21 @@ fun BottomNavBar(navController: NavHostController) {
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Box(modifier = Modifier.size(28.dp)) {
+                        Box(modifier = Modifier.size(26.dp)) {
                             Icon(
                                 imageVector = tab.icon,
                                 contentDescription = null,
                                 tint = if (isActive) BlushPink else Color(0xFF2D2D2D).copy(alpha = 0.4f),
                                 modifier = Modifier
-                                    .size(28.dp)
+                                    .size(26.dp)
                                     .alpha(iconAlpha)
                             )
                         }
                         Text(
                             text = tab.label,
                             fontSize = 10.sp,
-                            color = if (isActive) BlushPink else Color(0xFF2D2D2D).copy(alpha = 0.5f)
+                            color = if (isActive) BlushPink else Color(0xFF2D2D2D).copy(alpha = 0.5f),
+                            maxLines = 1
                         )
                     }
                 }
@@ -157,4 +149,3 @@ fun BottomNavBar(navController: NavHostController) {
         }
     }
 }
-
