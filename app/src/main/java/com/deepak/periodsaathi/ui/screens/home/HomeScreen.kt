@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deepak.periodsaathi.domain.model.CyclePhase
@@ -452,43 +453,39 @@ fun HomeScreen(
                 onClick = { onNavigateToChat() },
                 modifier = Modifier.align(Alignment.BottomEnd)
             )
+        }
+    }
 
-            AnimatedVisibility(
-                visible = showPremiumShayari,
-                enter = slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(),
-                exit = slideOutVertically(targetOffsetY = { -it / 2 }) + fadeOut(),
+    if (showPremiumShayari) {
+        Dialog(onDismissRequest = { showPremiumShayari = false }) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 80.dp, start = 24.dp, end = 24.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable { showPremiumShayari = false }
+                    .padding(28.dp),
+                contentAlignment = Alignment.Center
             ) {
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showPremiumShayari = false }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("✨", fontSize = 28.sp)
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            text = activePremiumShayari,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            "tap to dismiss",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    Text("✨", fontSize = 36.sp)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = activePremiumShayari,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 24.sp
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "tap anywhere to dismiss",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

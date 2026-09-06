@@ -152,32 +152,21 @@ fun ChatScreen(
                         color = Primary.copy(0.8f),
                         modifier = Modifier.padding(start = 4.dp)
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        viewModel.suggestedPrompts.take(2).forEach { prompt ->
-                            SuggestionChip(
-                                label = "${prompt.emoji} ${prompt.label}",
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    viewModel.selectSuggestedPrompt(prompt)
-                                }
-                            )
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        viewModel.suggestedPrompts.drop(2).take(2).forEach { prompt ->
-                            SuggestionChip(
-                                label = "${prompt.emoji} ${prompt.label}",
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    viewModel.selectSuggestedPrompt(prompt)
-                                }
-                            )
+                    viewModel.suggestedPrompts.chunked(2).forEach { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            row.forEach { prompt ->
+                                SuggestionChip(
+                                    label = "${prompt.emoji} ${prompt.label}",
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        viewModel.selectSuggestedPrompt(prompt)
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }
@@ -360,10 +349,11 @@ fun MessageBubble(message: ChatMessage) {
 @Composable
 fun SuggestionChip(
     label: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .clickable(onClick = onClick)
             .height(38.dp),
         shape = RoundedCornerShape(12.dp),

@@ -46,6 +46,7 @@ android {
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${getLocalProperty("google.web.client.id")}\"")
         buildConfigField("String", "GOOGLE_ANDROID_CLIENT_ID", "\"${getLocalProperty("google.android.client.id")}\"")
         buildConfigField("String", "SENTRY_DSN", "\"${getLocalProperty("sentry.dsn")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${getLocalProperty("gemini.api.key")}\"")
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -249,6 +250,9 @@ dependencies {
 
     // Lottie animations (bio-visualization engine)
     implementation(libs.lottie.compose)
+
+    // Gemini AI SDK
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     // Media3 ExoPlayer for yoga video sessions
     implementation("androidx.media3:media3-exoplayer:1.4.1")

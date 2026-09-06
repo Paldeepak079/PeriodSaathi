@@ -220,8 +220,13 @@
 
 # --- Sentry ---
 -keep class io.sentry.** { *; }
--keepclassmembers class io.sentry.** { *; }
+-keepclassmembers io.sentry.** { *; }
 -dontwarn io.sentry.**
 -keepattributes LineNumberTable,SourceFile
 -keepnames class io.sentry.** { *; }
 -keep class io.sentry.android.core.** { *; }
+
+# --- Google Generative AI (Gemini) ---
+-keep class com.google.ai.client.generativeai.** { *; }
+-keep class com.google.ai.client.generativeai.type.** { *; }
+-dontwarn com.google.ai.client.generativeai.**
