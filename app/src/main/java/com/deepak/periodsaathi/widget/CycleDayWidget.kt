@@ -26,7 +26,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -51,9 +50,9 @@ class CycleDayWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .cornerRadius(20.dp)
-                    .background(ColorProvider(WARM_CREAM))
-                    .padding(8.dp)
+                    .cornerRadius(24.dp)
+                    .background(ColorProvider(GLASS_BG))
+                    .padding(10.dp)
                     .clickable(onClick = openAppAction)
             ) {
                 if (state.isError) {
@@ -288,7 +287,7 @@ class CycleDayWidget : GlanceAppWidget() {
     }
 
     companion object {
-        private val WARM_CREAM = androidx.compose.ui.graphics.Color(0xFFFFF8F2)
+        private val GLASS_BG = androidx.compose.ui.graphics.Color(0x55FFFFFF)
         private val PRIMARY_ROSE = androidx.compose.ui.graphics.Color(0xFF874E58)
         private val SOFT_ROSE = androidx.compose.ui.graphics.Color(0xFFFFB6C1)
         private val LAVENDER = androidx.compose.ui.graphics.Color(0xFF655781)

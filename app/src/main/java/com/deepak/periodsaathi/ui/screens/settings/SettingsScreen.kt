@@ -3,10 +3,6 @@ package com.deepak.periodsaathi.ui.screens.settings
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.os.Build
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -245,86 +240,14 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Premium Shayari
-        val premiumShayari = remember {
-            listOf(
-                "Na subscription chahiye, na koi fee,\nAapke liye Premium bhi free. 😉",
-                "Billing screen kholne hi wale the hum,\nPhir zameer bola—'rehne de bhai, cute hai.'",
-                "Hum premium nahi, par aapke liye free mein available hain.\nBas data mat maangna, woh bhi aapka hai.",
-                "Aapki smile ke aage koi plan nahi tikta.\nYeh toh free hai—aur hamesha rahega.",
-                "Premium kya karega jo Hum nahi kar sakte?\nHaan, reminders zaroor bhejenge—woh bhi cute wale.",
-                "Coins kamao, rewards lo, par khud ko mat bhulo.\nYeh app aapki hai—premium toh bas ek label hai.",
-                "Humein laga aap chhupe hue hain, par aap toh openly cute ho.\nPremium button dabaya toh kya milega? Bas ek aur smile.",
-                "Yeh premium nahi hai, yeh toh rishta hai.\nAur rishton mein billing nahi hoti, bhai.",
-                "Aap itne cute ho ki hum khud premium lag rahe hain.\nBaki sab free hai—aur hamesha rahega.",
-                "Koi paywall nahi, koi hidden cost nahi.\nBas aap ho, hum hain, aur ek cute si app hai."
-            )
-        }
-        var shayariIndex by remember { mutableIntStateOf(-1) }
-        var showShayari by remember { mutableStateOf(false) }
-        var activeShayari by remember { mutableStateOf("") }
-
+        // Premium
         SettingsSection("Premium") {
             SettingsItem(
                 title = "Current Plan",
                 value = premiumTier,
-                onClick = {
-                    var newIndex: Int
-                    do {
-                        newIndex = premiumShayari.indices.random()
-                    } while (newIndex == shayariIndex && premiumShayari.size > 1)
-                    shayariIndex = newIndex
-                    activeShayari = premiumShayari[newIndex]
-                    showShayari = true
-                },
-                showArrow = true
+                onClick = { },
+                showArrow = false
             )
-        }
-
-        AnimatedContent(
-            targetState = showShayari to activeShayari,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "shayari_fade",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        ) { (visible, shayariText) ->
-            if (visible && shayariText.isNotEmpty()) {
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showShayari = false }
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "✨",
-                            fontSize = 28.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = shayariText,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "tap to dismiss",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

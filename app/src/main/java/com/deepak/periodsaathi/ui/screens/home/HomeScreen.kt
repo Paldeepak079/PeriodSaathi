@@ -1,5 +1,10 @@
 package com.deepak.periodsaathi.ui.screens.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -83,6 +88,9 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showPhaseCoachSheet by remember { mutableStateOf(false) }
+    var showPremiumShayari by remember { mutableStateOf(false) }
+    var activePremiumShayari by remember { mutableStateOf("") }
+    var lastPremiumIndex by remember { mutableIntStateOf(-1) }
     val context = LocalContext.current
     var ttsEngine by remember { mutableStateOf<android.speech.tts.TextToSpeech?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -225,7 +233,23 @@ fun HomeScreen(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        onNavigateToPayment()
+                        val shayariList = listOf(
+                            "Na subscription chahiye, na koi fee,\nAapke liye Premium bhi free. 😉",
+                            "Billing screen kholne hi wale the hum,\nPhir zameer bola—'rehne de bhai, cute hai.'",
+                            "Hum premium nahi, par aapke liye free mein available hain.\nBas data mat maangna, woh bhi aapka hai.",
+                            "Aapki smile ke aage koi plan nahi tikta.\nYeh toh free hai—aur hamesha rahega.",
+                            "Premium kya karega jo Hum nahi kar sakte?\nHaan, reminders zaroor bhejenge—woh bhi cute wale.",
+                            "Coins kamao, rewards lo, par khud ko mat bhulo.\nYeh app aapki hai—premium toh bas ek label hai.",
+                            "Humein laga aap chhupe hue hain, par aap toh openly cute ho.\nPremium button dabaya toh kya milega? Bas ek aur smile.",
+                            "Yeh premium nahi hai, yeh toh rishta hai.\nAur rishton mein billing nahi hoti, bhai.",
+                            "Aap itne cute ho ki hum khud premium lag rahe hain.\nBaki sab free hai—aur hamesha rahega.",
+                            "Koi paywall nahi, koi hidden cost nahi.\nBas aap ho, hum hain, aur ek cute si app hai."
+                        )
+                        var newIdx: Int
+                        do { newIdx = shayariList.indices.random() } while (newIdx == lastPremiumIndex && shayariList.size > 1)
+                        lastPremiumIndex = newIdx
+                        activePremiumShayari = shayariList[newIdx]
+                        showPremiumShayari = true
                     },
                     modifier = Modifier.padding(horizontal = 12.dp),
                     badge = { Icon(Icons.Default.Favorite, "Premium", tint = BlushPink, modifier = Modifier.size(16.dp)) }
@@ -428,6 +452,45 @@ fun HomeScreen(
                 onClick = { onNavigateToChat() },
                 modifier = Modifier.align(Alignment.BottomEnd)
             )
+
+            AnimatedVisibility(
+                visible = showPremiumShayari,
+                enter = slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it / 2 }) + fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 80.dp, start = 24.dp, end = 24.dp)
+            ) {
+                GlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showPremiumShayari = false }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("✨", fontSize = 28.sp)
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = activePremiumShayari,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            "tap to dismiss",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }
