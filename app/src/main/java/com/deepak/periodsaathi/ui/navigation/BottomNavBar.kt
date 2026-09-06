@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -81,7 +84,8 @@ fun BottomNavBar(navController: NavHostController) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp),
+            .height(72.dp)
+            .navigationBarsPadding(),
         color = WarmCream.copy(alpha = 0.92f),
         tonalElevation = 4.dp
     ) {
@@ -142,13 +146,11 @@ fun BottomNavBar(navController: NavHostController) {
                                     .alpha(iconAlpha)
                             )
                         }
-                        if (isActive) {
-                            Text(
-                                text = tab.label,
-                                fontSize = 10.sp,
-                                color = BlushPink
-                            )
-                        }
+                        Text(
+                            text = tab.label,
+                            fontSize = 10.sp,
+                            color = if (isActive) BlushPink else Color(0xFF2D2D2D).copy(alpha = 0.5f)
+                        )
                     }
                 }
             }

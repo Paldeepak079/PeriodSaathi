@@ -45,9 +45,9 @@ class PaymentViewModel @Inject constructor(
     val activePurchases: StateFlow<Set<String>> = _activePurchases.asStateFlow()
 
     val products = listOf(
-        Product("premium_themes", "Premium Themes", "₹99", 9900, listOf("All themes", "Custom colors")),
-        Product("ad_free", "Ad-Free Forever", "₹149", 14900, listOf("No ads", "Priority support")),
-        Product("full_bundle", "Full Premium", "₹199", 19900, listOf("Everything", "Exclusive rewards"), true)
+        Product("premium_themes", "Premium Themes", "₹99", 9900, listOf("More ways to make it yours.")),
+        Product("ad_free", "Ad-Free Forever", "₹149", 14900, listOf("Because nobody needs ads during a bad day.")),
+        Product("full_bundle", "Full Premium", "₹199", 19900, listOf("Everything. Because apparently we chose chaos."), true)
     )
 
     init {

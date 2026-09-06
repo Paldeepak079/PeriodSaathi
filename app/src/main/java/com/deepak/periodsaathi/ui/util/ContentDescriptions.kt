@@ -34,7 +34,6 @@ object ContentDescriptions {
     const val HABIT_CHECKED = "Habit %s, completed"
     const val HABIT_UNCHECKED = "Habit %s, not yet completed"
 
-    const val BIOMETRIC_BUTTON = "Authenticate with fingerprint or face to unlock"
     const val PIN_DOT_FILLED = "PIN digit entered"
     const val PIN_DOT_EMPTY = "PIN digit empty"
     const val STEALTH_MODE_TOGGLE = "Stealth mode, disguises app icon and name"

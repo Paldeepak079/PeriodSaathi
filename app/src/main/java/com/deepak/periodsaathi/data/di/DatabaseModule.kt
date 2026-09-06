@@ -5,6 +5,7 @@ import com.deepak.periodsaathi.data.dao.AccessoryDao
 import com.deepak.periodsaathi.data.dao.ChallengeDao
 import com.deepak.periodsaathi.data.dao.CycleDao
 import com.deepak.periodsaathi.data.dao.ForumDao
+import com.deepak.periodsaathi.data.dao.FriendDao
 import com.deepak.periodsaathi.data.dao.HabitDao
 import com.deepak.periodsaathi.data.dao.JournalDao
 import com.deepak.periodsaathi.data.dao.PurchaseDao
@@ -41,6 +42,11 @@ object DatabaseModule {
     @Provides
     fun providePartnerDao(database: PartnerDatabase): PartnerDao {
         return database.partnerDao()
+    }
+
+    @Provides
+    fun provideFriendDao(database: PartnerDatabase): FriendDao {
+        return database.friendDao()
     }
 
     @Provides

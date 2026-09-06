@@ -48,7 +48,7 @@ class UserPreferences(private val context: Context) {
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[IS_LOGGED_IN] ?: false }
-    val userName: Flow<String> = context.dataStore.data.map { it[USER_NAME] ?: "Priya" }
+    val userName: Flow<String> = context.dataStore.data.map { it[USER_NAME] ?: "" }
 
     suspend fun setLoggedIn(name: String) {
         context.dataStore.edit { prefs ->

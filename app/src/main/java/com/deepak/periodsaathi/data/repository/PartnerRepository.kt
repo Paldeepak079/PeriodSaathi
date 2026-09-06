@@ -1,9 +1,12 @@
 package com.deepak.periodsaathi.data.repository
 
+import com.deepak.periodsaathi.data.dao.FriendDao
 import com.deepak.periodsaathi.data.dao.PartnerDao
+import com.deepak.periodsaathi.data.model.FriendEntity
 import com.deepak.periodsaathi.data.model.PartnerConnectionEntity
 import com.deepak.periodsaathi.data.model.QuizAnswerEntity
 import com.deepak.periodsaathi.domain.model.CyclePhase
+import com.deepak.periodsaathi.security.PartnerSyncManager
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -163,4 +166,8 @@ abstract class PartnerRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPartnerRepository(impl: PartnerRepositoryImpl): PartnerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFriendRepository(impl: FriendRepositoryImpl): FriendRepository
 }

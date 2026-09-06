@@ -1,7 +1,6 @@
 package com.deepak.periodsaathi
 
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.deepak.periodsaathi.ui.components.FloatingSaathiButton
 import com.deepak.periodsaathi.ui.navigation.BottomNavBar
 import com.deepak.periodsaathi.ui.navigation.Calendar
+import com.deepak.periodsaathi.ui.navigation.Chat
 import com.deepak.periodsaathi.ui.navigation.Community
 import com.deepak.periodsaathi.ui.navigation.Home
 import com.deepak.periodsaathi.ui.navigation.PeriodSaathiNavGraph
@@ -40,7 +41,6 @@ class MainActivity : ComponentActivity() {
         stripePaymentService.initialize(this)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         Sentry.captureMessage("Sentry integration test — PeriodSaathi v1.1.0")
         setContent {
@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
                 )
 
                 val showBottomNav = currentRoute?.destination?.route in mainScreenRoutes
+                val isOnChatScreen = currentRoute?.destination?.route == Chat::class.qualifiedName
 
                 Scaffold(
                     bottomBar = {
@@ -72,6 +73,12 @@ class MainActivity : ComponentActivity() {
                 ) { paddingValues ->
                     Box(modifier = Modifier.padding(paddingValues)) {
                         PeriodSaathiNavGraph(navController = navController)
+                    }
+
+                    if (!isOnChatScreen) {
+                        FloatingSaathiButton(
+                            onClick = { navController.navigate(Chat) }
+                        )
                     }
                 }
             }

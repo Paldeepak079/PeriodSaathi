@@ -31,20 +31,6 @@ class SettingsViewModel @Inject constructor(
     val isDarkMode: StateFlow<Boolean> = userPreferences.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    init {
-        viewModelScope.launch {
-            userPreferences.userName.collect { name ->
-                _userName.value = name.ifBlank { "Friend" }
-            }
-        }
-    }
-
-    fun toggleDarkMode() {
-        viewModelScope.launch {
-            userPreferences.setDarkMode(!isDarkMode.value)
-        }
-    }
-
     private val _userName = MutableStateFlow("Friend")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
@@ -56,9 +42,6 @@ class SettingsViewModel @Inject constructor(
 
     private val _stealthMode = MutableStateFlow(false)
     val stealthMode: StateFlow<Boolean> = _stealthMode.asStateFlow()
-
-    private val _biometricLock = MutableStateFlow(false)
-    val biometricLock: StateFlow<Boolean> = _biometricLock.asStateFlow()
 
     private val _soundEnabled = MutableStateFlow(true)
     val soundEnabled: StateFlow<Boolean> = _soundEnabled.asStateFlow()
@@ -73,7 +56,18 @@ class SettingsViewModel @Inject constructor(
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            userPreferences.userName.collect { name ->
+                _userName.value = name.ifBlank { "Friend" }
+            }
+        }
         loadSettings()
+    }
+
+    fun toggleDarkMode() {
+        viewModelScope.launch {
+            userPreferences.setDarkMode(!isDarkMode.value)
+        }
     }
 
     private fun loadSettings() {
@@ -105,7 +99,6 @@ class SettingsViewModel @Inject constructor(
                     averageCycleLength = _cycleLength.value,
                     averagePeriodLength = _periodLength.value,
                     stealthModeEnabled = _stealthMode.value,
-                    biometricLockEnabled = _biometricLock.value,
                     soundEnabled = _soundEnabled.value,
                     hapticEnabled = _hapticEnabled.value
                 ))
@@ -136,11 +129,6 @@ class SettingsViewModel @Inject constructor(
 
     fun toggleStealthMode() {
         _stealthMode.value = !_stealthMode.value
-        saveSettings()
-    }
-
-    fun toggleBiometricLock() {
-        _biometricLock.value = !_biometricLock.value
         saveSettings()
     }
 

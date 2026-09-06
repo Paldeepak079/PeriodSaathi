@@ -38,7 +38,6 @@ fun SettingsScreen(
     val cycleLength by viewModel.cycleLength.collectAsStateWithLifecycle()
     val periodLength by viewModel.periodLength.collectAsStateWithLifecycle()
     val stealthMode by viewModel.stealthMode.collectAsStateWithLifecycle()
-    val biometricLock by viewModel.biometricLock.collectAsStateWithLifecycle()
     val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
     val hapticEnabled by viewModel.hapticEnabled.collectAsStateWithLifecycle()
     val premiumTier by viewModel.premiumTier.collectAsStateWithLifecycle()
@@ -228,7 +227,6 @@ fun SettingsScreen(
         // Privacy
         SettingsSection("Privacy") {
             SettingsToggle(title = "Stealth Mode", subtitle = "Hide app from launcher", checked = stealthMode, onToggle = { viewModel.toggleStealthMode() })
-            SettingsToggle(title = "Biometric Lock", subtitle = "Require fingerprint/face", checked = biometricLock, onToggle = { viewModel.toggleBiometricLock() })
         }
 
         Spacer(modifier = Modifier.height(16.dp))

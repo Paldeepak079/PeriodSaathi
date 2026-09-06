@@ -40,7 +40,7 @@ class SplashViewModel @Inject constructor(
             }
             val destination = when {
                 settingsData == null -> "Onboarding"
-                settingsData.stealthModeEnabled || settingsData.biometricLockEnabled -> "LockScreen"
+                settingsData.stealthModeEnabled -> "LockScreen"
                 else -> "Home"
             }
             _splashState.value = SplashState.NavigateTo(destination)

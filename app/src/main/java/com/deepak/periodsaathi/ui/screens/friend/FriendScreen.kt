@@ -33,43 +33,37 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.deepak.periodsaathi.data.model.FriendEntity
 import com.deepak.periodsaathi.ui.components.GlassCard
 import com.deepak.periodsaathi.ui.components.HolographicCodeBox
 import com.deepak.periodsaathi.ui.theme.*
 
-data class SyncedFriend(
-    val id: String,
-    val name: String,
-    val phase: String,
-    val cycleDay: Int,
-    val totalDays: Int,
-    val status: String,
-    val emoji: String
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: FriendViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
 
-    val inviteCode = "SAATHI" // Stable shimmery code
+    val inviteCode by viewModel.inviteCode.collectAsStateWithLifecycle()
+    val friends by viewModel.friends.collectAsStateWithLifecycle()
+    val isLinking by viewModel.isLinking.collectAsStateWithLifecycle()
+    val linkError by viewModel.linkError.collectAsStateWithLifecycle()
 
     var friendCodeInput by remember { mutableStateOf(TextFieldValue("")) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var mockFriendsList by remember {
-        mutableStateOf(
-            listOf(
-                SyncedFriend("1", "Aanya", "Luteal Phase", 16, 28, "Synced", "🥑"),
-                SyncedFriend("2", "Priya", "Menstrual Phase", 2, 28, "Synced", "🌸"),
-                SyncedFriend("3", "Sarah", "Follicular Phase", 8, 30, "Synced", "⚡"),
-                SyncedFriend("4", "Riya", "PMS Phase", 26, 28, "Awaiting Sync", "🌙")
-            )
-        )
+    var friendNameInput by remember { mutableStateOf(TextFieldValue("")) }
+
+    LaunchedEffect(linkError) {
+        linkError?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
     }
 
     Box(
@@ -78,14 +72,13 @@ fun FriendScreen(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xFFFFF7F2), // Warm Cream
-                        Color(0xFFFFF0F5), // Lavender-blush
-                        Color(0xFFE8F5E9)  // Gentle Mint Green tone
+                        Color(0xFFFFF7F2),
+                        Color(0xFFFFF0F5),
+                        Color(0xFFE8F5E9)
                     )
                 )
             )
     ) {
-        // Shimmering branding blobs for depth
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -108,11 +101,10 @@ fun FriendScreen(
                 .fillMaxSize()
                 .systemBarsPadding()
         ) {
-            // ── Top App Bar ──────────────────────────────────────────────────
             TopAppBar(
                 title = {
                     Text(
-                        text = "Sync Friends 👭",
+                        text = "Sync Friends",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = Primary
@@ -135,7 +127,7 @@ fun FriendScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // ── Shimmery Holographic Invite Code Card ─────────────────────
+                // Invite Code Card
                 item {
                     GlassCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -163,57 +155,60 @@ fun FriendScreen(
                                 lineHeight = 16.sp
                             )
 
-                            // shimmery holographic code block
-                            HolographicCodeBox(
-                                code = inviteCode,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(130.dp)
-                                    .padding(vertical = 4.dp)
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Button(
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(inviteCode))
-                                        Toast.makeText(context, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Copy Code", fontWeight = FontWeight.Bold)
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                            type = "text/plain"
-                                            putExtra(
-                                                Intent.EXTRA_TEXT,
-                                                "Sync cycle phases with me on Period Saathi! 🌸 Use my invite code: $inviteCode"
-                                            )
-                                        }
-                                        context.startActivity(Intent.createChooser(shareIntent, "Share Code via"))
-                                    },
+                            if (inviteCode.isNotBlank()) {
+                                HolographicCodeBox(
+                                    code = inviteCode,
                                     modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(PrimaryContainer)
+                                        .fillMaxWidth()
+                                        .height(130.dp)
+                                        .padding(vertical = 4.dp)
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = "Share", tint = OnPrimaryContainer)
+                                    Button(
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            clipboard.setText(androidx.compose.ui.text.AnnotatedString(inviteCode))
+                                            Toast.makeText(context, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Copy Code", fontWeight = FontWeight.Bold)
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(
+                                                    Intent.EXTRA_TEXT,
+                                                    "Sync cycle phases with me on Period Saathi! Use my invite code: $inviteCode"
+                                                )
+                                            }
+                                            context.startActivity(Intent.createChooser(shareIntent, "Share Code via"))
+                                        },
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(PrimaryContainer)
+                                    ) {
+                                        Icon(Icons.Default.Share, contentDescription = "Share", tint = OnPrimaryContainer)
+                                    }
                                 }
+                            } else {
+                                CircularProgressIndicator(color = Primary, modifier = Modifier.size(24.dp))
                             }
                         }
                     }
                 }
 
-                // ── Add Friend By Code ─────────────────────────────────────────
+                // Add Friend By Code
                 item {
                     GlassCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -226,10 +221,29 @@ fun FriendScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Enter Friend's Code 🔗",
+                                text = "Enter Friend's Code",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Primary
+                            )
+
+                            TextField(
+                                value = friendNameInput,
+                                onValueChange = { friendNameInput = it },
+                                placeholder = { Text("Friend's name (optional)", fontSize = 12.sp) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.White.copy(0.4f))
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(10.dp)),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                singleLine = true
                             )
 
                             Row(
@@ -240,7 +254,7 @@ fun FriendScreen(
                                 TextField(
                                     value = friendCodeInput,
                                     onValueChange = { friendCodeInput = it },
-                                    placeholder = { Text("e.g. LUNA25", fontSize = 12.sp) },
+                                    placeholder = { Text("e.g. AB23CD", fontSize = 12.sp) },
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(50.dp)
@@ -260,39 +274,38 @@ fun FriendScreen(
                                     onClick = {
                                         if (friendCodeInput.text.isNotBlank()) {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            isSubmitting = true
-                                            Toast.makeText(context, "Linking Friend...", Toast.LENGTH_SHORT).show()
-                                            // Simulate successful link
-                                            mockFriendsList = mockFriendsList + SyncedFriend(
-                                                id = (mockFriendsList.size + 1).toString(),
-                                                name = friendCodeInput.text.trim().uppercase(),
-                                                phase = "Follicular Phase",
-                                                cycleDay = 5,
-                                                totalDays = 28,
-                                                status = "Synced",
-                                                emoji = "⚡"
+                                            viewModel.linkFriend(
+                                                code = friendCodeInput.text.trim(),
+                                                name = friendNameInput.text.trim()
                                             )
                                             friendCodeInput = TextFieldValue("")
-                                            isSubmitting = false
-                                            Toast.makeText(context, "Successfully Synced!", Toast.LENGTH_SHORT).show()
+                                            friendNameInput = TextFieldValue("")
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                                     shape = RoundedCornerShape(10.dp),
                                     modifier = Modifier.height(50.dp),
-                                    enabled = !isSubmitting && friendCodeInput.text.isNotBlank()
+                                    enabled = !isLinking && friendCodeInput.text.isNotBlank()
                                 ) {
-                                    Text("Link", fontWeight = FontWeight.Bold)
+                                    if (isLinking) {
+                                        CircularProgressIndicator(
+                                            color = Color.White,
+                                            modifier = Modifier.size(20.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Text("Link", fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // ── Synced Sisterhood List ──────────────────────────────────────
+                // Synced Friends List Header
                 item {
                     Text(
-                        text = "Your Synced Sisterhood 🌸",
+                        text = "Your Synced Friends",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Primary,
@@ -300,8 +313,46 @@ fun FriendScreen(
                     )
                 }
 
-                items(mockFriendsList) { friend ->
-                    FriendItemRow(friend = friend)
+                if (friends.isEmpty()) {
+                    item {
+                        GlassCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(18.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "\uD83D\uDC6D",
+                                    fontSize = 36.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "No friends synced yet",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = OnSurface
+                                )
+                                Text(
+                                    text = "Share your invite code or enter a friend's code to get started.",
+                                    fontSize = 12.sp,
+                                    color = OnSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(friends, key = { it.id }) { friend ->
+                        FriendItemRow(
+                            friend = friend,
+                            onRemove = { viewModel.removeFriend(friend.id) }
+                        )
+                    }
                 }
             }
         }
@@ -309,7 +360,12 @@ fun FriendScreen(
 }
 
 @Composable
-fun FriendItemRow(friend: SyncedFriend) {
+fun FriendItemRow(
+    friend: FriendEntity,
+    onRemove: () -> Unit
+) {
+    var showRemoveDialog by remember { mutableStateOf(false) }
+
     GlassCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp)
@@ -329,20 +385,25 @@ fun FriendItemRow(friend: SyncedFriend) {
                         .background(PrimaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(friend.emoji, fontSize = 22.sp)
+                    Text(
+                        text = friend.name.take(1).uppercase(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Primary
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column {
                     Text(
-                        text = friend.name,
+                        text = friend.name.ifBlank { "Friend" },
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = OnSurface
                     )
                     Text(
-                        text = friend.phase,
+                        text = friend.status,
                         fontSize = 11.sp,
                         color = OnSurfaceVariant
                     )
@@ -351,25 +412,40 @@ fun FriendItemRow(friend: SyncedFriend) {
 
             Column(horizontalAlignment = Alignment.End) {
                 Surface(
-                    color = if (friend.status == "Synced") Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
-                    shape = RoundedCornerShape(8.dp)
+                    color = if (friend.status == "SYNCED") Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.clickable { showRemoveDialog = true }
                 ) {
                     Text(
-                        text = friend.status,
+                        text = if (friend.status == "SYNCED") "Synced" else "Pending",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (friend.status == "Synced") Color(0xFF2E7D32) else Color(0xFFEF6C00),
+                        color = if (friend.status == "SYNCED") Color(0xFF2E7D32) else Color(0xFFEF6C00),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Day ${friend.cycleDay}/${friend.totalDays}",
-                    fontSize = 10.sp,
-                    color = OnSurfaceVariant.copy(0.7f),
-                    fontWeight = FontWeight.SemiBold
-                )
             }
         }
+    }
+
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Remove Friend") },
+            text = { Text("Remove ${friend.name.ifBlank { "this friend" }} from your synced list?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRemoveDialog = false
+                    onRemove()
+                }) {
+                    Text("Remove", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

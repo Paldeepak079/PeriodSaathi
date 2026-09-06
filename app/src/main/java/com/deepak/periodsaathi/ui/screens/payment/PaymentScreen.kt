@@ -23,11 +23,11 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -86,7 +86,6 @@ fun PaymentScreen(
             .fillMaxSize()
             .background(Background)
     ) {
-        // Aesthetic ambient pink/lavender background glow circles
         Box(
             modifier = Modifier
                 .size(300.dp)
@@ -110,100 +109,47 @@ fun PaymentScreen(
                 .statusBarsPadding()
                 .padding(16.dp)
         ) {
-            // Header Row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             ) {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back", tint = Primary)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = "Saathi Premium 🌸",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Primary
-                    )
-                    Text(
-                        text = "Unlock exclusive insight & styling limits",
-                        fontSize = 12.sp,
-                        color = OnSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "Saathi Premium \uD83C\uDF38",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Primary
+                )
             }
 
+            // Tagline
+            Text(
+                text = "Because your period already costs enough patience.",
+                fontSize = 14.sp,
+                color = OnSurfaceVariant,
+                modifier = Modifier.padding(start = 48.dp, bottom = 24.dp),
+                lineHeight = 20.sp
+            )
+
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                // Current Plan Glass Card
-                item {
-                    GlassCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .background(Brush.linearGradient(listOf(BlushPink.copy(0.15f), SoftLavender.copy(0.15f))))
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(PrimaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Rounded.Star, null, tint = Primary, modifier = Modifier.size(24.dp))
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                val isAnyPremium = activePurchases.isNotEmpty()
-                                Text(
-                                    text = if (isAnyPremium) "Premium Member 👑" else "Basic Account",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                    color = Primary
-                                )
-                                Text(
-                                    text = if (isAnyPremium) "Thank you for supporting Saathi!" else "Upgrade to experience infinite possibilities",
-                                    fontSize = 12.sp,
-                                    color = OnSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Title
-                item {
-                    Text(
-                        text = "Choose Your Upgrade",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OnSurface,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
-                    )
-                }
-
-                // Products list
                 items(viewModel.products) { product ->
                     val isOwned = product.id in activePurchases
-                    ProductCard(
+                    PremiumPlanCard(
                         product = product,
                         isOwned = isOwned,
                         onPurchase = {
                             selectedProductId = product.id
                             viewModel.initiateStripePurchase(product.id) { clientSecret, customerId, ephemeralKey ->
                                 if (clientSecret.startsWith("pi_mock_")) {
-                                    // Simulated Mock secure gateway for development/testing
                                     mockClientSecret = clientSecret
                                     showMockCardDialog = true
                                 } else {
-                                    // Production-grade live Stripe Payment Sheet
                                     paymentSheet?.presentWithPaymentIntent(clientSecret)
                                 }
                             }
@@ -213,11 +159,12 @@ fun PaymentScreen(
                 }
 
                 item {
+                    Spacer(modifier = Modifier.height(8.dp))
                     TextButton(
                         onClick = { viewModel.restorePurchases() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = "Already purchased? Restore Purchases", color = OnSurfaceVariant)
+                        Text(text = "Already purchased? Restore", color = OnSurfaceVariant, fontSize = 13.sp)
                     }
                 }
 
@@ -225,7 +172,7 @@ fun PaymentScreen(
             }
         }
 
-        // Custom Confetti Pop on Premium Success state
+        // Success overlay
         AnimatedVisibility(
             visible = paymentState is PaymentState.Success,
             enter = fadeIn(),
@@ -243,36 +190,36 @@ fun PaymentScreen(
                 )
 
                 GlassCard(
-                    modifier = Modifier.padding(32.dp).widthIn(max = 350.dp),
+                    modifier = Modifier.padding(32.dp).widthIn(max = 340.dp),
                     shape = RoundedCornerShape(28.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
+                                .size(64.dp)
                                 .clip(CircleShape)
                                 .background(Brush.linearGradient(listOf(BlushPink, SoftLavender))),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Rounded.Celebration, null, tint = Color.White, modifier = Modifier.size(36.dp))
+                            Icon(Icons.Rounded.Celebration, null, tint = Color.White, modifier = Modifier.size(32.dp))
                         }
 
                         Text(
-                            text = "Welcome to Premium! 🎉",
+                            text = "Welcome to Premium!",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Primary
                         )
 
                         Text(
-                            text = "You've successfully unlocked all elite features, custom theme limits, and deep AI insights. Welcome onboard!",
+                            text = "You're all set. Enjoy the good stuff.",
                             fontSize = 14.sp,
                             color = OnSurfaceVariant,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            textAlign = TextAlign.Center
                         )
 
                         Button(
@@ -281,14 +228,14 @@ fun PaymentScreen(
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Let's Explore!", fontWeight = FontWeight.SemiBold)
+                            Text("Let's Go", fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
         }
 
-        // Custom Error Message Modal
+        // Error modal
         AnimatedVisibility(
             visible = paymentState is PaymentState.Error,
             enter = scaleIn() + fadeIn(),
@@ -307,29 +254,15 @@ fun PaymentScreen(
                     Column(
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            Icons.Rounded.ErrorOutline,
-                            null,
-                            tint = Color.Red,
-                            modifier = Modifier.size(48.dp)
-                        )
-
+                        Icon(Icons.Rounded.ErrorOutline, null, tint = Color.Red, modifier = Modifier.size(40.dp))
+                        Text("Payment Failed", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = OnSurface)
                         Text(
-                            text = "Payment Failed",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = OnSurface
-                        )
-
-                        val errorMsg = (paymentState as? PaymentState.Error)?.message ?: "Unknown Error"
-                        Text(
-                            text = errorMsg,
-                            fontSize = 14.sp,
+                            text = (paymentState as? PaymentState.Error)?.message ?: "Something went wrong.",
+                            fontSize = 13.sp,
                             color = OnSurfaceVariant
                         )
-
                         Button(
                             onClick = { viewModel.resetState() },
                             colors = ButtonDefaults.buttonColors(containerColor = Primary),
@@ -343,7 +276,7 @@ fun PaymentScreen(
             }
         }
 
-        // Premium Mock Credit Card Inputs Dialog for instant development sandbox testing
+        // Mock card dialog
         if (showMockCardDialog) {
             Box(
                 modifier = Modifier
@@ -365,93 +298,18 @@ fun PaymentScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                "Secure Stripe Sandbox",
-                                fontWeight = FontWeight.Bold,
-                                color = Primary,
-                                fontSize = 16.sp
-                            )
+                            Text("Test Payment", fontWeight = FontWeight.Bold, color = Primary, fontSize = 16.sp)
                             IconButton(onClick = { showMockCardDialog = false }) {
                                 Icon(Icons.Rounded.Close, null, tint = OnSurfaceVariant)
                             }
                         }
-
-                        // Premium Glass Credit Card Graphic
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(
-                                            BlushPink.copy(0.7f),
-                                            SoftLavender.copy(0.7f)
-                                        )
-                                    )
-                                )
-                                .border(1.dp, Color.White.copy(0.3f), RoundedCornerShape(16.dp))
-                                .padding(20.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(Icons.Rounded.CreditCard, null, tint = Color.White, modifier = Modifier.size(32.dp))
-                                    Text(
-                                        "STRIPE TEST",
-                                        color = Color.White.copy(0.8f),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Text(
-                                    text = if (cardNumber.isBlank()) "•••• •••• •••• ••••" else cardNumber,
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Column {
-                                        Text("CARD HOLDER", fontSize = 8.sp, color = Color.White.copy(0.6f))
-                                        Text("TEST CARD", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
-                                    }
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        Text("EXPIRES", fontSize = 8.sp, color = Color.White.copy(0.6f))
-                                        Text(
-                                            text = if (expiryDate.isBlank()) "--/--" else expiryDate,
-                                            fontSize = 12.sp,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        Text(
-                            text = "Use mock test card number 4242 4242 4242 4242 to authorize a successful test purchase.",
-                            fontSize = 11.sp,
-                            color = OnSurfaceVariant
-                        )
 
                         OutlinedTextField(
                             value = cardNumber,
@@ -480,7 +338,7 @@ fun PaymentScreen(
                                 value = cvvCode,
                                 onValueChange = { if (it.length <= 3) cvvCode = it },
                                 label = { Text("CVC") },
-                                placeholder = { Text("•••") },
+                                placeholder = { Text("123") },
                                 modifier = Modifier.weight(1f),
                                 visualTransformation = PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -492,7 +350,7 @@ fun PaymentScreen(
                             onClick = {
                                 isPaying = true
                                 coroutineScope.launch {
-                                    delay(2000) // Beautiful processing latency simulation
+                                    delay(2000)
                                     isPaying = false
                                     showMockCardDialog = false
                                     val prodId = selectedProductId ?: return@launch
@@ -507,7 +365,7 @@ fun PaymentScreen(
                             if (isPaying) {
                                 CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                             } else {
-                                Text("Pay Securely with Stripe", fontWeight = FontWeight.SemiBold)
+                                Text("Pay Now", fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -518,7 +376,7 @@ fun PaymentScreen(
 }
 
 @Composable
-private fun ProductCard(
+private fun PremiumPlanCard(
     product: Product,
     isOwned: Boolean,
     onPurchase: () -> Unit,
@@ -537,18 +395,8 @@ private fun ProductCard(
             modifier = Modifier
                 .background(
                     if (product.isBestValue) {
-                        Brush.linearGradient(
-                            listOf(
-                                BlushPink.copy(0.12f),
-                                SoftLavender.copy(0.12f)
-                            )
-                        )
-                    } else Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(0.1f),
-                            Color.White.copy(0.1f)
-                        )
-                    )
+                        Brush.linearGradient(listOf(BlushPink.copy(0.12f), SoftLavender.copy(0.12f)))
+                    } else Brush.linearGradient(listOf(Color.White.copy(0.1f), Color.White.copy(0.1f)))
                 )
                 .padding(20.dp)
         ) {
@@ -557,46 +405,22 @@ private fun ProductCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(text = product.name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Primary)
-                    if (product.isBestValue) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = product.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Primary)
+                    if (product.features.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Surface(
-                            color = WarmGold,
-                            shape = RoundedCornerShape(6.dp)
-                        ) {
-                            Text(
-                                text = "Best Value",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
-                        }
+                        Text(
+                            text = product.features.first(),
+                            fontSize = 13.sp,
+                            color = OnSurfaceVariant,
+                            lineHeight = 18.sp
+                        )
                     }
                 }
-                Text(text = product.price, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Primary)
+                Text(text = product.price, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Primary)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            product.features.forEach { feature ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Icon(
-                        Icons.Rounded.CheckCircle,
-                        null,
-                        tint = Primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = feature, color = OnSurfaceVariant, fontSize = 14.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = onPurchase,
@@ -612,7 +436,7 @@ private fun ProductCard(
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
                     Text(
-                        text = if (isOwned) "Activated ✓" else "Buy Now",
+                        text = if (isOwned) "Activated \u2713" else "Buy Now",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )

@@ -4,21 +4,25 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.deepak.periodsaathi.data.dao.FriendDao
 import com.deepak.periodsaathi.data.dao.PartnerDao
+import com.deepak.periodsaathi.data.model.FriendEntity
 import com.deepak.periodsaathi.data.model.PartnerConnectionEntity
 import com.deepak.periodsaathi.data.model.QuizAnswerEntity
 
 @Database(
     entities = [
         PartnerConnectionEntity::class,
-        QuizAnswerEntity::class
+        QuizAnswerEntity::class,
+        FriendEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class PartnerDatabase : RoomDatabase() {
 
     abstract fun partnerDao(): PartnerDao
+    abstract fun friendDao(): FriendDao
 
     companion object {
         @Volatile
@@ -31,7 +35,8 @@ abstract class PartnerDatabase : RoomDatabase() {
                     PartnerDatabase::class.java,
                     "partner_saathi_db"
                 )
-                    .fallbackToDestructiveMigration(false)
+                    .fallbackToDestructiveMigrationOnDowngrade(false)
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }
             }

@@ -70,7 +70,7 @@ class PartnerViewModel @Inject constructor(
         .combine(joinState) { dbConnection, joinState ->
             if (dbConnection == null) {
                 if (joinState is JoinUIState.Success) {
-                    ConnectionUIState.Connected("Priya", false)
+                    ConnectionUIState.Connected("", false)
                 } else {
                     ConnectionUIState.Idle
                 }

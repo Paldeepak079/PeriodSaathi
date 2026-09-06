@@ -47,7 +47,7 @@ fun PartnerSettingsScreen(
 
     val partnerName = when (val state = connectionState) {
         is ConnectionUIState.Connected -> state.partnerName
-        else -> "Deepak"
+        else -> ""
     }
 
     val isPrimary = when (val state = connectionState) {
@@ -304,9 +304,9 @@ fun PartnerSettingsScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = if (isPrimary) {
-                                "This will instantly revoke Arya's access to your cycle insights. They will be logged out of this view."
+                                "This will instantly revoke your partner's access to your cycle insights. They will be logged out of this view."
                             } else {
-                                "This will disconnect you from Priya's cycle predictions and clear all quiz answers."
+                                "This will disconnect you from your partner's cycle predictions and clear all quiz answers."
                             },
                             fontSize = 14.sp,
                             color = OnSurface,
