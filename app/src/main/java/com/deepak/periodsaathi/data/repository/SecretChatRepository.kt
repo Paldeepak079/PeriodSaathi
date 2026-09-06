@@ -1,9 +1,14 @@
 package com.deepak.periodsaathi.data.repository
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import com.deepak.periodsaathi.data.dao.ForumDao
 import com.deepak.periodsaathi.data.model.ForumComment
 import com.deepak.periodsaathi.data.model.ForumPost
+import com.deepak.periodsaathi.data.remote.PocketBaseService
 import com.deepak.periodsaathi.data.sync.DeviceIdentityManager
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -21,6 +26,8 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.contentOrNull
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,7 +35,9 @@ import javax.inject.Singleton
 class SecretChatRepository @Inject constructor(
     private val forumDao: ForumDao,
     private val supabase: SupabaseClient,
-    private val deviceIdentity: DeviceIdentityManager
+    private val deviceIdentity: DeviceIdentityManager,
+    private val pocketBaseService: PocketBaseService,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -37,6 +46,42 @@ class SecretChatRepository @Inject constructor(
 
     fun getAllPosts(): Flow<List<ForumPost>> = forumDao.getAllPosts()
     fun getCommentsForPost(postId: String) = forumDao.getCommentsForPost(postId)
+
+    suspend fun uploadImage(uriString: String): String {
+        val pbUrl = pocketBaseService.uploadImage(uriString)
+        if (pbUrl != null) return pbUrl
+
+        return try {
+            val uri = Uri.parse(uriString)
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return uriString
+            val original = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+
+            val maxSize = 800
+            val scale = minOf(maxSize.toFloat() / original.width, maxSize.toFloat() / original.height, 1f)
+            val resized = if (scale < 1f) {
+                Bitmap.createScaledBitmap(
+                    original,
+                    (original.width * scale).toInt(),
+                    (original.height * scale).toInt(),
+                    true
+                )
+            } else original
+
+            val dir = File(context.filesDir, "forum_images")
+            dir.mkdirs()
+            val fileName = "post_${UUID.randomUUID()}.jpg"
+            val file = File(dir, fileName)
+            file.outputStream().use { out ->
+                resized.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            }
+
+            Uri.fromFile(file).toString()
+        } catch (e: Exception) {
+            Log.e("SecretChatRepo", "Image save failed", e)
+            uriString
+        }
+    }
 
     suspend fun insertPost(post: ForumPost) {
         forumDao.insertPost(post)

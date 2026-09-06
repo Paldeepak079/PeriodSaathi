@@ -94,11 +94,17 @@ class SecretChatsViewModel @Inject constructor(
         _uiState.value = s.copy(isPosting = true)
         viewModelScope.launch {
             try {
+                val imageUrl = if (s.draftImageUrl != null && s.draftImageUrl.startsWith("content://")) {
+                    repository.uploadImage(s.draftImageUrl)
+                } else {
+                    s.draftImageUrl
+                }
+
                 val post = ForumPost(
                     anonymousAlias = myAlias,
                     title = s.draftTitle.trim(),
                     content = s.draftContent.trim(),
-                    imageUrl = s.draftImageUrl,
+                    imageUrl = imageUrl,
                     category = s.selectedCategory.takeIf { it != "all" } ?: "general"
                 )
                 repository.insertPost(post)

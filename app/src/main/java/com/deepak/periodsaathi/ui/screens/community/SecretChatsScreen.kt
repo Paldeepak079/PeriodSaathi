@@ -1,5 +1,6 @@
 package com.deepak.periodsaathi.ui.screens.community
 
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.provider.MediaStore
@@ -45,6 +46,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.deepak.periodsaathi.data.model.ForumComment
 import com.deepak.periodsaathi.data.model.ForumPost
 import com.deepak.periodsaathi.ui.components.GlassCard
@@ -583,30 +585,46 @@ private fun ComposePostDialog(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Uri Image Composable
+//  Image Composable — handles content://, file://, and HTTP URLs
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun UriImage(uriString: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val bitmap = remember(uriString) {
-        try {
-            val uri = android.net.Uri.parse(uriString)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(context.contentResolver, uri)
-                ImageDecoder.decodeBitmap(source)
-            } else {
-                @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-            }
-        } catch (_: Exception) { null }
-    }
-    if (bitmap != null) {
-        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Image",
-            modifier = modifier, contentScale = ContentScale.Crop)
+    if (uriString.startsWith("http://") || uriString.startsWith("https://")) {
+        // Network image — use Coil's AsyncImage
+        AsyncImage(
+            model = uriString,
+            contentDescription = "Image",
+            modifier = modifier,
+            contentScale = ContentScale.Crop,
+            error = painterResource(id = android.R.drawable.ic_menu_gallery)
+        )
     } else {
-        Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) { Icon(Icons.Rounded.BrokenImage, "Failed to load", tint = OnSurfaceVariant) }
+        // Local URI (content:// or file://)
+        val context = LocalContext.current
+        val bitmap = remember(uriString) {
+            try {
+                val uri = android.net.Uri.parse(uriString)
+                if (uri.scheme == "file") {
+                    // File URI — decode directly from path
+                    val path = uri.path ?: return@remember null
+                    BitmapFactory.decodeFile(path)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+            } catch (_: Exception) { null }
+        }
+        if (bitmap != null) {
+            Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Image",
+                modifier = modifier, contentScale = ContentScale.Crop)
+        } else {
+            Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) { Icon(Icons.Rounded.BrokenImage, "Failed to load", tint = OnSurfaceVariant) }
+        }
     }
 }
 

@@ -72,10 +72,24 @@ class ChatViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val name = userPreferences.userName.first().ifBlank { "there" }
-            val cycleDay = try { geminiService.buildChatContext().currentCycleDay } catch (_: Exception) { 0 }
-            val phase = try { geminiService.buildChatContext().currentPhase } catch (_: Exception) { "" }
+            val lastPeriodStr = userPreferences.lastPeriodStart.first()
+            val cycleLength = userPreferences.cycleLength.first()
 
-            val greeting = if (cycleDay > 0 && phase.isNotBlank()) {
+            val lastPeriodDate = runCatching { java.time.LocalDate.parse(lastPeriodStr) }.getOrNull()
+            val cycleDay = lastPeriodDate?.let {
+                java.time.temporal.ChronoUnit.DAYS.between(it, java.time.LocalDate.now()).toInt() + 1
+            }
+            val phase = if (cycleDay != null) {
+                when {
+                    cycleDay <= userPreferences.periodLength.first() -> "Menstrual"
+                    cycleDay <= (cycleLength / 2) - 2 -> "Follicular"
+                    cycleDay <= (cycleLength / 2) + 1 -> "Ovulatory"
+                    cycleDay > cycleLength - 5 -> "PMS"
+                    else -> "Luteal"
+                }
+            } else ""
+
+            val greeting = if (cycleDay != null && phase.isNotBlank()) {
                 "Hey $name! \uD83C\uDF38 You're on day $cycleDay of your cycle ($phase phase). I'm Saathi — ask me anything about your cycle, symptoms, or wellness!"
             } else {
                 "Hey $name! \uD83C\uDF38 I'm Saathi, your personal cycle wellness guide. Ask me about cramps, mood, cycle timing, diet, or any period-related question!"

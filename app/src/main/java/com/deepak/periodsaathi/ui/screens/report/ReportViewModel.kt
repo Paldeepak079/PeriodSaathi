@@ -710,32 +710,38 @@ class ReportViewModel @Inject constructor(
             val page = docEvent.page
             val pdfDoc = docEvent.document
             val pageNumber = pdfDoc.getPageNumber(page)
+            val pageSize = page.pageSize
 
             val canvas = PdfCanvas(page.newContentStreamBefore(), page.resources, pdfDoc)
-            val pageSize = page.pageSize
-            val centerX = pageSize.width / 2f
-            val centerY = pageSize.height / 2f
 
+            // Full-page cream background
             canvas.saveState()
-            canvas.setFillColor(DeviceRgb(0xFF, 0xB6, 0xC1))
-            canvas.circle(centerX.toDouble(), centerY.toDouble(), 120.0)
+            canvas.setFillColor(WarmCream)
+            canvas.rectangle(0.0, 0.0, pageSize.width.toDouble(), pageSize.height.toDouble())
             canvas.fill()
             canvas.restoreState()
 
+            // Subtle rotated watermark text
             canvas.saveState()
             canvas.beginText()
-            canvas.setFontAndSize(PdfFontFactory.createFont(), 60f)
-            canvas.setColor(DeviceRgb(0xFF, 0xB6, 0xC1), true)
-            canvas.setTextMatrix(centerX - 20f, centerY - 20f)
-            canvas.showText("PS")
+            canvas.setFontAndSize(PdfFontFactory.createFont(), 44f)
+            canvas.setColor(SoftRose, true)
+            val cx = pageSize.width / 2f
+            val cy = pageSize.height / 2f
+            val angle = -30.0 * Math.PI / 180.0
+            val cos = Math.cos(angle).toFloat()
+            val sin = Math.sin(angle).toFloat()
+            canvas.setTextMatrix(cos, sin, -sin, cos, cx - 120f, cy)
+            canvas.showText("Period Saathi")
             canvas.endText()
             canvas.restoreState()
 
+            // Page number at bottom center
             canvas.saveState()
             canvas.beginText()
             canvas.setFontAndSize(PdfFontFactory.createFont(), 8f)
             canvas.setColor(SubText, true)
-            canvas.setTextMatrix(pageSize.width / 2f - 10f, 25f)
+            canvas.setTextMatrix(pageSize.width / 2f - 5f, 25f)
             canvas.showText("$pageNumber")
             canvas.endText()
             canvas.restoreState()
