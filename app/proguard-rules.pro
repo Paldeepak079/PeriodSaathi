@@ -220,7 +220,7 @@
 
 # --- Sentry ---
 -keep class io.sentry.** { *; }
--keepclassmembers io.sentry.** { *; }
+-keepclassmembers class io.sentry.** { *; }
 -dontwarn io.sentry.**
 -keepattributes LineNumberTable,SourceFile
 -keepnames class io.sentry.** { *; }

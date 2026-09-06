@@ -32,8 +32,8 @@ android {
         applicationId = "com.deepak.periodsaathi"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.1.0"
+        versionCode = 6
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
