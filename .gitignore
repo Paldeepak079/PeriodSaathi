@@ -28,4 +28,5 @@ local.properties
 google-services.json
 .env
 sentry.properties
+build_log*.txt
 
