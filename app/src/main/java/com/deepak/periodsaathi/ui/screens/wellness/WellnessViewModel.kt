@@ -1,10 +1,6 @@
 package com.deepak.periodsaathi.ui.screens.wellness
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.pdf.PdfDocument
-import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -26,8 +22,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
@@ -56,6 +50,8 @@ data class DailyQuests(
     val trackMood: Boolean = false
 )
 
+data class MoodHistoryEntry(val date: Long, val mood: String, val moodScore: Int)
+
 data class WellnessState(
     val dailyScore: Int = 0,
     val totalCoins: Int = 0,
@@ -68,6 +64,9 @@ data class WellnessState(
     val exerciseMinutes: Int = 0,
     val mood: String = "",
     val customMeals: List<String> = emptyList(),
+    
+    // Mood trend history
+    val moodHistory: List<MoodHistoryEntry> = emptyList(),
     
     // Selection for Personalization
     val painType: String = "None",
@@ -123,6 +122,7 @@ class WellnessViewModel @Inject constructor(
     init {
         loadDataFromRaw()
         observeData()
+        loadMoodHistory()
         seedSolutions()
         observeSolutions()
         checkWaterReminderStatus()
@@ -207,6 +207,32 @@ class WellnessViewModel @Inject constructor(
                 }
                 updatePersonalizedEngine()
                 calculateWellnessScore()
+            }
+        }
+    }
+
+    private fun loadMoodHistory() {
+        viewModelScope.launch {
+            val sevenDaysAgo = LocalDate.now().minusDays(14)
+                .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            wellnessDao.getLogsSince(sevenDaysAgo).collect { logs ->
+                val moodEntries = logs
+                    .filter { it.mood.isNotEmpty() }
+                    .map { log ->
+                        val moodScore = when (log.mood.lowercase()) {
+                            "sad" -> 1
+                            "anxious" -> 2
+                            "irritated" -> 3
+                            "emotional" -> 4
+                            "calm" -> 5
+                            "happy" -> 6
+                            "energetic" -> 7
+                            else -> 0
+                        }
+                        MoodHistoryEntry(date = log.date, mood = log.mood, moodScore = moodScore)
+                    }
+                    .sortedBy { it.date }
+                _state.update { it.copy(moodHistory = moodEntries) }
             }
         }
     }
@@ -530,78 +556,5 @@ class WellnessViewModel @Inject constructor(
 
     private fun getTodayEpoch(): Long {
         return LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    }
-
-    // PDF data export (last 3 months)
-    fun exportReportToPDF() {
-        viewModelScope.launch {
-            try {
-                val threeMonthsAgo = LocalDate.now().minusMonths(3).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                wellnessDao.getLogsSince(threeMonthsAgo).first().let { logs ->
-                    val document = PdfDocument()
-                    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 standard size
-                    val page = document.startPage(pageInfo)
-                    
-                    val canvas: Canvas = page.canvas
-                    val paint = Paint()
-                    
-                    paint.textSize = 24f
-                    paint.isFakeBoldText = true
-                    canvas.drawText("PeriodSaathi - Wellness Health Report", 40f, 60f, paint)
-                    
-                    paint.textSize = 12f
-                    paint.isFakeBoldText = false
-                    canvas.drawText("Generated on: ${LocalDate.now()}", 40f, 85f, paint)
-                    canvas.drawText("Period Saathi Emotional Healing & Recovery Ledger", 40f, 105f, paint)
-                    
-                    var y = 150f
-                    paint.isFakeBoldText = true
-                    canvas.drawText("Date", 45f, y, paint)
-                    canvas.drawText("Score", 150f, y, paint)
-                    canvas.drawText("Water (Gl)", 220f, y, paint)
-                    canvas.drawText("Sleep (Hr)", 310f, y, paint)
-                    canvas.drawText("Mood", 400f, y, paint)
-                    canvas.drawText("Pain Lvl", 480f, y, paint)
-                    
-                    canvas.drawLine(40f, y + 10f, 550f, y + 10f, paint)
-                    y += 30f
-                    paint.isFakeBoldText = false
-                    
-                    logs.take(20).forEach { log ->
-                        val dateStr = InstantToLocalDate(log.date).toString()
-                        canvas.drawText(dateStr, 45f, y, paint)
-                        
-                        // Recalculate score for historical log
-                        val score = ((log.waterIntake.coerceAtMost(8) / 8f) * 15 +
-                                     (if (log.exerciseMinutes >= 20) 20 else 0) +
-                                     (if (log.sleepHours in 7f..9f) 10 else 0) +
-                                     (if (log.mood.isNotEmpty()) 10 else 0)).toInt()
-
-                        canvas.drawText("$score%", 150f, y, paint)
-                        canvas.drawText("${log.waterIntake} glasses", 220f, y, paint)
-                        canvas.drawText("${log.sleepHours} hrs", 310f, y, paint)
-                        canvas.drawText(log.mood.ifEmpty { "Not logged" }, 400f, y, paint)
-                        canvas.drawText(log.painLevel.ifEmpty { "None" }, 480f, y, paint)
-                        y += 24f
-                    }
-                    
-                    document.finishPage(page)
-                    
-                    val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val file = File(path, "PeriodSaathi_Wellness_Report.pdf")
-                    document.writeTo(FileOutputStream(file))
-                    document.close()
-                    
-                    Toast.makeText(context, "Report exported to Downloads folder! 📝", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed PDF Report creation", e)
-                Toast.makeText(context, "Failed exporting PDF report", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun InstantToLocalDate(epoch: Long): LocalDate {
-        return java.time.Instant.ofEpochMilli(epoch).atZone(ZoneId.systemDefault()).toLocalDate()
     }
 }

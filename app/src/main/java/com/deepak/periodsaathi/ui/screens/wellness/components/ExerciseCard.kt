@@ -42,7 +42,7 @@ fun ExerciseCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Recommended Yoga 🧘",
+                    text = if (exercise.name.lowercase().contains("yoga")) "Yoga Session" else "Exercise Session",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Mint

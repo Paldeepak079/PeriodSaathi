@@ -423,6 +423,11 @@ fun HomeScreen(
                     onDismiss = { showPhaseCoachSheet = false }
                 )
             }
+
+            FloatingSaathiButton(
+                onClick = { onNavigateToChat() },
+                modifier = Modifier.align(Alignment.BottomEnd)
+            )
         }
     }
 }

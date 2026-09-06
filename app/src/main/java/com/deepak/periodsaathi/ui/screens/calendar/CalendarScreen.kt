@@ -229,53 +229,37 @@ fun CalendarScreen(
             }
         }
 
-        Column(
+        FloatingActionButton(
+            onClick = { viewModel.showLogSheet() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(24.dp)
+                .size(64.dp),
+            containerColor = Color.Transparent,
+            contentColor = Color.White,
+            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp),
+            shape = CircleShape
         ) {
-            FloatingActionButton(
-                onClick = { viewModel.togglePredictorSheet() },
-                modifier = Modifier.size(48.dp),
-                containerColor = Color.White.copy(alpha = 0.9f),
-                contentColor = Primary,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-                shape = CircleShape
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(listOf(PrimaryFixed, PrimaryFixedDim)),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Text("🔮", fontSize = 18.sp)
-            }
-
-            FloatingActionButton(
-                onClick = { viewModel.showLogSheet() },
-                modifier = Modifier.size(64.dp),
-                containerColor = Color.Transparent,
-                contentColor = Color.White,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp),
-                shape = CircleShape
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(listOf(PrimaryFixed, PrimaryFixedDim)),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "Add Log",
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            "Log",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Log",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        "Log",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -627,11 +611,11 @@ private fun CycleHealthCard(nextPeriodDate: String, fertileIn: String) {
                             color = Tertiary
                         )
                     }
-                    }
                 }
             }
         }
     }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

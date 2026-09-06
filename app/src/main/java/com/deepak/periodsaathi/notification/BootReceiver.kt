@@ -41,7 +41,7 @@ class BootReceiver : BroadcastReceiver() {
 
     private fun scheduleWorkers(context: Context) {
         SyncWorker.schedule(context)
-        WidgetRefreshWorker.schedule(context)
+        WidgetRefreshWorker.schedulePeriodic(context)
     }
 }
 

@@ -1,6 +1,7 @@
 package com.deepak.periodsaathi.worker
 
 import android.content.Context
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -10,67 +11,53 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.deepak.periodsaathi.data.repository.CycleRepository
+import com.deepak.periodsaathi.widget.CycleDayWidget
+import com.deepak.periodsaathi.widget.PeriodCountdownWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.first
-import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
 class WidgetRefreshWorker @AssistedInject constructor(
     @Assisted private val context: Context,
-    @Assisted params: WorkerParameters,
-    private val cycleRepository: CycleRepository
+    @Assisted params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         return try {
-            val today = LocalDate.now()
-            val settings = cycleRepository.getSettings().first()
-            val cycleDay = cycleRepository.getCurrentCycleDay().first()
-            val phase = cycleRepository.getCurrentPhase().first()
-
-            val entries = cycleRepository.getMonthEntries(today.year, today.monthValue).first()
-            val todayEntry = entries.find { entry ->
-                val entryDate = java.time.Instant.ofEpochMilli(entry.date)
-                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
-                entryDate == today
+            val glanceManager = GlanceAppWidgetManager(context)
+            val cycleWidgetIds = glanceManager.getGlanceIds(CycleDayWidget::class.java)
+            cycleWidgetIds.forEach { id ->
+                CycleDayWidget().update(context, id)
             }
-            val waterGlasses = todayEntry?.waterGlasses ?: 0
-
-            val widgetState = CycleWidgetState(
-                cycleDay = cycleDay,
-                phaseName = phase.displayName,
-                phaseEmoji = phase.emoji,
-                waterCount = waterGlasses,
-                totalWater = 8
-            )
-
+            val countdownWidgetIds = glanceManager.getGlanceIds(PeriodCountdownWidget::class.java)
+            countdownWidgetIds.forEach { id ->
+                PeriodCountdownWidget().update(context, id)
+            }
             Result.success()
         } catch (e: Exception) {
-            Result.failure()
+            Result.retry()
         }
     }
 
     companion object {
-        private const val WORK_NAME = "widget_refresh"
+        private const val WORK_NAME_PERIODIC = "widget_refresh_periodic"
         private const val WORK_NAME_ONE_TIME = "widget_refresh_one_time"
 
-        fun schedule(context: Context) {
+        fun schedulePeriodic(context: Context) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
                 .build()
 
             val work = PeriodicWorkRequestBuilder<WidgetRefreshWorker>(
-                4, TimeUnit.HOURS
+                30, TimeUnit.MINUTES
             )
                 .setConstraints(constraints)
-                .addTag(WORK_NAME)
+                .addTag(WORK_NAME_PERIODIC)
                 .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK_NAME,
+                WORK_NAME_PERIODIC,
                 ExistingPeriodicWorkPolicy.KEEP,
                 work
             )
@@ -83,13 +70,9 @@ class WidgetRefreshWorker @AssistedInject constructor(
 
             WorkManager.getInstance(context).enqueue(work)
         }
+
+        fun refreshAllWidgets(context: Context) {
+            scheduleOneTime(context)
+        }
     }
 }
-
-data class CycleWidgetState(
-    val cycleDay: Int,
-    val phaseName: String,
-    val phaseEmoji: String,
-    val waterCount: Int,
-    val totalWater: Int
-)

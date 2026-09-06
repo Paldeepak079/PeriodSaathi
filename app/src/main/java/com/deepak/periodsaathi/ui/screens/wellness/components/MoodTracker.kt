@@ -21,8 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.deepak.periodsaathi.ui.components.GlassCard
+import com.deepak.periodsaathi.ui.screens.wellness.MoodHistoryEntry
 import com.deepak.periodsaathi.ui.theme.Lavender
 import com.deepak.periodsaathi.ui.theme.OnSurface
+import com.deepak.periodsaathi.ui.theme.OnSurfaceVariant
 import com.deepak.periodsaathi.ui.theme.Primary
 
 data class MoodItem(val name: String, val emoji: String)
@@ -30,16 +32,17 @@ data class MoodItem(val name: String, val emoji: String)
 @Composable
 fun MoodTracker(
     currentMood: String,
+    moodHistory: List<MoodHistoryEntry>,
     onMoodSelect: (String) -> Unit
 ) {
     val moods = listOf(
-        MoodItem("Sad", "😢"),
-        MoodItem("Anxious", "😰"),
-        MoodItem("Irritated", "😠"),
-        MoodItem("Emotional", "🥺"),
-        MoodItem("Calm", "🧘"),
-        MoodItem("Happy", "😊"),
-        MoodItem("Energetic", "⚡")
+        MoodItem("Sad", "\uD83D\uDE22"),
+        MoodItem("Anxious", "\uD83D\uDE30"),
+        MoodItem("Irritated", "\uD83D\uDE20"),
+        MoodItem("Emotional", "\uD83D\uDE2A"),
+        MoodItem("Calm", "\uD83E\uDDD8"),
+        MoodItem("Happy", "\uD83D\uDE0A"),
+        MoodItem("Energetic", "\u26A1")
     )
 
     GlassCard(
@@ -54,7 +57,7 @@ fun MoodTracker(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("🧠", fontSize = 24.sp)
+                Text("\uD83E\uDDE0", fontSize = 24.sp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     "Cycle Sync Mood Log",
@@ -67,7 +70,7 @@ fun MoodTracker(
             Text(
                 text = "Observe emotional cycles. Fluctuations are natural biological shifts.",
                 fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = OnSurfaceVariant,
                 lineHeight = 14.sp
             )
 
@@ -113,7 +116,7 @@ fun MoodTracker(
 
             HorizontalDivider()
 
-            // Dynamic Canvas line trend chart showing fluctuations
+            // Emotional Vitality Trend — real data
             Text(
                 text = "Emotional Vitality Trend:",
                 fontWeight = FontWeight.Bold,
@@ -121,54 +124,100 @@ fun MoodTracker(
                 color = OnSurface
             )
 
-            androidx.compose.foundation.Canvas(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .background(Color.White.copy(0.3f), RoundedCornerShape(12.dp))
-            ) {
-                val width = size.width
-                val height = size.height
-
-                // Mock 5 trend points representing recent daily fluctuations
-                val points = listOf(
-                    Offset(width * 0.1f, height * 0.7f),
-                    Offset(width * 0.3f, height * 0.8f),
-                    Offset(width * 0.5f, height * 0.3f),
-                    Offset(width * 0.7f, height * 0.4f),
-                    Offset(width * 0.9f, height * 0.2f)
+            if (moodHistory.size < 2) {
+                // Empty state
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .background(Color.White.copy(0.3f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("\uD83D\uDCC8", fontSize = 24.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Log your mood daily to see your emotional trend",
+                            fontSize = 11.sp,
+                            color = OnSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                // Real mood trend chart
+                val last7 = moodHistory.takeLast(7)
+                val moodValueMap = mapOf(
+                    "sad" to 1f, "anxious" to 2f, "irritated" to 3f,
+                    "emotional" to 4f, "calm" to 5f, "happy" to 6f, "energetic" to 7f
                 )
 
-                // Draw connecting bezier path
-                val path = Path().apply {
-                    moveTo(points[0].x, points[0].y)
-                    for (i in 1 until points.size) {
-                        val pPrev = points[i - 1]
-                        val pCurr = points[i]
-                        val cX = (pPrev.x + pCurr.x) / 2f
-                        cubicTo(cX, pPrev.y, cX, pCurr.y, pCurr.x, pCurr.y)
+                androidx.compose.foundation.Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .background(Color.White.copy(0.3f), RoundedCornerShape(12.dp))
+                ) {
+                    val canvasWidth = size.width
+                    val canvasHeight = size.height
+                    val padding = 16.dp.toPx()
+                    val usableWidth = canvasWidth - padding * 2
+                    val usableHeight = canvasHeight - padding * 2
+
+                    val points = last7.mapIndexed { index, entry ->
+                        val x = padding + (index.toFloat() / (last7.size - 1).coerceAtLeast(1)) * usableWidth
+                        val normalizedMood = (moodValueMap[entry.mood.lowercase()] ?: 4f) / 7f
+                        val y = padding + usableHeight - (normalizedMood * usableHeight)
+                        Offset(x, y)
+                    }
+
+                    // Gradient fill under curve
+                    val fillPath = Path().apply {
+                        moveTo(points.first().x, canvasHeight)
+                        points.forEach { lineTo(it.x, it.y) }
+                        lineTo(points.last().x, canvasHeight)
+                        close()
+                    }
+                    drawPath(
+                        path = fillPath,
+                        color = Primary.copy(alpha = 0.1f)
+                    )
+
+                    // Connecting bezier path
+                    val linePath = Path().apply {
+                        moveTo(points[0].x, points[0].y)
+                        for (i in 1 until points.size) {
+                            val prev = points[i - 1]
+                            val curr = points[i]
+                            val cX = (prev.x + curr.x) / 2f
+                            cubicTo(cX, prev.y, cX, curr.y, curr.x, curr.y)
+                        }
+                    }
+                    drawPath(
+                        path = linePath,
+                        color = Primary,
+                        style = Stroke(width = 2.5.dp.toPx())
+                    )
+
+                    // Data points
+                    points.forEach { pt ->
+                        drawCircle(color = Lavender, radius = 4.dp.toPx(), center = pt)
+                        drawCircle(color = Color.White, radius = 1.5.dp.toPx(), center = pt)
                     }
                 }
 
-                // Draw path lines
-                drawPath(
-                    path = path,
-                    color = Primary,
-                    style = Stroke(width = 3.dp.toPx())
-                )
-
-                // Draw points dots
-                points.forEach { pt ->
-                    drawCircle(
-                        color = Lavender,
-                        radius = 5.dp.toPx(),
-                        center = pt
-                    )
-                    drawCircle(
-                        color = Color.White,
-                        radius = 2.dp.toPx(),
-                        center = pt
-                    )
+                // Date labels
+                if (last7.size >= 2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        val firstDate = java.time.Instant.ofEpochMilli(last7.first().date)
+                            .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        val lastDate = java.time.Instant.ofEpochMilli(last7.last().date)
+                            .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        Text("${firstDate.monthValue}/${firstDate.dayOfMonth}", fontSize = 9.sp, color = OnSurfaceVariant)
+                        Text("${lastDate.monthValue}/${lastDate.dayOfMonth}", fontSize = 9.sp, color = OnSurfaceVariant)
+                    }
                 }
             }
         }

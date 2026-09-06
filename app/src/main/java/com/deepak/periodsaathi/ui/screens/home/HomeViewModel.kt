@@ -1,5 +1,6 @@
 package com.deepak.periodsaathi.ui.screens.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import java.time.LocalDate
 import androidx.lifecycle.viewModelScope
@@ -10,6 +11,7 @@ import com.deepak.periodsaathi.domain.model.CyclePhase
 import com.deepak.periodsaathi.domain.model.PeriodPrediction
 import com.deepak.periodsaathi.data.datastore.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,7 +58,8 @@ class HomeViewModel @Inject constructor(
     private val cycleRepository: CycleRepository,
     private val healthQueryEngine: HealthQueryEngine,
     private val userPreferences: UserPreferences,
-    private val gamificationManager: GamificationManager
+    private val gamificationManager: GamificationManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -204,6 +207,7 @@ class HomeViewModel @Inject constructor(
             if (newWater >= 8) {
                 gamificationManager.awardPoints(PointEvent.WATER_LOGGED)
             }
+            com.deepak.periodsaathi.worker.WidgetRefreshWorker.refreshAllWidgets(context)
         }
     }
 

@@ -14,11 +14,14 @@ import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.element.Table
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.sentry.Sentry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,6 +64,7 @@ class ReportViewModel @Inject constructor(
     fun exportPdf() {
         _exportState.value = ExportState.Loading
         viewModelScope.launch {
+            val span = Sentry.startTransaction("exportPdf", "task")
             try {
                 val cycles = cycleRepository.getLastNCycles(_selectedCycles.value).first()
                 val settings = cycleRepository.getSettings().first()
@@ -68,10 +72,17 @@ class ReportViewModel @Inject constructor(
                     _exportState.value = ExportState.Error("No cycle data available")
                     return@launch
                 }
-                val file = generatePdf(cycles, settings.userName)
+                val file = withContext(Dispatchers.IO) {
+                    generatePdf(cycles, settings.userName)
+                }
+                span.status = io.sentry.SpanStatus.OK
                 _exportState.value = ExportState.Success(file.absolutePath, "application/pdf")
             } catch (e: Exception) {
+                span.status = io.sentry.SpanStatus.INTERNAL_ERROR
+                span.throwable = e
                 _exportState.value = ExportState.Error(e.message ?: "Failed to generate PDF")
+            } finally {
+                span.finish()
             }
         }
     }
@@ -79,6 +90,7 @@ class ReportViewModel @Inject constructor(
     fun exportCsv() {
         _exportState.value = ExportState.Loading
         viewModelScope.launch {
+            val span = Sentry.startTransaction("exportCsv", "task")
             try {
                 val cycles = cycleRepository.getLastNCycles(_selectedCycles.value).first()
                 val settings = cycleRepository.getSettings().first()
@@ -86,10 +98,17 @@ class ReportViewModel @Inject constructor(
                     _exportState.value = ExportState.Error("No cycle data available")
                     return@launch
                 }
-                val file = generateCsv(cycles, settings.userName)
+                val file = withContext(Dispatchers.IO) {
+                    generateCsv(cycles, settings.userName)
+                }
+                span.status = io.sentry.SpanStatus.OK
                 _exportState.value = ExportState.Success(file.absolutePath, "text/csv")
             } catch (e: Exception) {
+                span.status = io.sentry.SpanStatus.INTERNAL_ERROR
+                span.throwable = e
                 _exportState.value = ExportState.Error(e.message ?: "Failed to generate CSV")
+            } finally {
+                span.finish()
             }
         }
     }

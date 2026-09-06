@@ -221,6 +221,9 @@ dependencies {
     // Sentry
     implementation(libs.sentry.android)
 
+    // Material Components (needed for Theme.MaterialComponents in XML)
+    implementation(libs.material.components)
+
     // Biometrics
     implementation(libs.androidx.biometric)
 

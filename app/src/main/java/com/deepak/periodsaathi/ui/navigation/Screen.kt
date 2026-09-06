@@ -40,6 +40,7 @@ import kotlinx.serialization.Serializable
 @Serializable object Rewards      // Rewards shop screen
 @Serializable object Profile      // Profile screen
 @Serializable object Privacy      // Privacy policy screen
+@Serializable object MedicalDisclaimer // Medical disclaimer screen
 @Serializable object Support      // Support screen
 
 

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.model.CycleEntry
 import com.deepak.periodsaathi.data.repository.CycleRepository
+import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -28,7 +30,8 @@ data class DayLogUiState(
 
 @HiltViewModel
 class DayLogViewModel @Inject constructor(
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DayLogUiState())
@@ -116,6 +119,7 @@ class DayLogViewModel @Inject constructor(
                 }
                 _state.value = _state.value.copy(isSaving = false)
                 _saveComplete.emit(Unit)
+                com.deepak.periodsaathi.worker.WidgetRefreshWorker.refreshAllWidgets(context)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(isSaving = false)
                 _saveError.emit("Failed to save: ${e.message}")

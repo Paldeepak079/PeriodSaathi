@@ -1,6 +1,5 @@
 package com.deepak.periodsaathi.ui.navigation
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -28,23 +27,31 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.deepak.periodsaathi.ui.theme.BlushPink
 import com.deepak.periodsaathi.ui.theme.WarmCream
+import kotlin.math.roundToInt
 
 data class NavTab(
     val label: String,
@@ -69,12 +76,9 @@ fun BottomNavBar(navController: NavHostController) {
         tab.route::class.qualifiedName == currentRoute
     }.coerceAtLeast(0)
 
-    val tabWidth = 60.dp
-    val indicatorOffset by animateDpAsState(
-        targetValue = tabWidth * activeTabIndex,
-        animationSpec = spring(dampingRatio = 0.6f),
-        label = "indicatorOffset"
-    )
+    var indicatorOffsetPx by remember { mutableFloatStateOf(0f) }
+    var indicatorWidthPx by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
 
     NavigationBar(
         containerColor = WarmCream.copy(alpha = 0.92f),
@@ -82,17 +86,25 @@ fun BottomNavBar(navController: NavHostController) {
         windowInsets = NavigationBarDefaults.windowInsets
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            // Sliding indicator
-            Box(
-                modifier = Modifier
-                    .offset(x = indicatorOffset + 8.dp)
-                    .width(tabWidth - 16.dp)
-                    .height(3.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(BlushPink)
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 4.dp)
+            // Sliding indicator — animates via spring on offset change
+            val animatedOffsetX by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = indicatorOffsetPx,
+                animationSpec = spring(dampingRatio = 0.6f),
+                label = "indicatorOffsetX"
             )
+
+            if (indicatorWidthPx > 0f) {
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
+                        .width(with(density) { indicatorWidthPx.toDp() })
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(BlushPink)
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 4.dp)
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -123,6 +135,14 @@ fun BottomNavBar(navController: NavHostController) {
                                     launchSingleTop = true
                                     restoreState = true
                                     popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                }
+                            }
+                            .onGloballyPositioned { coordinates ->
+                                val pos = coordinates.positionInParent()
+                                val size = coordinates.size
+                                if (index == activeTabIndex) {
+                                    indicatorOffsetPx = pos.x
+                                    indicatorWidthPx = size.width.toFloat()
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp)

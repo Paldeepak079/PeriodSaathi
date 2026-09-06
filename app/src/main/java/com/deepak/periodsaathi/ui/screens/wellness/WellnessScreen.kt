@@ -414,7 +414,7 @@ fun WellnessScreen(
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    wellnessCategories.take(4).forEach { cat ->
+                    wellnessCategories.forEach { cat ->
                         val catSolutions = state.allSolutions.filter { it.category == cat.key }
                         if (catSolutions.isNotEmpty()) {
                             Row(
@@ -487,41 +487,9 @@ fun WellnessScreen(
             item {
                 MoodTracker(
                     currentMood = state.mood,
+                    moodHistory = state.moodHistory,
                     onMoodSelect = { viewModel.logMood(it) }
                 )
-            }
-
-            // PDF report exports
-            item {
-                GlassCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Download Health Ledger 📝",
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurface
-                        )
-                        Text(
-                            text = "Generate a medically detailed PDF report of your wellness and self-care logs for the past 3 months.",
-                            fontSize = 12.sp,
-                            color = OnSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        Button(
-                            onClick = { viewModel.exportReportToPDF() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Secondary),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("Export PDF Report", fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
             }
         }
 

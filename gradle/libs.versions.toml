@@ -38,6 +38,7 @@ sqlcipher = "4.5.4"
 sqliteKtx = "2.4.0"
 lottie = "6.6.0"
 sentry = "8.39.0"
+materialComponents = "1.12.0"
 sentryPlugin = "4.0.1"
 
 
@@ -98,6 +99,7 @@ sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", versio
 sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqliteKtx" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
+material-components = { group = "com.google.android.material", name = "material", version.ref = "materialComponents" }
 
 
 # Testing

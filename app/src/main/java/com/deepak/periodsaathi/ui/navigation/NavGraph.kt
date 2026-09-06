@@ -41,6 +41,7 @@ import com.deepak.periodsaathi.ui.screens.payment.PaymentScreen
 import com.deepak.periodsaathi.ui.screens.remedies.RemediesScreen
 import com.deepak.periodsaathi.ui.screens.report.ReportExportScreen
 import com.deepak.periodsaathi.ui.screens.settings.SettingsScreen
+import com.deepak.periodsaathi.ui.screens.settings.MedicalDisclaimerScreen
 import com.deepak.periodsaathi.ui.screens.splash.SplashScreen
 import com.deepak.periodsaathi.ui.screens.timecapsule.TimeCapsuleScreen
 import com.deepak.periodsaathi.ui.screens.wardrobe.WardrobeScreen
@@ -162,7 +163,11 @@ fun PeriodSaathiNavGraph(
         composable<Settings> { SettingsScreen(
             onNavigateToPayment = { navController.navigate(Payment) },
             onNavigateToReport = { navController.navigate(ReportExport) },
+            onNavigateToMedicalDisclaimer = { navController.navigate(MedicalDisclaimer) },
             onSignOut = { navController.navigate(Splash) { popUpTo<Settings> { inclusive = true } } }
+        ) }
+        composable<MedicalDisclaimer> { MedicalDisclaimerScreen(
+            onBack = { navController.popBackStack() }
         ) }
         composable<ReportExport> { ReportExportScreen() }
         composable<Wardrobe> { WardrobeScreen() }

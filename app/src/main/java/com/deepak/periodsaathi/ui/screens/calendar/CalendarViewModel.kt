@@ -1,10 +1,12 @@
 package com.deepak.periodsaathi.ui.screens.calendar
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deepak.periodsaathi.data.model.CycleEntry
 import com.deepak.periodsaathi.data.repository.CycleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +44,8 @@ enum class FertilityMode { NEUTRAL, PLANNING, AVOIDING }
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val cycleRepository: CycleRepository
+    private val cycleRepository: CycleRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _currentYearMonth = MutableStateFlow(YearMonth.now())
@@ -214,6 +217,7 @@ class CalendarViewModel @Inject constructor(
                 ))
                 loadMonth()
                 computeSymptomPredictions()
+                com.deepak.periodsaathi.worker.WidgetRefreshWorker.refreshAllWidgets(context)
             } catch (_: Exception) {
             } finally {
                 hideLogSheet()
